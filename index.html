@@ -665,8 +665,8 @@ select.status-sel{
     <div class="login-logo">Salon <em>Concert</em></div>
     <div class="login-sub">演奏会管理システム</div>
     <div class="login-tabs">
-      <button class="active" onclick="setLoginMode('organizer',this)">主催者</button>
-      <button onclick="setLoginMode('performer',this)">演奏者</button>
+      <button onclick="setLoginMode('organizer',this)">主催者</button>
+      <button class="active" onclick="setLoginMode('performer',this)">演奏者</button>
     </div>
     <div class="login-form" id="login-form">
       <!-- dynamic -->
@@ -1096,7 +1096,7 @@ let instrumentList = [
   '打楽器','その他'
 ];
 let currentUser = null; // {role:'organizer'|'performer', entryId?, name}
-let loginMode = 'organizer';
+let loginMode = 'performer';
 let editingConcertId = null;
 let editingEntryId = null;
 let editingTxnId = null;
