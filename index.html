@@ -691,6 +691,8 @@ select.status-sel{
       <div class="ph">
         <h2>演奏会一覧</h2>
         <div class="ph-actions">
+          <button class="btn btn-outline btn-sm" onclick="exportData()">📤 エクスポート</button>
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0">📥 インポート<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
           <button class="btn btn-outline btn-sm" onclick="openSettingsModal()">⚙ 設定</button>
           <button class="btn btn-gold" onclick="openConcertModal()">＋ 演奏会を作成</button>
         </div>
@@ -1215,6 +1217,53 @@ function doLogin(){
     }
   }
   startApp();
+}
+
+function exportData(){
+  const data = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    concerts,
+    entries,
+    applications,
+    instrumentList
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'salon-concert-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  if(!confirm('現在のデータをインポートしたデータで上書きします。よろしいですか？')) {
+    event.target.value=''; return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if(!data.concerts || !data.entries){
+        alert('ファイルの形式が正しくありません。'); return;
+      }
+      concerts      = data.concerts      || [];
+      entries       = data.entries       || [];
+      applications  = data.applications  || [];
+      instrumentList= data.instrumentList|| DEFAULT_INSTRUMENTS;
+      persist();
+      updateDatalist();
+      renderConcerts();
+      alert('インポートが完了しました！');
+    } catch(err){
+      alert('読み込みに失敗しました。正しいバックアップファイルか確認してください。');
+    }
+    event.target.value='';
+  };
+  reader.readAsText(file);
 }
 
 function logout(){
