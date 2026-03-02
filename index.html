@@ -1228,6 +1228,32 @@ select.status-sel{
   <option value="その他">
 </datalist>
 
+<script type="module">
+// ════════════════════════
+//  FIREBASE SETUP
+// ════════════════════════
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAvuRxZPjL0hZ9L9eRGR6yXh0YQvKsXDOY",
+  authDomain: "salon-concert-managemet.firebaseapp.com",
+  databaseURL: "https://salon-concert-managemet-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "salon-concert-managemet",
+  storageBucket: "salon-concert-managemet.firebasestorage.app",
+  messagingSenderId: "432791319748",
+  appId: "1:432791319748:web:9bdb9719119948de508591"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
+window._fbDb = db;
+window._fbRef = ref;
+window._fbSet = set;
+window._fbOnValue = onValue;
+window._fbGet = get;
+</script>
+
 <script>
 // ════════════════════════
 //  STATE
@@ -1255,30 +1281,76 @@ function fmtTime(m){ return `${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}
 function today(){ return new Date().toISOString().slice(0,10); }
 
 // ════════════════════════
-//  STORAGE
+//  STORAGE（Firebase）
 // ════════════════════════
+let _fbReady = false;
+let _persistTimer = null;
+
 async function persist(){
-  try{
-    await window.storage.set('sc_concerts', JSON.stringify(concerts));
-    await window.storage.set('sc_entries',  JSON.stringify(entries));
-    await window.storage.set('sc_txns',     JSON.stringify(transactions));
-    await window.storage.set('sc_apps',     JSON.stringify(applications));
-    await window.storage.set('sc_instruments', JSON.stringify(instrumentList));
-  }catch(e){}
+  // デバウンス：連続保存を300ms間引く
+  if(_persistTimer) clearTimeout(_persistTimer);
+  _persistTimer = setTimeout(async ()=>{
+    if(!window._fbDb) return;
+    const data = {
+      concerts,
+      entries,
+      transactions,
+      applications,
+      instrumentList,
+      updatedAt: Date.now()
+    };
+    try{
+      await window._fbSet(window._fbRef(window._fbDb, 'salonConcert'), data);
+    }catch(e){ console.warn('Firebase write error:', e); }
+  }, 300);
 }
+
 async function hydrate(){
+  if(!window._fbDb) return;
   try{
-    const c = await window.storage.get('sc_concerts');
-    const e = await window.storage.get('sc_entries');
-    const t = await window.storage.get('sc_txns');
-    const a = await window.storage.get('sc_apps');
-    const il = await window.storage.get('sc_instruments');
-    if(c) concerts      = JSON.parse(c.value);
-    if(e) entries       = JSON.parse(e.value);
-    if(t) transactions  = JSON.parse(t.value);
-    if(a) applications  = JSON.parse(a.value);
-    if(il) instrumentList = JSON.parse(il.value);
-  }catch(e){}
+    const snapshot = await window._fbGet(window._fbRef(window._fbDb, 'salonConcert'));
+    if(snapshot.exists()){
+      const data = snapshot.val();
+      if(data.concerts)     concerts      = data.concerts;
+      if(data.entries)      entries       = data.entries;
+      if(data.transactions) transactions  = data.transactions;
+      if(data.applications) applications  = data.applications;
+      if(data.instrumentList) instrumentList = data.instrumentList;
+    }
+  }catch(e){ console.warn('Firebase read error:', e); }
+}
+
+// リアルタイム同期リスナー（ログイン後に開始）
+function startRealtimeSync(){
+  if(!window._fbDb || window._realtimeStarted) return;
+  window._realtimeStarted = true;
+  window._fbOnValue(window._fbRef(window._fbDb, 'salonConcert'), snapshot=>{
+    if(!snapshot.exists()) return;
+    const data = snapshot.val();
+    // 自分が書き込んだ直後は無視（300ms以内）
+    if(_persistTimer) return;
+    if(data.concerts)     concerts      = data.concerts;
+    if(data.entries)      entries       = data.entries;
+    if(data.transactions) transactions  = data.transactions;
+    if(data.applications) applications  = data.applications;
+    if(data.instrumentList) instrumentList = data.instrumentList;
+    // 表示中のページを再描画
+    refreshCurrentPage();
+  });
+}
+
+function refreshCurrentPage(){
+  const activePage = document.querySelector('.page.active');
+  if(!activePage) return;
+  const id = activePage.id;
+  if(id==='page-concerts')       renderConcerts();
+  else if(id==='page-participants') renderParticipants();
+  else if(id==='page-applications') renderApplications();
+  else if(id==='page-program')   renderProgram();
+  else if(id==='page-my-concert-info') renderMyConcertInfo();
+  else if(id==='page-my-concert')      renderMyConvert();
+  else if(id==='page-my-program')      renderMyProgram();
+  else if(id==='page-my-profile')      renderMyProfile();
 }
 
 // ════════════════════════
@@ -1402,6 +1474,7 @@ function startApp(){
   document.getElementById('app').style.display='block';
   document.getElementById('user-pill').innerHTML = `<span>${esc(currentUser.name)}</span>`;
   buildNav();
+  startRealtimeSync();
   if(currentUser.role === 'organizer'){
     showPage('concerts');
     renderConcerts();
@@ -2911,9 +2984,29 @@ function closeModal(id){
 //  INIT
 // ════════════════════════
 async function init(){
+  // Firebase が module script でロードされるまで待つ
+  for(let i=0;i<50;i++){
+    if(window._fbDb) break;
+    await new Promise(r=>setTimeout(r,100));
+  }
+  if(!window._fbDb){
+    alert('データベースへの接続に失敗しました。ページを再読み込みしてください。');
+    return;
+  }
+
+  // ローディング表示
+  const loginBox = document.querySelector('.login-box');
+  const origContent = loginBox.innerHTML;
+  loginBox.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--text3)">
+    <div style="font-size:2rem;margin-bottom:0.8rem">♪</div>
+    <div style="font-size:0.85rem;letter-spacing:0.1em">データを読み込み中...</div>
+  </div>`;
+
   await hydrate();
+  loginBox.innerHTML = origContent;
   updateDatalist();
-  // seed demo data
+
+  // seed demo data（初回のみ）
   if(!concerts.length){
     const cid=uid();
     concerts.push({
