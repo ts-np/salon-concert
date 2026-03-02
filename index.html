@@ -552,6 +552,127 @@ select.status-sel{
   .prog-pieces{color:#555}
   .prog-num{border-color:#ccc;color:#888}
 }
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:600px){
+
+  /* ヘッダー */
+  header{padding:0 0.9rem;height:50px}
+  .hdr-logo{font-size:0.95rem;letter-spacing:0.06em}
+  .user-pill{font-size:0.68rem;padding:0.2rem 0.6rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* ナビ */
+  nav{padding:0 0.2rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  nav button{font-size:0.72rem;padding:0.65rem 0.8rem;letter-spacing:0.04em}
+
+  /* メインコンテンツ */
+  main{padding:1.2rem 0.85rem 5rem}
+
+  /* ページヘッダー */
+  .ph{flex-wrap:wrap;gap:0.6rem;margin-bottom:1.2rem}
+  .ph h2{font-size:1.2rem}
+  .ph-actions{width:100%;justify-content:flex-start;gap:0.4rem}
+  .ph-actions .btn{font-size:0.7rem;padding:0.3rem 0.6rem}
+
+  /* カード */
+  .card{padding:1rem 1rem}
+  .card-actions{gap:0.4rem}
+  .card-actions .btn{font-size:0.68rem;padding:0.28rem 0.55rem}
+
+  /* 演奏会カード：フライヤーを下に */
+  .card .card-row{flex-direction:column;align-items:flex-start}
+
+  /* セレクトバー */
+  .sel-bar{flex-direction:column;align-items:stretch;gap:0.5rem}
+  .sel-bar select{max-width:100%;min-width:0}
+
+  /* テーブル：フォントを小さく */
+  thead th{font-size:0.65rem;padding:0.5rem 0.6rem}
+  tbody td{font-size:0.72rem;padding:0.5rem 0.6rem}
+
+  /* モーダル */
+  .overlay{padding:0;align-items:flex-end}
+  .modal{
+    border-radius:16px 16px 0 0;
+    max-height:92vh;
+    padding:1.4rem 1.1rem 2rem;
+    width:100%;
+    max-width:100%;
+  }
+  .modal-hd h3{font-size:1.05rem}
+
+  /* フォームグリッド：1列に */
+  .form-grid{grid-template-columns:1fr}
+  .full{grid-column:1}
+
+  /* ピースエディタ：作曲者欄を下に */
+  .piece-row{
+    grid-template-columns:1.2rem 1fr auto;
+    grid-template-rows:auto auto;
+    gap:0.2rem 0.3rem;
+  }
+  .piece-row .piece-title{grid-column:2}
+  .piece-row .piece-composer{grid-column:2;font-size:0.72rem;color:var(--text3)}
+  .piece-row .remove-btn{grid-column:3;grid-row:1/3;align-self:center}
+  .piece-drag-handle{grid-row:1/3}
+
+  /* メンバー行：2列に */
+  .member-row{grid-template-columns:1fr auto}
+
+  /* プログラム */
+  .prog-header{padding:1.2rem 1rem}
+  .prog-title{font-size:1.5rem}
+  .prog-body{padding:1rem}
+  .prog-item{grid-template-columns:2rem 1fr;gap:0 0.7rem}
+  .prog-num{width:1.8rem;height:1.8rem;font-size:0.78rem}
+  .prog-name{font-size:0.9rem}
+
+  /* Finance KPI */
+  .fin-summary-grid{grid-template-columns:1fr 1fr}
+  .fin-kpi-value{font-size:1.3rem}
+
+  /* Finance タブ */
+  .fin-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .fin-tab{font-size:0.72rem;padding:0.45rem 0.8rem}
+
+  /* トランザクション行 */
+  .txn-row{
+    grid-template-columns:70px 1fr 80px;
+    grid-template-rows:auto auto;
+  }
+  .txn-row > *:nth-child(4){display:none} /* カテゴリ非表示 */
+  .txn-row .txn-actions{grid-column:3;grid-row:1/3;justify-content:flex-end;align-items:center}
+
+  /* 棒グラフ */
+  .bar-row{grid-template-columns:80px 1fr 65px}
+  .bar-label{font-size:0.68rem}
+
+  /* コンペアグリッド */
+  .compare-grid{grid-template-columns:1fr}
+
+  /* ログイン */
+  .login-box{padding:2rem 1.3rem;margin:0 0.8rem}
+  .login-logo{font-size:1.5rem}
+
+  /* 申し込みフォーム */
+  .apply-wrap{padding:1.5rem 0.9rem 4rem}
+  .apply-card{padding:1.4rem 1.1rem}
+  .apply-concert-name{font-size:1.4rem}
+
+  /* チケット行 */
+  .ticket-row{grid-template-columns:1fr 90px auto}
+
+  /* 参加費行 */
+  .fee-row{font-size:0.72rem}
+
+  /* バッジ */
+  .badge{font-size:0.6rem;padding:0.14rem 0.45rem}
+}
+
+@media(max-width:400px){
+  nav button{font-size:0.65rem;padding:0.6rem 0.6rem}
+  .fin-summary-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -2773,9 +2894,14 @@ function openModal(id){
   overlay.classList.add('open');
   const modal = overlay.querySelector('.modal');
   if(modal) modal.scrollTop = 0;
+  // スマホ：オーバーレイタップで閉じる
+  overlay._closeHandler = e => { if(e.target===overlay) closeModal(id); };
+  overlay.addEventListener('click', overlay._closeHandler);
 }
 function closeModal(id){
-  document.getElementById(id+'-overlay').classList.remove('open');
+  const overlay = document.getElementById(id+'-overlay');
+  overlay.classList.remove('open');
+  if(overlay._closeHandler){ overlay.removeEventListener('click', overlay._closeHandler); delete overlay._closeHandler; }
   if(id==='concert-modal') editingConcertId=null;
   if(id==='entry-modal') editingEntryId=null;
   if(id==='txn-modal') editingTxnId=null;
