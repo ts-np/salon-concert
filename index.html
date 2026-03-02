@@ -1,0 +1,2959 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salon Concert — 演奏会管理</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Shippori+Mincho:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1a1814;
+  --surface: #18150f;
+  --surface2: #211d15;
+  --border: #2e2820;
+  --border2: #3d3425;
+  --gold: #c9a85c;
+  --gold2: #e8c97a;
+  --gold-dim: rgba(201,168,92,0.15);
+  --text: #f0ead8;
+  --text2: #a89878;
+  --text3: #6b5c42;
+  --red: #c0392b;
+  --green: #2e7d5e;
+  --green-bg: rgba(46,125,94,0.15);
+  --blue: #2471a3;
+  --blue-bg: rgba(36,113,163,0.15);
+  --amber: #b7770d;
+  --amber-bg: rgba(183,119,13,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Shippori Mincho',serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;
+  background: radial-gradient(ellipse at 50% 30%, #2a1f0a 0%, #0e0c0a 70%);
+}
+.login-box{
+  width:100%;max-width:420px;padding:2.5rem 2rem;
+  border:1px solid var(--border2);border-radius:12px;
+  background:var(--surface);
+  box-shadow:0 0 60px rgba(201,168,92,0.06);
+  text-align:center;
+}
+.login-logo{
+  font-family:'EB Garamond',serif;
+  font-size:1.8rem;font-weight:400;
+  letter-spacing:0.12em;
+  color:var(--gold2);
+  margin-bottom:0.3rem;
+}
+.login-logo em{font-style:italic;font-weight:400}
+.login-sub{font-size:0.72rem;color:var(--text3);letter-spacing:0.1em;margin-bottom:2rem}
+.login-tabs{display:flex;border:1px solid var(--border2);border-radius:8px;margin-bottom:1.5rem;overflow:hidden}
+.login-tabs button{
+  flex:1;padding:0.6rem;border:none;
+  background:none;color:var(--text3);
+  font-family:'Shippori Mincho',serif;font-size:0.8rem;
+  cursor:pointer;transition:all 0.2s;
+}
+.login-tabs button.active{background:var(--gold-dim);color:var(--gold2);border-bottom:2px solid var(--gold)}
+.login-form{display:flex;flex-direction:column;gap:0.8rem;text-align:left}
+.login-form input,.login-form select{
+  padding:0.65rem 0.9rem;
+  border:1px solid var(--border2);border-radius:6px;
+  background:var(--surface2);color:var(--text);
+  font-family:'Shippori Mincho',serif;font-size:0.85rem;
+  transition:border-color 0.2s;
+}
+.login-form input:focus,.login-form select:focus{outline:none;border-color:var(--gold)}
+.login-note{font-size:0.72rem;color:var(--text3);text-align:center;margin-top:0.3rem}
+
+/* ── APP SHELL ── */
+#app{display:none}
+header{
+  height:56px;background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;
+  position:sticky;top:0;z-index:50;
+}
+.hdr-logo{
+  font-family:'EB Garamond',serif;font-size:1.1rem;
+  letter-spacing:0.1em;color:var(--gold);
+}
+.hdr-logo em{font-style:italic}
+.hdr-right{display:flex;align-items:center;gap:1rem}
+.user-pill{
+  font-size:0.75rem;color:var(--text2);
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:20px;padding:0.25rem 0.8rem;
+}
+.user-pill span{color:var(--gold);font-weight:600}
+
+/* ── NAV ── */
+nav{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;padding:0 1.5rem;gap:0;overflow-x:auto;
+}
+nav button{
+  background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--text3);font-family:'Shippori Mincho',serif;font-size:0.78rem;
+  letter-spacing:0.08em;padding:0.75rem 1.2rem;cursor:pointer;
+  white-space:nowrap;transition:color 0.2s,border-color 0.2s;
+}
+nav button.active{color:var(--gold2);border-bottom-color:var(--gold)}
+nav button:hover:not(.active){color:var(--text)}
+
+/* ── MAIN ── */
+main{max-width:980px;margin:0 auto;padding:1.8rem 1.2rem 5rem}
+.page{display:none}
+.page.active{display:block;animation:fadeUp 0.3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ── PAGE HEADER ── */
+.ph{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.5rem;
+  padding-bottom:0.8rem;
+  border-bottom:1px solid var(--border2);
+}
+.ph h2{
+  font-family:'EB Garamond',serif;font-size:1.5rem;
+  font-weight:400;letter-spacing:0.05em;color:var(--gold2);
+}
+.ph-actions{display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap}
+
+/* ── BUTTONS ── */
+.btn{
+  padding:0.45rem 1rem;border:none;border-radius:5px;
+  font-family:'Shippori Mincho',serif;font-size:0.78rem;
+  letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;
+}
+.btn-gold{background:var(--gold);color:#0e0c0a;font-weight:600}
+.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:none;border:1px solid var(--border2);color:var(--text2)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-danger{background:#7b1d14;color:#fdd}
+.btn-danger:hover{background:var(--red)}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:#25634b}
+.btn-sm{padding:0.3rem 0.7rem;font-size:0.72rem}
+
+/* ── CARD ── */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:1.2rem 1.4rem;margin-bottom:0.9rem;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.card:hover{border-color:var(--border2);box-shadow:0 4px 24px rgba(0,0,0,0.3)}
+.card-title{
+  font-family:'EB Garamond',serif;font-size:1.1rem;
+  color:var(--text);margin-bottom:0.25rem;
+}
+.card-meta{font-size:0.73rem;color:var(--text3);margin-bottom:0.6rem;line-height:1.6}
+.card-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
+.card-actions{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.9rem}
+
+/* ── BADGES ── */
+.badge{
+  display:inline-block;padding:0.18rem 0.6rem;border-radius:20px;
+  font-size:0.65rem;letter-spacing:0.05em;font-weight:600;vertical-align:middle;
+}
+.badge-upcoming{background:var(--blue-bg);color:#74b9ff;border:1px solid var(--blue)}
+.badge-past{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+.badge-confirmed{background:var(--green-bg);color:#6fcf97;border:1px solid var(--green)}
+.badge-pending{background:var(--amber-bg);color:#f6c90e;border:1px solid var(--amber)}
+.badge-absent{background:rgba(192,57,43,0.15);color:#e88;border:1px solid #7b1d14}
+.badge-solo{background:rgba(155,89,182,0.15);color:#bb8fce;border:1px solid rgba(155,89,182,0.4)}
+.badge-group{background:rgba(52,152,219,0.15);color:#7fb3d3;border:1px solid rgba(52,152,219,0.4)}
+
+/* ── SELECT BAR ── */
+.sel-bar{
+  display:flex;gap:0.7rem;align-items:center;margin-bottom:1.4rem;flex-wrap:wrap;
+}
+.sel-bar select{
+  flex:1;min-width:200px;max-width:400px;
+  padding:0.55rem 2rem 0.55rem 0.8rem;
+  border:1px solid var(--border2);border-radius:6px;
+  background:var(--surface2);color:var(--text);
+  font-family:'Shippori Mincho',serif;font-size:0.83rem;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M0 0l5 7 5-7z' fill='%236b5c42'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 0.8rem center;
+}
+.sel-bar select:focus{outline:none;border-color:var(--gold)}
+
+/* ── TABLE ── */
+.tbl-wrap{border:1px solid var(--border);border-radius:8px;overflow:hidden;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:0.8rem}
+thead{background:var(--surface2)}
+thead th{
+  padding:0.65rem 0.9rem;text-align:left;
+  font-weight:500;font-size:0.7rem;letter-spacing:0.08em;
+  color:var(--text3);white-space:nowrap;
+}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:0.65rem 0.9rem;vertical-align:middle}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem 1.2rem}
+@media(max-width:560px){.form-grid{grid-template-columns:1fr}}
+.full{grid-column:1/-1}
+.fg{display:flex;flex-direction:column;gap:0.3rem}
+.fg label{font-size:0.7rem;letter-spacing:0.07em;color:var(--text3);font-weight:600}
+.fg input,.fg textarea,.fg select{
+  padding:0.55rem 0.8rem;
+  border:1px solid var(--border2);border-radius:5px;
+  background:var(--surface2);color:var(--text);
+  font-family:'Shippori Mincho',serif;font-size:0.83rem;
+  transition:border-color 0.2s;
+}
+.fg input:focus,.fg textarea:focus,.fg select:focus{outline:none;border-color:var(--gold)}
+.fg textarea{resize:vertical;min-height:72px}
+
+/* ── MODAL ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  display:none;align-items:center;justify-content:center;
+  z-index:200;padding:1rem;
+}
+.overlay.open{display:flex}
+.modal{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:12px;padding:1.8rem;
+  width:100%;max-width:580px;max-height:90vh;overflow-y:auto;
+  box-shadow:0 24px 80px rgba(0,0,0,0.6);
+}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem}
+.modal-hd h3{font-family:'EB Garamond',serif;font-size:1.2rem;font-weight:400;color:var(--gold2)}
+.close-btn{background:none;border:none;color:var(--text3);font-size:1.4rem;cursor:pointer;padding:0.2rem 0.4rem;line-height:1}
+.close-btn:hover{color:var(--text)}
+.modal-footer{display:flex;gap:0.6rem;justify-content:flex-end;margin-top:1.2rem;padding-top:0.8rem;border-top:1px solid var(--border)}
+
+/* ── SECTION ── */
+.subsect{
+  margin-top:1rem;padding:1rem;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;
+}
+.subsect-title{
+  font-size:0.72rem;letter-spacing:0.1em;
+  color:var(--gold);text-transform:uppercase;
+  margin-bottom:0.8rem;font-weight:600;
+}
+.type-toggle{display:flex;gap:0.5rem;margin-bottom:0.8rem}
+.type-btn{
+  padding:0.4rem 1rem;border-radius:20px;border:1px solid var(--border2);
+  background:none;color:var(--text3);
+  font-family:'Shippori Mincho',serif;font-size:0.75rem;
+  cursor:pointer;transition:all 0.2s;
+}
+.type-btn.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold2)}
+
+/* ── MEMBER ROW ── */
+.member-row{
+  display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem;
+}
+.member-row input{flex:1}
+.remove-btn{
+  background:none;border:1px solid #7b1d14;color:#e88;
+  border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.8rem;
+  transition:all 0.2s;flex-shrink:0;
+}
+.remove-btn:hover{background:#7b1d14}
+
+/* ── PROGRAM ── */
+.prog-wrap{
+  background:var(--surface);border:1px solid var(--gold-dim);
+  border-radius:10px;overflow:hidden;
+}
+.prog-header{
+  padding:2rem;
+  background:linear-gradient(135deg, #1a1408, #0e0c0a);
+  text-align:center;border-bottom:1px solid var(--border2);
+}
+.prog-title{
+  font-family:'EB Garamond',serif;font-size:2rem;font-weight:400;
+  color:var(--gold2);letter-spacing:0.08em;margin-bottom:0.3rem;
+}
+.prog-info{font-size:0.78rem;color:var(--text3);letter-spacing:0.07em;line-height:2}
+.prog-body{padding:1.5rem 2rem}
+.prog-item{
+  padding:1rem 0;border-bottom:1px solid var(--border);
+  display:grid;grid-template-columns:2.5rem 1fr;gap:0 1rem;
+}
+.prog-item:last-child{border-bottom:none}
+.prog-num{
+  width:2rem;height:2rem;border-radius:50%;
+  border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'EB Garamond',serif;font-size:0.85rem;color:var(--gold);
+  flex-shrink:0;margin-top:0.15rem;
+}
+.prog-name{font-size:1rem;color:var(--text);margin-bottom:0.2rem}
+.prog-group-name{font-size:0.78rem;color:var(--text3);margin-bottom:0.2rem}
+.prog-pieces{font-size:0.8rem;color:var(--text2);white-space:pre-wrap;line-height:1.7;margin-bottom:0.3rem}
+.prog-time{font-size:0.7rem;color:var(--text3)}
+.prog-profile{font-size:0.75rem;color:var(--text3);font-style:italic;margin-top:0.4rem;padding-left:0.6rem;border-left:2px solid var(--border2);line-height:1.6}
+.prog-acc{font-size:0.72rem;color:var(--text3);margin-top:0.2rem}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:3rem 1rem;color:var(--text3)}
+.empty .empty-icon{font-size:2.5rem;margin-bottom:0.5rem}
+.empty p{font-size:0.8rem;line-height:1.8}
+
+/* ── STATUS SELECT ── */
+select.status-sel{
+  padding:0.2rem 0.5rem;border-radius:4px;
+  border:1px solid var(--border2);background:var(--surface2);
+  color:var(--text);font-family:'Shippori Mincho',serif;font-size:0.72rem;
+}
+
+/* ── PIECE EDITOR ── */
+.piece-list{ display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.6rem; }
+.piece-row{
+  display:grid;grid-template-columns:1.4rem 1fr 1fr auto;
+  gap:0 0.4rem;align-items:center;
+  background:var(--bg);border:1px solid var(--border);border-radius:6px;
+  padding:0.35rem 0.5rem;
+  cursor:grab;transition:background 0.15s,border-color 0.15s;
+  user-select:none;
+}
+.piece-row:active{cursor:grabbing}
+.piece-row.drag-over{border-color:var(--gold);background:var(--gold-dim)}
+.piece-row.dragging{opacity:0.4}
+.piece-drag-handle{
+  color:var(--text3);font-size:0.9rem;text-align:center;cursor:grab;
+  padding:0.1rem;
+}
+.piece-row input{
+  background:transparent;border:none;
+  font-family:'Shippori Mincho',serif;font-size:0.8rem;color:var(--text);
+  padding:0.25rem 0.3rem;
+}
+.piece-row input:focus{outline:none;background:var(--surface2);border-radius:3px}
+.piece-row input::placeholder{color:var(--text3)}
+
+/* ── MEMBER ROW (updated) ── */
+.member-row{
+  display:grid;grid-template-columns:1fr 1fr auto;
+  gap:0 0.5rem;align-items:center;margin-bottom:0.5rem;
+}
+.member-row input{width:100%}
+
+/* ── INFO BOX ── */
+.info-box{
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:8px;padding:1rem 1.2rem;margin-bottom:1rem;
+  font-size:0.82rem;color:var(--text2);line-height:1.8;
+}
+.info-box strong{color:var(--gold2)}
+
+/* ── FINANCE ── */
+.fin-summary-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:0.8rem;margin-bottom:1.5rem;
+}
+.fin-kpi{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:1rem 1.2rem;
+}
+.fin-kpi-label{font-size:0.68rem;letter-spacing:0.08em;color:var(--text3);margin-bottom:0.4rem;font-weight:600}
+.fin-kpi-value{font-family:'EB Garamond',serif;font-size:1.6rem;font-weight:400;line-height:1}
+.fin-kpi-value.income{color:#6fcf97}
+.fin-kpi-value.expense{color:#e87}{color:#e8876a}
+.fin-kpi-value.balance-pos{color:#6fcf97}
+.fin-kpi-value.balance-neg{color:#e87}
+.fin-kpi-value.balance-neg{color:#eb6b5a}
+.fin-kpi-sub{font-size:0.7rem;color:var(--text3);margin-top:0.3rem}
+
+/* ── TICKET TIER ROWS ── */
+.ticket-row{
+  display:grid;grid-template-columns:1fr 100px auto;
+  gap:0 0.5rem;align-items:center;margin-bottom:0.45rem;
+}
+.ticket-row input{width:100%}
+
+/* ── ENTRY FEE STATUS ── */
+.fee-pill{
+  display:inline-flex;align-items:center;gap:0.35rem;
+  padding:0.22rem 0.65rem;border-radius:20px;font-size:0.7rem;font-weight:600;
+  cursor:pointer;border:none;font-family:'Shippori Mincho',serif;
+  transition:all 0.2s;
+}
+.fee-pill.unpaid{background:rgba(183,119,13,0.18);color:#f6c90e;border:1px solid var(--amber)}
+.fee-pill.paid{background:var(--green-bg);color:#6fcf97;border:1px solid var(--green)}
+
+/* ── PARTICIPANT FEE TABLE ── */
+.fee-row{
+  display:grid;gap:0 0.8rem;align-items:center;
+  padding:0.6rem 0.9rem;border-bottom:1px solid var(--border);
+  font-size:0.8rem;transition:background 0.15s;
+}
+.fee-row:last-child{border-bottom:none}
+.fee-row:hover{background:var(--surface2)}
+.fee-row.fee-header{
+  background:var(--surface2);font-size:0.7rem;
+  letter-spacing:0.06em;color:var(--text3);font-weight:600;
+}
+.fee-progress{
+  height:4px;background:var(--surface2);border-radius:2px;margin-top:0.6rem;overflow:hidden;
+}
+.fee-progress-bar{height:100%;background:linear-gradient(90deg,#2e7d5e,#6fcf97);border-radius:2px;transition:width 0.5s ease}
+
+.fin-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.4rem}
+.fin-tab{
+  background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--text3);font-family:'Shippori Mincho',serif;font-size:0.78rem;
+  letter-spacing:0.06em;padding:0.55rem 1.1rem;cursor:pointer;
+  transition:color 0.2s,border-color 0.2s;white-space:nowrap;
+}
+.fin-tab.active{color:var(--gold2);border-bottom-color:var(--gold)}
+.fin-tab:hover:not(.active){color:var(--text)}
+
+.fin-section{display:none}
+.fin-section.active{display:block}
+
+/* transaction table */
+.txn-row{
+  display:grid;grid-template-columns:90px 1fr 100px 80px 80px;
+  gap:0 0.8rem;align-items:center;
+  padding:0.65rem 0.9rem;border-bottom:1px solid var(--border);
+  font-size:0.8rem;transition:background 0.15s;
+}
+.txn-row:hover{background:var(--surface2)}
+.txn-row.header{
+  background:var(--surface2);font-size:0.7rem;
+  letter-spacing:0.06em;color:var(--text3);font-weight:600;
+  border-radius:8px 8px 0 0;
+}
+.txn-amount-income{color:#6fcf97;font-weight:600;text-align:right}
+.txn-amount-expense{color:#eb6b5a;font-weight:600;text-align:right}
+.txn-amount-neutral{color:var(--text2);text-align:right}
+.txn-actions{display:flex;gap:0.3rem;justify-content:flex-end}
+
+/* bar chart */
+.bar-chart{display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem}
+.bar-row{display:grid;grid-template-columns:110px 1fr 80px;gap:0 0.6rem;align-items:center;font-size:0.75rem}
+.bar-label{color:var(--text2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{background:var(--surface2);border-radius:4px;height:18px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:4px;transition:width 0.6s ease;min-width:2px}
+.bar-fill.income{background:linear-gradient(90deg,#2e7d5e,#6fcf97)}
+.bar-fill.expense{background:linear-gradient(90deg,#7b1d14,#eb6b5a)}
+.bar-val{color:var(--text3);text-align:right;white-space:nowrap}
+
+/* compare grid */
+.compare-grid{
+  display:grid;gap:0.8rem;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+}
+.compare-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:1rem 1.2rem;
+}
+.compare-card-name{font-size:0.82rem;color:var(--text);margin-bottom:0.6rem;font-weight:600}
+.compare-bar-wrap{margin-top:0.4rem}
+.balance-bar{height:6px;border-radius:3px;margin-top:0.3rem}
+
+/* category badge */
+.cat-badge{
+  display:inline-block;padding:0.12rem 0.5rem;border-radius:3px;
+  font-size:0.65rem;letter-spacing:0.04em;
+}
+
+/* ── APPLICATION FORM (public) ── */
+#apply-screen{
+  display:none;min-height:100vh;
+  background:radial-gradient(ellipse at 50% 20%, #1a120a 0%, #0e0c0a 70%);
+}
+.apply-wrap{max-width:560px;margin:0 auto;padding:2.5rem 1.2rem 5rem}
+.apply-header{text-align:center;margin-bottom:2rem}
+.apply-concert-name{
+  font-family:'EB Garamond',serif;font-size:1.8rem;font-weight:400;
+  color:var(--gold2);letter-spacing:0.06em;margin-bottom:0.3rem;
+}
+.apply-concert-info{font-size:0.78rem;color:var(--text3);letter-spacing:0.06em;line-height:1.8;margin-bottom:1rem}
+.apply-flyer{
+  width:100%;max-height:280px;object-fit:contain;
+  border-radius:8px;margin-bottom:1.2rem;
+  border:1px solid var(--border);
+}
+.apply-card{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:12px;padding:1.8rem 1.6rem;
+  box-shadow:0 8px 40px rgba(0,0,0,0.4);
+}
+.apply-card h2{
+  font-family:'EB Garamond',serif;font-size:1.2rem;font-weight:400;
+  color:var(--gold2);letter-spacing:0.06em;margin-bottom:1.2rem;
+  padding-bottom:0.6rem;border-bottom:1px solid var(--border2);
+}
+.apply-line-btn{
+  display:flex;align-items:center;gap:0.6rem;justify-content:center;
+  background:#06c755;color:#fff;border:none;border-radius:8px;
+  padding:0.7rem 1.4rem;font-size:0.85rem;font-weight:600;
+  cursor:pointer;text-decoration:none;margin-bottom:1.5rem;
+  transition:background 0.2s;
+}
+.apply-line-btn:hover{background:#05a548}
+.apply-line-btn svg{width:22px;height:22px;fill:#fff}
+.apply-success{
+  text-align:center;padding:2rem 1rem;
+}
+.apply-success-icon{font-size:3rem;margin-bottom:0.8rem}
+.apply-success h3{
+  font-family:'EB Garamond',serif;font-size:1.3rem;color:var(--gold2);
+  margin-bottom:0.5rem;
+}
+.apply-success p{font-size:0.82rem;color:var(--text3);line-height:1.8}
+
+/* ── FLYER UPLOAD ── */
+.flyer-upload-area{
+  border:2px dashed var(--border2);border-radius:8px;
+  padding:1.5rem;text-align:center;cursor:pointer;
+  transition:border-color 0.2s,background 0.2s;
+  position:relative;
+}
+.flyer-upload-area:hover{border-color:var(--gold);background:var(--gold-dim)}
+.flyer-upload-area input[type=file]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
+}
+.flyer-preview{
+  width:100%;max-height:180px;object-fit:contain;
+  border-radius:6px;margin-top:0.8rem;display:none;
+}
+
+/* ── APPLICATIONS (organizer) ── */
+.app-badge-new{background:rgba(36,113,163,0.2);color:#7fb3d3;border:1px solid var(--blue);padding:0.15rem 0.5rem;border-radius:3px;font-size:0.65rem}
+.app-badge-accepted{background:var(--green-bg);color:#6fcf97;border:1px solid var(--green);padding:0.15rem 0.5rem;border-radius:3px;font-size:0.65rem}
+.app-badge-rejected{background:rgba(192,57,43,0.15);color:#e88;border:1px solid #7b1d14;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.65rem}
+
+/* drag reorder rows */
+#participant-tbody tr.dragging{opacity:0.4;}
+#participant-tbody tr.drag-over{outline:2px solid var(--gold);outline-offset:-2px;background:var(--gold-dim);}
+
+@media print{
+  header,nav,.ph-actions,.sel-bar,.card-actions,.btn,#app>main>.ph{display:none!important}
+  body{background:white;color:black}
+  .prog-wrap{border:none}
+  .prog-header{background:white;color:black}
+  .prog-title{color:#333}
+  .prog-info{color:#666}
+  .prog-name{color:#222}
+  .prog-pieces{color:#555}
+  .prog-num{border-color:#ccc;color:#888}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ PUBLIC APPLICATION SCREEN ══ -->
+<div id="apply-screen">
+  <div class="apply-wrap">
+    <div class="apply-header">
+      <div style="font-family:'EB Garamond',serif;font-size:0.85rem;letter-spacing:0.15em;color:var(--text3);margin-bottom:0.8rem">Salon Concert</div>
+      <div class="apply-concert-name" id="apply-concert-name"></div>
+      <div class="apply-concert-info" id="apply-concert-info"></div>
+      <div id="apply-fee-info" style="display:none;font-size:0.8rem;color:var(--gold2);background:rgba(197,166,96,0.1);border:1px solid rgba(197,166,96,0.25);border-radius:7px;padding:0.6rem 1rem;margin-bottom:1rem;line-height:1.9;text-align:left"></div>
+      <img class="apply-flyer" id="apply-flyer-img" src="" alt="チラシ">
+      <a class="apply-line-btn" id="apply-line-btn" href="#" target="_blank" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.02 2 11c0 3.54 2.29 6.53 5.47 8.34L7 22l2.81-1.5C10.54 20.82 11.27 21 12 21c5.52 0 10-4.02 10-9S17.52 2 12 2z"/></svg>
+        LINE オープンチャットに参加する
+      </a>
+    </div>
+
+    <div class="apply-card" id="apply-form-wrap">
+      <h2>参加申し込み</h2>
+      <div class="form-grid">
+        <div class="fg"><label>氏名 *</label><input id="af-name" type="text" placeholder="山田 花子"></div>
+        <div class="fg"><label>ふりがな</label><input id="af-kana" type="text" placeholder="やまだ はなこ"></div>
+        <div class="fg full"><label>メールアドレス *</label><input id="af-email" type="email" placeholder="example@mail.com"></div>
+        <div class="fg"><label>電話番号</label><input id="af-tel" type="tel" placeholder="090-0000-0000"></div>
+        <div class="fg"><label>楽器</label><input id="af-instrument" type="text" list="instrument-list" placeholder="ピアノ、ヴァイオリン 等"></div>
+      </div>
+
+      <!-- 参加形式 -->
+      <div style="margin:1rem 0 0.5rem">
+        <div class="fg"><label>参加形式</label></div>
+        <div class="type-toggle" style="margin-top:0.4rem">
+          <button class="type-btn active" id="af-type-solo" onclick="setApplyType('solo')">ソロ</button>
+          <button class="type-btn" id="af-type-group" onclick="setApplyType('group')">グループ / アンサンブル</button>
+        </div>
+      </div>
+
+      <!-- グループ追加フィールド -->
+      <div id="af-group-fields" style="display:none">
+        <div class="form-grid">
+          <div class="fg full"><label>グループ名</label><input id="af-group-name" type="text" placeholder="例：トリオ・ラ・フルール"></div>
+          <div class="fg full"><label>メンバー（氏名・楽器）</label>
+            <div id="af-member-list"></div>
+            <button class="btn btn-outline btn-sm" style="margin-top:0.4rem" onclick="addAfMember()">＋ メンバーを追加</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 伴奏 -->
+      <div style="margin:1rem 0 0.5rem" id="af-acc-wrap">
+        <div class="subsect">
+          <div class="subsect-title">伴奏</div>
+          <div class="form-grid">
+            <div class="fg full">
+              <label>伴奏の有無</label>
+              <select id="af-acc-type" onchange="toggleAfAcc()">
+                <option value="none">伴奏なし</option>
+                <option value="self">自己手配（伴奏者あり）</option>
+                <option value="needed">伴奏者の手配が必要</option>
+              </select>
+            </div>
+            <div class="fg full" id="af-acc-name-wrap" style="display:none">
+              <label>伴奏者名</label><input id="af-acc-name" type="text" placeholder="伴奏者の氏名">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 演奏曲目 -->
+      <div class="subsect" style="margin-bottom:1rem">
+        <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>演奏曲目</span>
+          <span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">☰ ドラッグで順番変更</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1.4rem 1fr 1fr auto;gap:0.3rem 0.4rem;margin-bottom:0.4rem;padding:0 0.5rem">
+          <span></span>
+          <span style="font-size:0.68rem;color:var(--text3)">曲名</span>
+          <span style="font-size:0.68rem;color:var(--text3)">作曲者</span>
+          <span></span>
+        </div>
+        <div class="piece-list" id="af-piece-list"></div>
+        <button class="btn btn-outline btn-sm" onclick="addAfPiece()">＋ 曲を追加</button>
+      </div>
+
+      <!-- メッセージ -->
+      <div class="form-grid">
+        <div class="fg full"><label>主催者へのメッセージ・備考</label>
+          <textarea id="af-message" rows="3" placeholder="ご質問やご要望があればご記入ください"></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top:1.2rem">
+        <button class="btn btn-gold" style="width:100%;padding:0.75rem;font-size:0.9rem" onclick="submitApplication()">申し込む</button>
+      </div>
+    </div>
+
+    <!-- 送信完了 -->
+    <div class="apply-card apply-success" id="apply-success-wrap" style="display:none">
+      <div class="apply-success-icon">✅</div>
+      <h3>申し込みを受け付けました</h3>
+      <p>主催者よりご連絡をお待ちください。</p>
+      <div id="apply-mailto-wrap" style="margin-top:1.2rem"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Salon <em>Concert</em></div>
+    <div class="login-sub">演奏会管理システム</div>
+    <div class="login-tabs">
+      <button class="active" onclick="setLoginMode('organizer',this)">主催者</button>
+      <button onclick="setLoginMode('performer',this)">演奏者</button>
+    </div>
+    <div class="login-form" id="login-form">
+      <!-- dynamic -->
+    </div>
+    <div class="login-note" id="login-note"></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+  <header>
+    <div class="hdr-logo">Salon <em>Concert</em></div>
+    <div class="hdr-right">
+      <div class="user-pill" id="user-pill"></div>
+      <button class="btn btn-outline btn-sm" onclick="logout()">ログアウト</button>
+    </div>
+  </header>
+  <nav id="main-nav"></nav>
+  <main>
+    <!-- ORGANIZER PAGES -->
+    <div class="page" id="page-concerts">
+      <div class="ph">
+        <h2>演奏会一覧</h2>
+        <div class="ph-actions">
+          <button class="btn btn-outline btn-sm" onclick="openSettingsModal()">⚙ 設定</button>
+          <button class="btn btn-gold" onclick="openConcertModal()">＋ 演奏会を作成</button>
+        </div>
+      </div>
+      <div id="concert-list"></div>
+    </div>
+
+    <div class="page" id="page-participants">
+      <div class="ph">
+        <h2>参加者管理</h2>
+        <div class="ph-actions">
+          <button class="btn btn-gold" onclick="openEntryModal()">＋ 参加者を追加</button>
+        </div>
+      </div>
+      <div class="sel-bar">
+        <select id="p-concert-sel" onchange="renderParticipants()"></select>
+      </div>
+      <div id="participant-list"></div>
+    </div>
+
+    <div class="page" id="page-program">
+      <div class="ph">
+        <h2>プログラム</h2>
+        <div class="ph-actions">
+          <button class="btn btn-outline" onclick="copyProgramText(this)">📋 テキストをコピー</button>
+          <button class="btn btn-outline" onclick="window.print()">🖨 印刷 / PDF</button>
+        </div>
+      </div>
+      <div class="sel-bar">
+        <select id="prog-concert-sel" onchange="renderProgram()"></select>
+      </div>
+      <div id="program-output"></div>
+    </div>
+
+    <div class="page" id="page-finance">
+      <div class="ph">
+        <h2>Finance</h2>
+        <div class="ph-actions">
+          <button class="btn btn-gold" onclick="openTxnModal()">＋ 収支を記録</button>
+        </div>
+      </div>
+      <div class="sel-bar">
+        <select id="fin-concert-sel" onchange="renderFinance()"></select>
+        <button class="btn btn-outline btn-sm" onclick="showAllConcerts()">全演奏会比較</button>
+      </div>
+      <!-- KPI row -->
+      <div class="fin-summary-grid" id="fin-kpi"></div>
+      <!-- Tabs -->
+      <div class="fin-tabs">
+        <button class="fin-tab active" onclick="switchFinTab('txn',this)">収支明細</button>
+        <button class="fin-tab" onclick="switchFinTab('fees',this)">参加費管理</button>
+        <button class="fin-tab" onclick="switchFinTab('breakdown',this)">費目内訳</button>
+        <button class="fin-tab" onclick="switchFinTab('compare',this)">演奏会比較</button>
+      </div>
+      <div class="fin-section active" id="fin-txn"></div>
+      <div class="fin-section" id="fin-fees"></div>
+      <div class="fin-section" id="fin-breakdown"></div>
+      <div class="fin-section" id="fin-compare"></div>
+    </div>
+
+    <div class="page" id="page-applications">
+      <div class="ph">
+        <h2>参加申し込み管理</h2>
+        <div class="ph-actions">
+          <button class="btn btn-outline btn-sm" id="copy-apply-link-btn" onclick="copyApplyLink()">🔗 申し込みリンクをコピー</button>
+        </div>
+      </div>
+      <div class="sel-bar">
+        <select id="app-concert-sel" onchange="renderApplications()"></select>
+      </div>
+      <div id="application-list"></div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+
+    <!-- PERFORMER PAGE -->
+    <div class="page" id="page-my-concert">
+      <div class="ph"><h2>マイ演奏会</h2></div>
+      <div id="my-concert-content"></div>
+    </div>
+
+    <div class="page" id="page-my-profile">
+      <div class="ph"><h2>プロフィール・出演情報</h2></div>
+      <div id="my-profile-content"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ══ MODAL: SETTINGS ══ -->
+<div class="overlay" id="settings-modal-overlay">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3>設定</h3>
+      <button class="close-btn" onclick="closeModal('settings-modal')">×</button>
+    </div>
+    <div style="font-size:0.72rem;letter-spacing:0.1em;color:var(--gold2);font-weight:600;margin-bottom:0.6rem">楽器リスト</div>
+    <p style="font-size:0.78rem;color:var(--text3);margin-bottom:0.8rem;line-height:1.7">
+      申し込みフォーム・参加者登録・プロフィール編集で表示される候補リストです。<br>
+      1行に1つずつ入力。自由入力も引き続き使えます。
+    </p>
+    <textarea id="settings-instruments" rows="14"
+      style="width:100%;font-size:0.85rem;line-height:1.9;font-family:'Shippori Mincho',serif"
+      placeholder="ピアノ&#10;ヴァイオリン&#10;フルート&#10;..."></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="resetInstruments()">デフォルトに戻す</button>
+      <button class="btn btn-gold" onclick="saveInstruments()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: CONCERT ══ -->
+<div class="overlay" id="concert-modal-overlay">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3 id="concert-modal-title">演奏会を作成</h3>
+      <button class="close-btn" onclick="closeModal('concert-modal')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg full"><label>演奏会名 *</label><input id="cm-name" type="text" placeholder="例：第3回 春のサロンコンサート"></div>
+      <div class="fg"><label>開催日 *</label><input id="cm-date" type="date"></div>
+      <div class="fg"><label>開始時刻</label><input id="cm-time" type="time" value="14:00"></div>
+      <div class="fg full"><label>会場</label><input id="cm-venue" type="text" placeholder="例：○○サロン"></div>
+      <div class="fg full"><label>演奏者へのメモ（演奏者に表示されます）</label><textarea id="cm-note"></textarea></div>
+      <div class="fg full"><label>招待コード（演奏者がログインに使用）</label><input id="cm-code" type="text" placeholder="例: spring2025"></div>
+      <div class="fg full"><label>LINE オープンチャット URL</label><input id="cm-line-url" type="url" placeholder="https://line.me/ti/g2/..."></div>
+    </div>
+
+    <!-- チラシアップロード -->
+    <div class="subsect" style="margin-top:1rem">
+      <div class="subsect-title">チラシ</div>
+      <div class="flyer-upload-area" onclick="document.getElementById('cm-flyer-input').click()">
+        <input type="file" id="cm-flyer-input" accept="image/*" onchange="handleFlyerUpload(event)" style="display:none">
+        <div id="cm-flyer-placeholder">
+          <div style="font-size:1.5rem;margin-bottom:0.4rem">🖼</div>
+          <div style="font-size:0.78rem;color:var(--text3)">クリックして画像をアップロード<br><span style="font-size:0.68rem">JPG / PNG / WEBP</span></div>
+        </div>
+        <img id="cm-flyer-preview" class="flyer-preview" src="" alt="チラシプレビュー">
+      </div>
+      <div style="margin-top:0.6rem;display:flex;gap:0.5rem;align-items:center">
+        <button class="btn btn-outline btn-sm" id="cm-flyer-clear" onclick="clearFlyer()" style="display:none">チラシを削除</button>
+      </div>
+    </div>
+
+    <!-- 入場料設定 -->
+    <div class="subsect" style="margin-top:1rem">
+      <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>入場料設定</span>
+        <span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">（無料の場合は空欄）</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 100px auto;gap:0.3rem 0.5rem;margin-bottom:0.4rem">
+        <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">区分名</span>
+        <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">金額（円）</span>
+        <span></span>
+      </div>
+      <div id="ticket-tier-list"></div>
+      <button class="btn btn-outline btn-sm" onclick="addTicketTierRow()">＋ 区分を追加</button>
+    </div>
+
+    <!-- 参加費・伴奏費設定 -->
+    <div class="subsect" style="margin-top:1rem">
+      <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>参加費・伴奏費</span>
+        <span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">申し込みフォームに案内表示・登録時デフォルト値</span>
+      </div>
+
+      <!-- 参加費区分 -->
+      <div style="font-size:0.72rem;color:var(--text2);margin:0.5rem 0 0.3rem;font-weight:600">参加費</div>
+      <div style="display:grid;grid-template-columns:1fr 100px auto;gap:0.3rem 0.5rem;margin-bottom:0.3rem">
+        <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">区分名</span>
+        <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">金額（円）</span>
+        <span></span>
+      </div>
+      <div id="entry-fee-tier-list"></div>
+      <button class="btn btn-outline btn-sm" onclick="addEntryFeeTierRow()" style="margin-bottom:0.8rem">＋ 区分を追加</button>
+
+      <!-- 伴奏費 -->
+      <div style="font-size:0.72rem;color:var(--text2);margin:0.2rem 0 0.3rem;font-weight:600">伴奏費</div>
+      <div class="form-grid">
+        <div class="fg">
+          <label>伴奏費（円）</label>
+          <input id="cm-acc-fee" type="number" min="0" placeholder="例：5000">
+        </div>
+        <div class="fg full">
+          <label>費用に関する備考</label>
+          <input id="cm-fee-note" type="text" placeholder="例：参加費は当日集金、伴奏費は別途ご相談">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('concert-modal')">キャンセル</button>
+      <button class="btn btn-gold" onclick="saveConcert()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: ENTRY (ADD/EDIT PARTICIPANT) ══ -->
+<div class="overlay" id="entry-modal-overlay">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3 id="entry-modal-title">参加者を追加</h3>
+      <button class="close-btn" onclick="closeModal('entry-modal')">×</button>
+    </div>
+
+    <div class="form-grid">
+      <div class="fg full"><label>演奏会 *</label><select id="em-concert" onchange="onEmConcertChange()"></select></div>
+    </div>
+
+    <!-- TYPE -->
+    <div style="margin:1rem 0 0.5rem">
+      <div class="fg"><label>出演形式</label></div>
+      <div class="type-toggle" style="margin-top:0.4rem">
+        <button class="type-btn active" id="type-solo-btn" onclick="setType('solo')">ソロ</button>
+        <button class="type-btn" id="type-group-btn" onclick="setType('group')">グループ / アンサンブル</button>
+      </div>
+    </div>
+
+    <!-- SOLO FIELDS -->
+    <div id="solo-fields">
+      <div class="form-grid">
+        <div class="fg"><label>氏名 *</label><input id="em-name" type="text" placeholder="山田 花子"></div>
+        <div class="fg"><label>ふりがな</label><input id="em-kana" type="text" placeholder="やまだ はなこ"></div>
+        <div class="fg"><label>メール</label><input id="em-email" type="email"></div>
+        <div class="fg"><label>電話</label><input id="em-tel" type="tel"></div>
+        <div class="fg full"><label>楽器</label><input id="em-instrument" type="text" list="instrument-list" placeholder="例：ピアノ、ヴァイオリン、フルート"></div>
+      </div>
+      <div class="subsect" style="margin-top:0.9rem">
+        <div class="subsect-title">伴奏</div>
+        <div class="form-grid">
+          <div class="fg">
+            <label>伴奏の有無</label>
+            <select id="em-acc-type" onchange="toggleAccFields()">
+              <option value="none">伴奏なし</option>
+              <option value="self">自己手配（伴奏者あり）</option>
+              <option value="needed">伴奏者の手配が必要</option>
+            </select>
+          </div>
+          <div class="fg" id="acc-name-wrap" style="display:none">
+            <label>伴奏者名</label><input id="em-acc-name" type="text" placeholder="伴奏者の氏名">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUP FIELDS -->
+    <div id="group-fields" style="display:none">
+      <div class="form-grid">
+        <div class="fg full"><label>グループ名 *</label><input id="em-group-name" type="text" placeholder="例：トリオ・ラ・フルール"></div>
+        <div class="fg"><label>代表者メール</label><input id="em-group-email" type="email"></div>
+        <div class="fg"><label>代表者電話</label><input id="em-group-tel" type="tel"></div>
+      </div>
+      <div class="subsect" style="margin-top:0.9rem">
+        <div class="subsect-title">メンバー（氏名・楽器）</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.4rem">
+          <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">氏名</span>
+          <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">楽器</span>
+          <span></span>
+        </div>
+        <div id="member-list-fields"></div>
+        <button class="btn btn-outline btn-sm" onclick="addMemberField()">＋ メンバーを追加</button>
+      </div>
+    </div>
+
+    <!-- COMMON: PIECES -->
+    <div class="subsect" style="margin-top:1rem">
+      <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>演奏曲目</span>
+        <span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">☰ ドラッグで順番変更</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1.4rem 1fr 1fr auto;gap:0.3rem 0.4rem;margin-bottom:0.4rem;padding:0 0.5rem">
+        <span></span>
+        <span style="font-size:0.68rem;color:var(--text3)">曲名</span>
+        <span style="font-size:0.68rem;color:var(--text3)">作曲者</span>
+        <span></span>
+      </div>
+      <div class="piece-list" id="piece-list"></div>
+      <button class="btn btn-outline btn-sm" onclick="addPieceRow()">＋ 曲を追加</button>
+    </div>
+
+    <!-- COMMON: REST -->
+    <div class="form-grid" style="margin-top:1rem">
+      <div class="fg"><label>出演順</label><input id="em-order" type="number" min="1"></div>
+      <div class="fg"><label>予定演奏時間（分）</label><input id="em-duration" type="number" min="1"></div>
+      <div class="fg full"><label>プロフィール・自己紹介</label><textarea id="em-profile" rows="3"></textarea></div>
+      <div class="fg">
+        <label>参加状況</label>
+        <select id="em-status">
+          <option value="pending">未確認</option>
+          <option value="confirmed">参加確定</option>
+          <option value="absent">欠席</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>ログインコード（演奏者がログインに使用）</label>
+        <input id="em-performer-code" type="text" placeholder="例: yamada2025">
+      </div>
+    </div>
+
+    <!-- PARTICIPATION FEE -->
+    <div class="subsect" style="margin-top:1rem">
+      <div class="subsect-title">参加費</div>
+      <div class="form-grid">
+        <div class="fg">
+          <label>参加費（円）</label>
+          <input id="em-fee-amount" type="number" min="0" placeholder="3000">
+        </div>
+        <div class="fg">
+          <label>回収状況</label>
+          <select id="em-fee-status">
+            <option value="unpaid">未回収</option>
+            <option value="paid">回収済み</option>
+          </select>
+        </div>
+        <div class="fg full">
+          <label>備考（振込確認番号など）</label>
+          <input id="em-fee-note" type="text" placeholder="例: 振込確認済み">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('entry-modal')">キャンセル</button>
+      <button class="btn btn-gold" onclick="saveEntry()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: TRANSACTION ══ -->
+<div class="overlay" id="txn-modal-overlay">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hd">
+      <h3 id="txn-modal-title">収支を記録</h3>
+      <button class="close-btn" onclick="closeModal('txn-modal')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg full"><label>演奏会</label><select id="tm-concert"></select></div>
+      <div class="fg full">
+        <label>収入 / 支出</label>
+        <div class="type-toggle" style="margin-top:0.3rem">
+          <button class="type-btn active" id="txn-type-income" onclick="setTxnType('income')">収入</button>
+          <button class="type-btn" id="txn-type-expense" onclick="setTxnType('expense')">支出</button>
+        </div>
+      </div>
+      <div class="fg full">
+        <label>カテゴリ</label>
+        <select id="tm-category"></select>
+      </div>
+      <div class="fg full"><label>内容・メモ</label><input id="tm-desc" type="text" placeholder="例：○○ホール使用料"></div>
+      <div class="fg"><label>金額（円）</label><input id="tm-amount" type="number" min="0" placeholder="10000"></div>
+      <div class="fg"><label>日付</label><input id="tm-date" type="date"></div>
+      <div class="fg full"><label>備考</label><input id="tm-note" type="text" placeholder="領収書No.など"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('txn-modal')">キャンセル</button>
+      <button class="btn btn-gold" onclick="saveTxn()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 楽器サジェストリスト -->
+<datalist id="instrument-list">
+  <option value="ピアノ">
+
+  <option value="ヴァイオリン">
+  <option value="ヴィオラ">
+  <option value="チェロ">
+  <option value="ハープ">
+  <option value="ギター">
+  <option value="フルート">
+  <option value="ピッコロ">
+  <option value="オーボエ">
+  <option value="クラリネット">
+  <option value="バスクラリネット">
+  <option value="ファゴット">
+  <option value="サクソフォン">
+  <option value="トランペット">
+  <option value="ホルン">
+  <option value="トロンボーン">
+  <option value="チューバ">
+  <option value="ユーフォニアム">
+  <option value="ソプラノ">
+  <option value="メゾソプラノ">
+  <option value="アルト">
+  <option value="テノール">
+  <option value="バリトン">
+  <option value="バス">
+  <option value="打楽器">
+  <option value="その他">
+</datalist>
+
+<script>
+// ════════════════════════
+//  STATE
+// ════════════════════════
+let concerts = [];
+let entries = [];
+let transactions = [];
+let applications = [];
+let instrumentList = [
+  'ピアノ','ヴァイオリン','ヴィオラ','チェロ','ハープ','ギター',
+  'フルート','ピッコロ','オーボエ','クラリネット','バスクラリネット','ファゴット','サクソフォン',
+  'トランペット','ホルン','トロンボーン','チューバ','ユーフォニアム',
+  'ソプラノ','メゾソプラノ','アルト','テノール','バリトン','バス',
+  '打楽器','その他'
+];
+let currentUser = null; // {role:'organizer'|'performer', entryId?, name}
+let loginMode = 'organizer';
+let editingConcertId = null;
+let editingEntryId = null;
+let editingTxnId = null;
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+function esc(s){ if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtTime(m){ return `${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`; }
+function today(){ return new Date().toISOString().slice(0,10); }
+
+// ════════════════════════
+//  STORAGE
+// ════════════════════════
+async function persist(){
+  try{
+    await window.storage.set('sc_concerts', JSON.stringify(concerts));
+    await window.storage.set('sc_entries',  JSON.stringify(entries));
+    await window.storage.set('sc_txns',     JSON.stringify(transactions));
+    await window.storage.set('sc_apps',     JSON.stringify(applications));
+    await window.storage.set('sc_instruments', JSON.stringify(instrumentList));
+  }catch(e){}
+}
+async function hydrate(){
+  try{
+    const c = await window.storage.get('sc_concerts');
+    const e = await window.storage.get('sc_entries');
+    const t = await window.storage.get('sc_txns');
+    const a = await window.storage.get('sc_apps');
+    const il = await window.storage.get('sc_instruments');
+    if(c) concerts      = JSON.parse(c.value);
+    if(e) entries       = JSON.parse(e.value);
+    if(t) transactions  = JSON.parse(t.value);
+    if(a) applications  = JSON.parse(a.value);
+    if(il) instrumentList = JSON.parse(il.value);
+  }catch(e){}
+}
+
+// ════════════════════════
+//  LOGIN
+// ════════════════════════
+function setLoginMode(mode, btn){
+  loginMode = mode;
+  document.querySelectorAll('.login-tabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLoginForm();
+}
+
+function renderLoginForm(){
+  const f = document.getElementById('login-form');
+  const n = document.getElementById('login-note');
+  if(loginMode === 'organizer'){
+    f.innerHTML = `
+      <input type="password" id="org-pass" placeholder="主催者パスワード" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="btn btn-gold" onclick="doLogin()">ログイン</button>`;
+    n.textContent = 'デモ用パスワード: admin';
+  } else {
+    const opts = concerts.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    f.innerHTML = `
+      <select id="perf-concert">${opts||'<option disabled>演奏会がありません</option>'}</select>
+      <input type="text" id="perf-code" placeholder="ログインコード" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="btn btn-gold" onclick="doLogin()">ログイン</button>`;
+    n.textContent = '主催者から受け取ったコードでログインしてください';
+  }
+}
+
+function doLogin(){
+  if(loginMode === 'organizer'){
+    const pass = document.getElementById('org-pass').value;
+    if(pass !== 'admin'){ alert('パスワードが違います'); return; }
+    currentUser = {role:'organizer', name:'主催者'};
+  } else {
+    const cid  = document.getElementById('perf-concert')?.value;
+    const code = document.getElementById('perf-code')?.value?.trim();
+    if(!code){ alert('ログインコードを入力してください'); return; }
+
+    // Try concert-level code
+    const concert = concerts.find(c=>c.id===cid);
+    if(concert && concert.code && concert.code.toLowerCase()===code.toLowerCase()){
+      currentUser = {role:'performer', concertId: cid, name: concert.name+'（参加者）'};
+    } else {
+      // Try entry-level code
+      const entry = entries.find(e=>e.concertId===cid && e.performerCode && e.performerCode.toLowerCase()===code.toLowerCase());
+      if(!entry){ alert('コードが見つかりません。主催者にお問い合わせください。'); return; }
+      currentUser = {role:'performer', entryId: entry.id, concertId: cid, name: entry.type==='group'? entry.groupName : entry.name};
+    }
+  }
+  startApp();
+}
+
+function logout(){
+  currentUser = null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  renderLoginForm();
+}
+
+// ════════════════════════
+//  APP START
+// ════════════════════════
+function startApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('user-pill').innerHTML = `<span>${esc(currentUser.name)}</span>`;
+  buildNav();
+  if(currentUser.role === 'organizer'){
+    showPage('concerts');
+    renderConcerts();
+  } else {
+    showPage('my-concert');
+    renderMyConvert();
+  }
+}
+
+function buildNav(){
+  const nav = document.getElementById('main-nav');
+  if(currentUser.role === 'organizer'){
+    nav.innerHTML = `
+      <button class="active" onclick="showPage('concerts',this)">演奏会一覧</button>
+      <button onclick="showPage('participants',this)">参加者管理</button>
+      <button onclick="showPage('applications',this)" id="nav-applications">申し込み管理</button>
+      <button onclick="showPage('program',this)">プログラム</button>
+      <button onclick="showPage('finance',this)">Finance</button>
+`;
+  } else {
+    nav.innerHTML = `
+      <button class="active" onclick="showPage('my-concert',this)">出演情報</button>
+      <button onclick="showPage('my-profile',this)">プロフィール編集</button>`;
+  }
+  // show badge if new applications exist
+  updateAppBadge();
+}
+
+function updateAppBadge(){
+  const btn = document.getElementById('nav-applications');
+  if(!btn) return;
+  const newCount = applications.filter(a=>a.status==='new').length;
+  btn.innerHTML = `申し込み管理${newCount>0?` <span style="background:#2471a3;color:#fff;border-radius:10px;padding:0 5px;font-size:0.65rem;margin-left:2px">${newCount}</span>`:''}`;
+}
+
+function showPage(name, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+  else { const btns=document.querySelectorAll('nav button'); if(btns[0]) btns[0].classList.add('active'); }
+
+  if(name==='participants')   { populateSel('p-concert-sel'); renderParticipants(); }
+  if(name==='applications')   { populateSel('app-concert-sel'); renderApplications(); }
+  if(name==='program')        { populateSel('prog-concert-sel'); renderProgram(); }
+  if(name==='finance')        { populateSel('fin-concert-sel'); renderFinance(); }
+  if(name==='my-concert')     renderMyConvert();
+  if(name==='my-profile')     renderMyProfile();
+}
+
+// ════════════════════════
+//  CONCERTS (ORGANIZER)
+// ════════════════════════
+function addTicketTierRow(name='', price=''){
+  const wrap = document.getElementById('ticket-tier-list');
+  const row = document.createElement('div');
+  row.className = 'ticket-row';
+  row.innerHTML = `
+    <input type="text" placeholder="例：一般、学生、シニア" class="tier-name" value="${esc(name)}">
+    <input type="number" placeholder="1000" min="0" class="tier-price" value="${price}">
+    <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
+  wrap.appendChild(row);
+}
+function getTicketTiers(){
+  return [...document.querySelectorAll('#ticket-tier-list .ticket-row')].map(r=>({
+    name: r.querySelector('.tier-name').value.trim(),
+    price: parseInt(r.querySelector('.tier-price').value)||0
+  })).filter(t=>t.name);
+}
+function loadTicketTiers(tiers){
+  document.getElementById('ticket-tier-list').innerHTML='';
+  if(tiers&&tiers.length) tiers.forEach(t=>addTicketTierRow(t.name,t.price));
+  else { addTicketTierRow('一般',''); addTicketTierRow('学生',''); }
+}
+
+function addEntryFeeTierRow(name='', price=''){
+  const wrap = document.getElementById('entry-fee-tier-list');
+  const row = document.createElement('div');
+  row.className = 'ticket-row';
+  row.innerHTML = `
+    <input type="text" placeholder="例：ソロ、グループ、学生" class="tier-name" value="${esc(name)}">
+    <input type="number" placeholder="3000" min="0" class="tier-price" value="${price}">
+    <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
+  wrap.appendChild(row);
+}
+function getEntryFeeTiers(){
+  return [...document.querySelectorAll('#entry-fee-tier-list .ticket-row')].map(r=>({
+    name: r.querySelector('.tier-name').value.trim(),
+    price: parseInt(r.querySelector('.tier-price').value)||0
+  })).filter(t=>t.name);
+}
+function loadEntryFeeTiers(tiers){
+  document.getElementById('entry-fee-tier-list').innerHTML='';
+  if(tiers&&tiers.length) tiers.forEach(t=>addEntryFeeTierRow(t.name,t.price));
+  else { addEntryFeeTierRow('ソロ',''); addEntryFeeTierRow('グループ',''); }
+}
+
+function openConcertModal(id){
+  editingConcertId = id||null;
+  pendingFlyerData = null;
+  if(id){
+    const c=concerts.find(x=>x.id===id);
+    document.getElementById('cm-name').value=c.name;
+    document.getElementById('cm-date').value=c.date||'';
+    document.getElementById('cm-time').value=c.time||'14:00';
+    document.getElementById('cm-venue').value=c.venue||'';
+    document.getElementById('cm-note').value=c.note||'';
+    document.getElementById('cm-code').value=c.code||'';
+    document.getElementById('cm-line-url').value=c.lineUrl||'';
+    document.getElementById('cm-acc-fee').value=c.accFee||'';
+    document.getElementById('cm-fee-note').value=c.feeNote||'';
+    loadTicketTiers(c.ticketTiers||[]);
+    loadEntryFeeTiers(c.entryFeeTiers||[]);
+    if(c.flyerData){
+      pendingFlyerData = c.flyerData;
+      const preview = document.getElementById('cm-flyer-preview');
+      preview.src = c.flyerData; preview.style.display='block';
+      document.getElementById('cm-flyer-placeholder').style.display='none';
+      document.getElementById('cm-flyer-clear').style.display='inline-block';
+    } else { clearFlyer(); }
+    document.getElementById('concert-modal-title').textContent='演奏会を編集';
+  } else {
+    ['cm-name','cm-date','cm-venue','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('cm-time').value='14:00';
+    loadTicketTiers([]);
+    loadEntryFeeTiers([]);
+    clearFlyer();
+    document.getElementById('concert-modal-title').textContent='演奏会を作成';
+  }
+  openModal('concert-modal');
+}
+function saveConcert(){
+  const name=document.getElementById('cm-name').value.trim();
+  if(!name){alert('演奏会名を入力してください');return;}
+  const data={
+    name,
+    date:document.getElementById('cm-date').value,
+    time:document.getElementById('cm-time').value,
+    venue:document.getElementById('cm-venue').value.trim(),
+    note:document.getElementById('cm-note').value.trim(),
+    code:document.getElementById('cm-code').value.trim(),
+    lineUrl:document.getElementById('cm-line-url').value.trim(),
+    entryFeeTiers: getEntryFeeTiers(),
+    accFee:   Number(document.getElementById('cm-acc-fee').value)||0,
+    feeNote:  document.getElementById('cm-fee-note').value.trim(),
+    ticketTiers:getTicketTiers(),
+    flyerData: pendingFlyerData,
+  };
+  if(editingConcertId){
+    const i=concerts.findIndex(x=>x.id===editingConcertId);
+    if(!pendingFlyerData && concerts[i].flyerData) data.flyerData=concerts[i].flyerData;
+    concerts[i]={...concerts[i],...data};
+  } else {
+    concerts.push({id:uid(),...data});
+  }
+  persist(); closeModal('concert-modal'); renderConcerts();
+}
+function deleteConcert(id){
+  if(!confirm('この演奏会を削除しますか？\n参加者データも削除されます。'))return;
+  concerts=concerts.filter(x=>x.id!==id);
+  entries=entries.filter(x=>x.concertId!==id);
+  persist(); renderConcerts();
+}
+function renderConcerts(){
+  const el=document.getElementById('concert-list');
+  if(!concerts.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">♪</div><p>演奏会がまだありません。<br>「演奏会を作成」から追加してください。</p></div>';
+    return;
+  }
+  const sorted=[...concerts].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  el.innerHTML=sorted.map(c=>{
+    const cnt=entries.filter(e=>e.concertId===c.id).length;
+    const confirmed=entries.filter(e=>e.concertId===c.id&&e.status==='confirmed').length;
+    const newApps=applications.filter(a=>a.concertId===c.id&&a.status==='new').length;
+    const past=c.date&&c.date<today();
+    const badge=c.date?`<span class="badge ${past?'badge-past':'badge-upcoming'}">${past?'終了':'開催予定'}</span>`:'';
+    const applyUrl = location.origin+location.pathname+'?apply='+c.id;
+    return `<div class="card">
+      <div class="card-row" style="gap:1rem">
+        <div style="flex:1">
+          <div class="card-title">${esc(c.name)} ${badge}</div>
+          <div class="card-meta">
+            ${c.date||'日程未定'} ${c.time||''}${c.venue?' ｜ '+esc(c.venue):''}
+          </div>
+          ${c.code?`<div style="font-size:0.7rem;color:var(--text3)">招待コード: <code style="background:var(--surface2);padding:0 4px;border-radius:3px;color:var(--gold)">${esc(c.code)}</code></div>`:''}
+          ${c.lineUrl?`<div style="margin-top:0.3rem"><a href="${esc(c.lineUrl)}" target="_blank" style="font-size:0.72rem;color:#06c755;text-decoration:none">● LINE オープンチャット</a></div>`:''}
+          ${(concert=>{ const tiers=(concert.entryFeeTiers||[]).map(t=>`${t.name} ${fmt(t.price)}`).join('・'); const acc=concert.accFee?`伴奏費 ${fmt(concert.accFee)}`:''; return (tiers||acc)?`<div style="margin-top:0.3rem;font-size:0.72rem;color:var(--text3)">${[tiers,acc].filter(Boolean).join('　')}</div>`:''; })(c)}
+          <div style="margin-top:0.4rem;font-size:0.7rem;color:var(--text3)">申し込みリンク:
+            <button onclick="navigator.clipboard.writeText('${applyUrl}').then(()=>alert('コピーしました'))" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.7rem;padding:0 4px">🔗 コピー</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem">
+          ${c.flyerData?`<img src="${c.flyerData}" style="width:70px;height:70px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">`:''}
+          <div style="text-align:right;font-size:0.75rem;color:var(--text3);white-space:nowrap">
+            参加者 <strong style="color:var(--text)">${cnt}</strong>名
+            ${cnt?`<br><span style="color:#6fcf97">確定 ${confirmed}名</span>`:''}
+            ${newApps?`<br><span style="color:#74b9ff">新規申込 ${newApps}件</span>`:''}
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-outline btn-sm" onclick="openConcertModal('${c.id}')">編集</button>
+        <button class="btn btn-outline btn-sm" onclick="goParticipants('${c.id}')">参加者管理</button>
+        <button class="btn btn-outline btn-sm" onclick="goApplications('${c.id}')">申し込み${newApps?` (${newApps})`:''}管理</button>
+        <button class="btn btn-outline btn-sm" onclick="goProgram('${c.id}')">プログラム</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteConcert('${c.id}')">削除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function goApplications(cid){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-applications').classList.add('active');
+  document.querySelectorAll('nav button')[2].classList.add('active');
+  populateSel('app-concert-sel');
+  document.getElementById('app-concert-sel').value=cid;
+  renderApplications();
+}
+function goParticipants(cid){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-participants').classList.add('active');
+  document.querySelectorAll('nav button')[1].classList.add('active');
+  populateSel('p-concert-sel');
+  document.getElementById('p-concert-sel').value=cid;
+  renderParticipants();
+}
+function goProgram(cid){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-program').classList.add('active');
+  document.querySelectorAll('nav button')[2].classList.add('active');
+  populateSel('prog-concert-sel');
+  document.getElementById('prog-concert-sel').value=cid;
+  renderProgram();
+}
+
+// ════════════════════════
+//  ENTRIES (PARTICIPANTS)
+// ════════════════════════
+let currentType = 'solo';
+
+function setType(t){
+  currentType=t;
+  document.getElementById('solo-fields').style.display=t==='solo'?'block':'none';
+  document.getElementById('group-fields').style.display=t==='group'?'block':'none';
+  document.getElementById('type-solo-btn').classList.toggle('active',t==='solo');
+  document.getElementById('type-group-btn').classList.toggle('active',t==='group');
+}
+function toggleAccFields(){
+  const v=document.getElementById('em-acc-type').value;
+  document.getElementById('acc-name-wrap').style.display=v==='self'?'block':'none';
+}
+
+// ── MEMBER ROWS (name + instrument) ──
+function addMemberField(name='', instrument=''){
+  const wrap=document.getElementById('member-list-fields');
+  const row=document.createElement('div');
+  row.className='member-row';
+  row.innerHTML=`
+    <input type="text" placeholder="氏名" class="member-name-input" value="${esc(name)}">
+    <input type="text" placeholder="楽器" class="member-instrument-input" list="instrument-list" value="${esc(instrument)}">
+    <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
+  wrap.appendChild(row);
+}
+function getMembers(){
+  const rows=document.querySelectorAll('#member-list-fields .member-row');
+  return [...rows].map(r=>({
+    name: r.querySelector('.member-name-input').value.trim(),
+    instrument: r.querySelector('.member-instrument-input').value.trim()
+  })).filter(m=>m.name);
+}
+
+// ── PIECE ROWS (drag-and-drop) ──
+let dragSrc=null;
+function addPieceRow(title='', composer=''){
+  const list=document.getElementById('piece-list');
+  const row=document.createElement('div');
+  row.className='piece-row';
+  row.draggable=true;
+  row.innerHTML=`
+    <span class="piece-drag-handle" title="ドラッグで並び替え">⠿</span>
+    <input type="text" placeholder="曲名" class="piece-title" value="${esc(title)}">
+    <input type="text" placeholder="作曲者" class="piece-composer" value="${esc(composer)}">
+    <button class="remove-btn" onclick="this.parentNode.remove()" style="font-size:0.75rem;padding:0.2rem 0.4rem">✕</button>`;
+  // drag events
+  row.addEventListener('dragstart', e=>{
+    dragSrc=row;row.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+  });
+  row.addEventListener('dragend', ()=>{
+    dragSrc=null;
+    document.querySelectorAll('.piece-row').forEach(r=>r.classList.remove('drag-over','dragging'));
+  });
+  row.addEventListener('dragover', e=>{ e.preventDefault(); if(dragSrc&&dragSrc!==row) row.classList.add('drag-over'); });
+  row.addEventListener('dragleave', ()=>row.classList.remove('drag-over'));
+  row.addEventListener('drop', e=>{
+    e.preventDefault();
+    row.classList.remove('drag-over');
+    if(dragSrc&&dragSrc!==row){
+      const list=row.parentNode;
+      const nodes=[...list.children];
+      const srcIdx=nodes.indexOf(dragSrc);
+      const tgtIdx=nodes.indexOf(row);
+      if(srcIdx<tgtIdx) list.insertBefore(dragSrc,row.nextSibling);
+      else list.insertBefore(dragSrc,row);
+    }
+  });
+  list.appendChild(row);
+}
+function getPieces(){
+  return [...document.querySelectorAll('#piece-list .piece-row')].map(r=>({
+    title: r.querySelector('.piece-title').value.trim(),
+    composer: r.querySelector('.piece-composer').value.trim()
+  })).filter(p=>p.title||p.composer);
+}
+function loadPieces(pieces){
+  document.getElementById('piece-list').innerHTML='';
+  if(!pieces||!pieces.length){ addPieceRow(); return; }
+  // support old string format migration
+  if(typeof pieces === 'string'){
+    pieces.split('\n').filter(Boolean).forEach(l=>{
+      const m=l.match(/^(.+?):\s*(.+)$/);
+      m ? addPieceRow(m[2].trim(), m[1].trim()) : addPieceRow(l.trim(),'');
+    });
+  } else {
+    pieces.forEach(p=>addPieceRow(p.title||'', p.composer||''));
+  }
+}
+
+function openEntryModal(id){
+  populateSel2('em-concert');
+  editingEntryId=id||null;
+  if(id){
+    const e=entries.find(x=>x.id===id);
+    document.getElementById('entry-modal-title').textContent='参加者を編集';
+    document.getElementById('em-concert').value=e.concertId;
+    setType(e.type||'solo');
+    if(e.type==='group'){
+      document.getElementById('em-group-name').value=e.groupName||'';
+      document.getElementById('em-group-email').value=e.groupEmail||'';
+      document.getElementById('em-group-tel').value=e.groupTel||'';
+      document.getElementById('member-list-fields').innerHTML='';
+      // support old array-of-strings format
+      const members=e.members||[];
+      if(members.length && typeof members[0]==='string'){
+        members.forEach(m=>addMemberField(m,''));
+      } else {
+        members.forEach(m=>addMemberField(m.name||m,m.instrument||''));
+      }
+    } else {
+      document.getElementById('em-name').value=e.name||'';
+      document.getElementById('em-kana').value=e.kana||'';
+      document.getElementById('em-email').value=e.email||'';
+      document.getElementById('em-tel').value=e.tel||'';
+      document.getElementById('em-instrument').value=e.instrument||'';
+      document.getElementById('em-acc-type').value=e.accType||'none';
+      document.getElementById('em-acc-name').value=e.accName||'';
+      toggleAccFields();
+    }
+    loadPieces(e.pieces);
+    document.getElementById('em-order').value=e.order||'';
+    document.getElementById('em-duration').value=e.duration||'';
+    document.getElementById('em-profile').value=e.profile||'';
+    document.getElementById('em-status').value=e.status||'pending';
+    document.getElementById('em-performer-code').value=e.performerCode||'';
+    document.getElementById('em-fee-amount').value=e.feeAmount||'';
+    document.getElementById('em-fee-status').value=e.feeStatus||'unpaid';
+    document.getElementById('em-fee-note').value=e.feeNote||'';
+  } else {
+    document.getElementById('entry-modal-title').textContent='参加者を追加';
+    setType('solo');
+    ['em-name','em-kana','em-email','em-tel','em-instrument','em-acc-name',
+     'em-group-name','em-group-email','em-group-tel','em-order','em-duration','em-profile','em-performer-code']
+      .forEach(i=>document.getElementById(i).value='');
+    document.getElementById('em-acc-type').value='none';
+    document.getElementById('em-status').value='pending';
+    document.getElementById('member-list-fields').innerHTML='';
+    addMemberField();
+    toggleAccFields();
+    loadPieces([]);
+    document.getElementById('em-fee-amount').value='';
+    document.getElementById('em-fee-status').value='unpaid';
+    document.getElementById('em-fee-note').value='';
+    const cid=document.getElementById('p-concert-sel')?.value;
+    if(cid){
+      document.getElementById('em-concert').value=cid;
+      onEmConcertChange();
+    }
+  }
+  openModal('entry-modal');
+}
+function onEmConcertChange(){
+  const feeField = document.getElementById('em-fee-amount');
+  if(feeField.value !== '') return;
+  const cid = document.getElementById('em-concert').value;
+  const concert = concerts.find(c=>c.id===cid);
+  if(concert && concert.entryFeeTiers && concert.entryFeeTiers.length){
+    feeField.value = concert.entryFeeTiers[0].price;
+  }
+}
+
+function saveEntry(){
+  const cid=document.getElementById('em-concert').value;
+  const type=currentType;
+  let data={concertId:cid,type,
+    pieces:getPieces(),
+    order:parseInt(document.getElementById('em-order').value)||0,
+    duration:parseInt(document.getElementById('em-duration').value)||0,
+    profile:document.getElementById('em-profile').value.trim(),
+    status:document.getElementById('em-status').value,
+    performerCode:document.getElementById('em-performer-code').value.trim(),
+    feeAmount:parseFloat(document.getElementById('em-fee-amount').value)||0,
+    feeStatus:document.getElementById('em-fee-status').value,
+    feeNote:document.getElementById('em-fee-note').value.trim(),
+  };
+  if(type==='solo'){
+    const name=document.getElementById('em-name').value.trim();
+    if(!name){alert('氏名を入力してください');return;}
+    Object.assign(data,{
+      name,kana:document.getElementById('em-kana').value.trim(),
+      email:document.getElementById('em-email').value.trim(),
+      tel:document.getElementById('em-tel').value.trim(),
+      instrument:document.getElementById('em-instrument').value.trim(),
+      accType:document.getElementById('em-acc-type').value,
+      accName:document.getElementById('em-acc-name').value.trim(),
+    });
+  } else {
+    const gn=document.getElementById('em-group-name').value.trim();
+    if(!gn){alert('グループ名を入力してください');return;}
+    Object.assign(data,{
+      groupName:gn,
+      groupEmail:document.getElementById('em-group-email').value.trim(),
+      groupTel:document.getElementById('em-group-tel').value.trim(),
+      members:getMembers(),
+    });
+  }
+  if(editingEntryId){
+    const i=entries.findIndex(x=>x.id===editingEntryId);
+    entries[i]={...entries[i],...data};
+  } else {
+    entries.push({id:uid(),...data});
+  }
+  persist(); closeModal('entry-modal'); renderParticipants();
+}
+function deleteEntry(id){
+  if(!confirm('この参加者を削除しますか？'))return;
+  entries=entries.filter(x=>x.id!==id);
+  persist(); renderParticipants();
+}
+function toggleFeeStatus(id){
+  const e=entries.find(x=>x.id===id);
+  if(!e) return;
+  e.feeStatus = e.feeStatus==='paid' ? 'unpaid' : 'paid';
+  persist(); renderParticipants();
+}
+
+function changeStatus(id, val){
+  const e=entries.find(x=>x.id===id);
+  if(e){e.status=val;persist();}
+}
+
+function populateSel(selId){
+  const sel=document.getElementById(selId);
+  const prev=sel.value;
+  sel.innerHTML=concerts.length
+    ?concerts.map(c=>`<option value="${c.id}">${esc(c.name)}${c.date?' ('+c.date+')':''}</option>`).join('')
+    :'<option value="">— 演奏会を作成してください —</option>';
+  if(prev&&concerts.find(c=>c.id===prev)) sel.value=prev;
+}
+function populateSel2(selId){
+  const sel=document.getElementById(selId);
+  sel.innerHTML=concerts.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+}
+
+function renderParticipants(){
+  const cid=document.getElementById('p-concert-sel')?.value;
+  const el=document.getElementById('participant-list');
+  if(!cid){el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>';return;}
+  const list=entries.filter(e=>e.concertId===cid).sort((a,b)=>(a.order||999)-(b.order||999));
+  if(!list.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">♩</div><p>参加者がまだいません。<br>「参加者を追加」から登録してください。</p></div>';
+    return;
+  }
+  el.innerHTML=`<div class="tbl-wrap"><table>
+    <thead><tr>
+      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th>楽器</th><th>演奏曲目</th><th>時間</th><th>伴奏 / メンバー</th><th>参加費</th><th>参加状況</th><th>操作</th>
+    </tr></thead><tbody id="participant-tbody">
+    ${list.map(e=>{
+      const nameCell = e.type==='group'
+        ? `<strong>${esc(e.groupName)}</strong><br><span style="font-size:0.7rem;color:var(--text3)">${(e.members||[]).map(m=>typeof m==='string'?esc(m):esc(m.name)).join(' / ')}</span>`
+        : `<strong>${esc(e.name)}</strong>${e.kana?`<br><span style="font-size:0.7rem;color:var(--text3)">${esc(e.kana)}</span>`:''}`;
+
+      // instrument cell
+      const instrCell = e.type==='group'
+        ? `<span style="font-size:0.72rem;color:var(--text3)">${(e.members||[]).map(m=>typeof m==='string'?'':esc(m.instrument||'')).filter(Boolean).join('<br>')}</span>`
+        : `<span style="font-size:0.75rem;color:var(--text2)">${esc(e.instrument||'—')}</span>`;
+
+      // pieces cell
+      const piecesArr = Array.isArray(e.pieces) ? e.pieces
+        : (e.pieces ? e.pieces.split('\n').map(l=>({title:l,composer:''})) : []);
+      const piecesCell = piecesArr.length
+        ? piecesArr.map(p=>`<div style="font-size:0.73rem;color:var(--text2)">${esc(p.title||'')}${p.composer?`<span style="color:var(--text3)"> / ${esc(p.composer)}</span>`:''}</div>`).join('')
+        : '<span style="color:var(--text3)">—</span>';
+
+      const accCell = e.type==='group'
+        ? `<span style="font-size:0.72rem;color:var(--text3)">${(e.members||[]).length}名</span>`
+        : (e.accType==='self'?`<span style="font-size:0.72rem;color:var(--text2)">${esc(e.accName)||'（名前未入力）'}</span>`
+          :e.accType==='needed'?`<span style="font-size:0.72rem;color:#f6c90e">手配必要</span>`
+          :`<span style="font-size:0.72rem;color:var(--text3)">なし</span>`);
+      return `<tr draggable="true" data-id="${e.id}" style="cursor:grab">
+        <td style="white-space:nowrap;text-align:center">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.05rem">
+            <span style="font-size:1rem;color:var(--text3);line-height:1;cursor:grab;user-select:none" title="ドラッグして並べ替え">⠿</span>
+            <button onclick="moveEntry('${e.id}',-1,'${cid}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.7rem;padding:0;line-height:1" title="上へ">▲</button>
+            <span style="font-size:0.72rem;color:var(--text2)">${e.order||'—'}</span>
+            <button onclick="moveEntry('${e.id}',1,'${cid}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.7rem;padding:0;line-height:1" title="下へ">▼</button>
+          </div>
+        </td>
+        <td>${nameCell}</td>
+        <td><span class="badge ${e.type==='group'?'badge-group':'badge-solo'}">${e.type==='group'?'グループ':'ソロ'}</span></td>
+        <td>${instrCell}</td>
+        <td style="max-width:160px">${piecesCell}</td>
+        <td style="font-size:0.75rem;color:var(--text3)">${e.duration?e.duration+'分':'—'}</td>
+        <td>${accCell}</td>
+        <td>
+          ${e.feeAmount?`<div style="font-size:0.78rem;color:var(--text2);margin-bottom:0.2rem">${fmt(e.feeAmount)}</div>
+          <button class="fee-pill ${e.feeStatus==='paid'?'paid':'unpaid'}" onclick="toggleFeeStatus('${e.id}')">${e.feeStatus==='paid'?'✓ 回収済み':'● 未回収'}</button>`
+          :'<span style="font-size:0.72rem;color:var(--text3)">未設定</span>'}
+        </td>
+        <td>
+          <select class="status-sel" onchange="changeStatus('${e.id}',this.value)">
+            <option value="pending" ${e.status==='pending'?'selected':''}>未確認</option>
+            <option value="confirmed" ${e.status==='confirmed'?'selected':''}>参加確定</option>
+            <option value="absent" ${e.status==='absent'?'selected':''}>欠席</option>
+          </select>
+        </td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-outline btn-sm" onclick="openEntryModal('${e.id}')">編集</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteEntry('${e.id}')">削除</button>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody></table></div>`;
+
+  // ── Drag & Drop reorder ──
+  const tbody = document.getElementById('participant-tbody');
+  let dragSrc = null;
+  tbody.querySelectorAll('tr').forEach(row => {
+    row.addEventListener('dragstart', e => {
+      dragSrc = row;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+      dragSrc = null;
+      tbody.querySelectorAll('tr').forEach(r => r.classList.remove('dragging','drag-over'));
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      if(dragSrc && dragSrc !== row) row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      if(!dragSrc || dragSrc === row) return;
+
+      // Build new order from DOM after drop
+      const rows = [...tbody.querySelectorAll('tr')];
+      const srcIdx = rows.indexOf(dragSrc);
+      const tgtIdx = rows.indexOf(row);
+      if(srcIdx < tgtIdx) row.after(dragSrc);
+      else row.before(dragSrc);
+
+      // Re-map order values to entries
+      const cid = document.getElementById('p-concert-sel').value;
+      [...tbody.querySelectorAll('tr')].forEach((r, i) => {
+        const entry = entries.find(x => x.id === r.dataset.id);
+        if(entry) entry.order = i + 1;
+      });
+      // Update number displays
+      tbody.querySelectorAll('tr').forEach((r, i) => {
+        const numEl = r.querySelector('span[style*="0.72rem"]');
+        if(numEl) numEl.textContent = i + 1;
+      });
+      persist();
+    });
+  });
+}
+
+function moveEntry(id, dir, cid){
+  // Get sorted list for this concert
+  const list = entries
+    .filter(e => e.concertId === cid)
+    .sort((a,b) => (a.order||999) - (b.order||999));
+
+  const idx = list.findIndex(e => e.id === id);
+  const swapIdx = idx + dir;
+  if(swapIdx < 0 || swapIdx >= list.length) return;
+
+  // Swap order values
+  const orderA = list[idx].order || (idx + 1);
+  const orderB = list[swapIdx].order || (swapIdx + 1);
+  list[idx].order    = orderB;
+  list[swapIdx].order = orderA;
+
+  // Re-normalize orders to 1,2,3...
+  list.sort((a,b) => (a.order||999) - (b.order||999));
+  list.forEach((e, i) => { e.order = i + 1; });
+
+  persist();
+  renderParticipants();
+}
+
+function copyProgramText(btn){
+  const cid = document.getElementById('prog-concert-sel')?.value;
+  if(!cid){ alert('演奏会を選択してください'); return; }
+  const concert = concerts.find(c=>c.id===cid);
+  const list = entries
+    .filter(e=>e.concertId===cid && e.status!=='absent')
+    .sort((a,b)=>(a.order||999)-(b.order||999));
+
+  if(!list.length){ alert('表示できる参加者がいません'); return; }
+
+  // TSV: 氏名/グループ名・楽器・演奏曲目（複数曲は改行で結合）・伴奏者名
+  const header = ['氏名 / グループ名', '楽器', '演奏曲目・作曲者', '伴奏者'].join('\t');
+  const rows = list.map(e => {
+    const name = e.type==='group'
+      ? (e.groupName||'')
+      : (e.name||'');
+
+    const instrument = e.type==='group'
+      ? (e.members||[]).map(m=>{
+          const name = typeof m==='string' ? m : (m.name||'');
+          const instr = typeof m==='string' ? '' : (m.instrument||'');
+          return instr ? `${name}（${instr}）` : name;
+        }).filter(Boolean).join('\n')
+      : (e.instrument||'');
+
+    const pieces = Array.isArray(e.pieces) ? e.pieces
+      : (e.pieces ? e.pieces.split('\n').map(l=>({title:l,composer:''})) : []);
+    const piecesText = pieces
+      .map(p=>[p.title||'', p.composer||''].filter(Boolean).join(' / '))
+      .filter(Boolean).join('\n');
+
+    const acc = e.type==='solo' && e.accType==='self' ? (e.accName||'') : '';
+
+    // TSVセル内の改行はそのままでOK（Excel/Sheetsはダブルクォートで囲めば対応）
+    const cell = s => s.includes('\t') || s.includes('\n') ? `"${s.replace(/"/g,'""')}"` : s;
+    return [cell(name), cell(instrument), cell(piecesText), cell(acc)].join('\t');
+  });
+
+  const tsv = [header, ...rows].join('\n');
+
+  navigator.clipboard.writeText(tsv).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ コピーしました';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+function renderProgram(){
+  const cid=document.getElementById('prog-concert-sel')?.value;
+  const el=document.getElementById('program-output');
+  if(!cid){el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>';return;}
+  const concert=concerts.find(c=>c.id===cid);
+  if(!concert)return;
+  const list=entries.filter(e=>e.concertId===cid&&e.status!=='absent').sort((a,b)=>(a.order||999)-(b.order||999));
+  let mins=0;
+  if(concert.time){const[h,m]=concert.time.split(':').map(Number);mins=h*60+m;}
+
+  function renderPieces(pieces){
+    if(!pieces||!pieces.length) return '';
+    const arr = Array.isArray(pieces) ? pieces
+      : pieces.split('\n').filter(Boolean).map(l=>({title:l,composer:''}));
+    return arr.map((p,i)=>`<div style="display:flex;gap:0.5rem;align-items:baseline;line-height:1.7">
+      ${arr.length>1?`<span style="font-size:0.65rem;color:var(--text3);min-width:1rem">${i+1}.</span>`:''}
+      <span>${esc(p.title||'')}${p.composer?`<span style="color:var(--text3);font-size:0.78rem"> — ${esc(p.composer)}</span>`:''}</span>
+    </div>`).join('');
+  }
+
+  const items=list.map((e,i)=>{
+    const start=concert.time?fmtTime(mins):'';
+    mins+=(e.duration||0);
+    const end=(concert.time&&e.duration)?`〜${fmtTime(mins)}`:'';
+
+    const nameDisplay=e.type==='group'
+      ?`<div class="prog-name">${esc(e.groupName)}</div>
+        <div class="prog-group-name">${(e.members||[]).map(m=>{
+          const nm=typeof m==='string'?m:(m.name||'');
+          const instr=typeof m==='string'?'':(m.instrument||'');
+          return `${esc(nm)}${instr?` <span style="color:var(--text3);font-size:0.72rem">（${esc(instr)}）</span>`:''}`;
+        }).join('　')}</div>`
+      :`<div class="prog-name">${esc(e.name)}${e.kana?` <span style="font-size:0.78rem;font-weight:300">（${esc(e.kana)}）</span>`:''}</div>
+        ${e.instrument?`<div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.15rem">${esc(e.instrument)}</div>`:''}`;
+
+    const accLine=e.type==='solo'&&e.accType==='self'&&e.accName
+      ?`<div class="prog-acc">伴奏：${esc(e.accName)}</div>`:'';
+
+    return `<div class="prog-item">
+      <div class="prog-num">${e.order||i+1}</div>
+      <div>
+        ${nameDisplay}
+        <div class="prog-pieces">${renderPieces(e.pieces)}</div>
+        ${accLine}
+      </div>
+    </div>`;
+  });
+  el.innerHTML=`<div class="prog-wrap">
+    <div class="prog-header">
+      <div class="prog-title">${esc(concert.name)}</div>
+      <div class="prog-info">
+        ${concert.date||''}${concert.time?' &ensp;'+concert.time:''}${concert.venue?' &ensp;｜&ensp; '+esc(concert.venue):''}
+      </div>
+    </div>
+    <div class="prog-body">
+      ${items.length?items.join(''):'<p style="text-align:center;color:var(--text3);font-size:0.82rem;padding:2rem">参加確定の演奏者がいません</p>'}
+    </div>
+  </div>`;
+}
+
+// ════════════════════════
+//  PERFORMER VIEW
+// ════════════════════════
+function renderMyConvert(){
+  const el=document.getElementById('my-concert-content');
+  const cid=currentUser.concertId;
+  const concert=concerts.find(c=>c.id===cid);
+  if(!concert){el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>';return;}
+
+  // entry for this performer
+  let myEntry=null;
+  if(currentUser.entryId){
+    myEntry=entries.find(e=>e.id===currentUser.entryId);
+  }
+
+  const statusLabel={pending:'未確認',confirmed:'参加確定',absent:'欠席'};
+  const statusBadge={pending:'badge-pending',confirmed:'badge-confirmed',absent:'badge-absent'};
+
+  // Program for this concert (others)
+  const list=entries.filter(e=>e.concertId===cid&&e.status!=='absent').sort((a,b)=>(a.order||999)-(b.order||999));
+  let mins=0;
+  if(concert.time){const[h,m]=concert.time.split(':').map(Number);mins=h*60+m;}
+
+  el.innerHTML=`
+    <div class="info-box">
+      <strong>${esc(concert.name)}</strong><br>
+      ${concert.date||'日程未定'} ${concert.time||''} ${concert.venue?'｜ '+esc(concert.venue):''}<br>
+      ${concert.note?esc(concert.note):''}
+    </div>
+
+    ${myEntry?`<div class="card" style="border-color:var(--gold-dim)">
+      <div class="card-row">
+        <div class="card-title">${myEntry.type==='group'?esc(myEntry.groupName):esc(myEntry.name)}</div>
+        <span class="badge ${statusBadge[myEntry.status]||'badge-pending'}">${statusLabel[myEntry.status]||'未確認'}</span>
+      </div>
+      <div class="card-meta">
+        出演順：${myEntry.order||'未定'} &ensp; 演奏時間：${myEntry.duration?myEntry.duration+'分':'未定'}
+        ${myEntry.type==='solo'&&myEntry.accType==='needed'?'<span style="color:#f6c90e;margin-left:1rem">⚠ 伴奏者手配が必要です</span>':''}
+        ${myEntry.type==='solo'&&myEntry.accType==='self'?`<span style="color:var(--text2);margin-left:1rem">伴奏：${esc(myEntry.accName)||'未入力'}</span>`:''}
+      </div>
+      ${myEntry.pieces&&myEntry.pieces.length?`<div style="font-size:0.8rem;color:var(--text2);line-height:1.9;margin-top:0.3rem">
+        ${(Array.isArray(myEntry.pieces)?myEntry.pieces:[]).map((p,i)=>`<div>${i+1}. ${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('')}
+      </div>`:''}
+    </div>`:''}
+
+    <h3 style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text3);letter-spacing:0.08em;margin:1.5rem 0 0.8rem">演奏会プログラム</h3>
+    <div class="prog-wrap">
+      <div class="prog-body">
+        ${list.map((e,i)=>{
+          const start=concert.time?fmtTime(mins):'';
+          mins+=(e.duration||0);
+          const end=(concert.time&&e.duration)?`〜${fmtTime(mins)}`:'';
+          const isMe=myEntry&&e.id===myEntry.id;
+          return `<div class="prog-item" style="${isMe?'background:var(--gold-dim);margin:0 -1.5rem;padding:1rem 1.5rem;border-radius:4px':''}">
+            <div class="prog-num" style="${isMe?'border-color:var(--gold);color:var(--gold2)':''}">${e.order||i+1}</div>
+            <div>
+              <div class="prog-name">${e.type==='group'?esc(e.groupName):esc(e.name)}</div>
+              ${(()=>{
+                const pa=Array.isArray(e.pieces)?e.pieces:(e.pieces?[{title:e.pieces,composer:''}]:[]);
+                return pa.map((p,i)=>`<div style="font-size:0.78rem;color:var(--text2)">${pa.length>1?`${i+1}. `:''}${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('');
+              })()}
+              ${start?`<div class="prog-time">${start}${end}</div>`:''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function renderMyProfile(){
+  const el=document.getElementById('my-profile-content');
+  if(!currentUser.entryId){
+    el.innerHTML='<div class="empty"><p>プロフィール編集はエントリーコードでログインした場合のみ利用できます</p></div>';
+    return;
+  }
+  const e=entries.find(x=>x.id===currentUser.entryId);
+  if(!e){el.innerHTML='<div class="empty"><p>データが見つかりません</p></div>';return;}
+
+  const feeHtml = e.feeAmount > 0 ? `
+    <div class="subsect" style="margin-top:1rem;border-color:var(--border)">
+      <div class="subsect-title" style="display:flex;align-items:center;gap:0.5rem">
+        <span>参加費</span>
+        <span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">（主催者のみ変更可）</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:1.2rem;padding:0.6rem 0">
+        <div>
+          <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.2rem">金額</div>
+          <div style="font-family:'EB Garamond',serif;font-size:1.4rem;color:var(--text)">${fmt(e.feeAmount)}</div>
+        </div>
+        <div>
+          <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.2rem">回収状況</div>
+          <span class="fee-pill ${e.feeStatus==='paid'?'paid':'unpaid'}" style="cursor:default;pointer-events:none">
+            ${e.feeStatus==='paid'?'✓ 回収済み':'● 未回収'}
+          </span>
+        </div>
+        ${e.feeNote?`<div style="font-size:0.75rem;color:var(--text3)">${esc(e.feeNote)}</div>`:''}
+      </div>
+    </div>` : '';
+
+  el.innerHTML=`
+    <div class="card">
+      <div class="card-title" style="margin-bottom:1rem">${e.type==='group'?esc(e.groupName):esc(e.name)}</div>
+      <div class="form-grid">
+        ${e.type==='solo'?`
+        <div class="fg"><label>メールアドレス</label><input id="mp-email" type="email" value="${esc(e.email||'')}"></div>
+        <div class="fg"><label>電話番号</label><input id="mp-tel" type="tel" value="${esc(e.tel||'')}"></div>
+        <div class="fg full"><label>楽器</label><input id="mp-instrument" type="text" list="instrument-list" value="${esc(e.instrument||'')}" placeholder="例：ピアノ"></div>
+        <div class="fg"><label>伴奏の有無</label>
+          <select id="mp-acc-type" onchange="toggleMpAcc()">
+            <option value="none" ${e.accType==='none'||!e.accType?'selected':''}>伴奏なし</option>
+            <option value="self" ${e.accType==='self'?'selected':''}>自己手配（伴奏者あり）</option>
+            <option value="needed" ${e.accType==='needed'?'selected':''}>伴奏者の手配が必要</option>
+          </select>
+        </div>
+        <div class="fg" id="mp-acc-name-wrap" style="display:${e.accType==='self'?'flex':'none'}"><label>伴奏者名</label>
+          <input id="mp-acc-name" type="text" value="${esc(e.accName||'')}"></div>
+        `: e.type==='group'?`
+        <div class="fg full"><label>グループ名</label><input id="mp-group-name" type="text" value="${esc(e.groupName||'')}"></div>
+        <div class="fg"><label>メールアドレス（代表）</label><input id="mp-email" type="email" value="${esc(e.groupEmail||'')}"></div>
+        <div class="fg"><label>電話番号（代表）</label><input id="mp-tel" type="tel" value="${esc(e.groupTel||'')}"></div>
+        <div class="fg full">
+          <label>メンバー</label>
+          <div id="mp-member-list" style="margin-bottom:0.4rem"></div>
+          <button class="btn btn-outline btn-sm" onclick="addMpMember()">＋ メンバーを追加</button>
+        </div>
+        `:''}
+        <div class="fg full"><label>プロフィール・自己紹介</label>
+          <textarea id="mp-profile" rows="4">${esc(e.profile||'')}</textarea></div>
+      </div>
+
+      <div class="subsect" style="margin-top:1rem">
+        <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>演奏曲目</span>
+          <span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">☰ ドラッグで順番変更</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1.4rem 1fr 1fr auto;gap:0.3rem 0.4rem;margin-bottom:0.4rem;padding:0 0.5rem">
+          <span></span>
+          <span style="font-size:0.68rem;color:var(--text3)">曲名</span>
+          <span style="font-size:0.68rem;color:var(--text3)">作曲者</span>
+          <span></span>
+        </div>
+        <div class="piece-list" id="mp-piece-list"></div>
+        <button class="btn btn-outline btn-sm" onclick="addMpPieceRow()">＋ 曲を追加</button>
+      </div>
+
+      ${feeHtml}
+
+      <div style="margin-top:1rem;display:flex;justify-content:flex-end">
+        <button class="btn btn-gold" onclick="saveMyProfile()">保存</button>
+      </div>
+    </div>`;
+
+  // グループメンバー編集
+  if(e.type==='group'){
+    const ml = document.getElementById('mp-member-list');
+    window.addMpMember = (name='', instrument='') => {
+      const row = document.createElement('div');
+      row.className = 'member-row';
+      row.innerHTML = `
+        <input type="text" placeholder="氏名" class="member-name-input" value="${esc(name)}">
+        <input type="text" placeholder="楽器" class="member-instrument-input" list="instrument-list" value="${esc(instrument)}">
+        <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
+      ml.appendChild(row);
+    };
+    const members = e.members||[];
+    if(members.length){
+      members.forEach(m=>addMpMember(typeof m==='string'?m:m.name||'', typeof m==='string'?'':m.instrument||''));
+    } else {
+      addMpMember();
+    }
+  }
+
+  // 曲目エディタ
+  const listEl=document.getElementById('mp-piece-list');
+  function addMpRow(title='',composer=''){
+    const row=document.createElement('div');
+    row.className='piece-row';row.draggable=true;
+    row.innerHTML=`
+      <span class="piece-drag-handle">⠿</span>
+      <input type="text" placeholder="曲名" class="piece-title" value="${esc(title)}">
+      <input type="text" placeholder="作曲者" class="piece-composer" value="${esc(composer)}">
+      <button class="remove-btn" onclick="this.parentNode.remove()" style="font-size:0.75rem;padding:0.2rem 0.4rem">✕</button>`;
+    let ds=null;
+    row.addEventListener('dragstart',ev=>{ds=row;row.classList.add('dragging');ev.dataTransfer.effectAllowed='move';});
+    row.addEventListener('dragend',()=>{ds=null;listEl.querySelectorAll('.piece-row').forEach(r=>r.classList.remove('drag-over','dragging'));});
+    row.addEventListener('dragover',ev=>{ev.preventDefault();if(ds&&ds!==row)row.classList.add('drag-over');});
+    row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
+    row.addEventListener('drop',ev=>{ev.preventDefault();row.classList.remove('drag-over');
+      if(ds&&ds!==row){const ns=[...listEl.children];const si=ns.indexOf(ds),ti=ns.indexOf(row);
+      si<ti?listEl.insertBefore(ds,row.nextSibling):listEl.insertBefore(ds,row);}});
+    listEl.appendChild(row);
+  }
+  window.addMpPieceRow=()=>addMpRow();
+  const pa=Array.isArray(e.pieces)?e.pieces:(e.pieces?e.pieces.split('\n').map(l=>({title:l,composer:''})):[]);
+  if(pa.length) pa.forEach(p=>addMpRow(p.title||'',p.composer||''));
+  else addMpRow();
+}
+function toggleMpAcc(){
+  const v=document.getElementById('mp-acc-type')?.value;
+  const w=document.getElementById('mp-acc-name-wrap');
+  if(w) w.style.display=v==='self'?'flex':'none';
+}
+function saveMyProfile(){
+  const e=entries.find(x=>x.id===currentUser.entryId);
+  if(!e)return;
+  e.pieces=[...document.querySelectorAll('#mp-piece-list .piece-row')].map(r=>({
+    title:r.querySelector('.piece-title').value.trim(),
+    composer:r.querySelector('.piece-composer').value.trim()
+  })).filter(p=>p.title||p.composer);
+  e.profile=document.getElementById('mp-profile').value.trim();
+  if(e.type==='solo'){
+    e.email=document.getElementById('mp-email').value.trim();
+    e.tel=document.getElementById('mp-tel').value.trim();
+    e.instrument=document.getElementById('mp-instrument').value.trim();
+    e.accType=document.getElementById('mp-acc-type').value;
+    e.accName=document.getElementById('mp-acc-name')?.value.trim()||'';
+  } else if(e.type==='group'){
+    e.groupName=document.getElementById('mp-group-name').value.trim();
+    e.groupEmail=document.getElementById('mp-email').value.trim();
+    e.groupTel=document.getElementById('mp-tel').value.trim();
+    e.members=[...document.querySelectorAll('#mp-member-list .member-row')].map(r=>({
+      name:r.querySelector('.member-name-input').value.trim(),
+      instrument:r.querySelector('.member-instrument-input').value.trim()
+    })).filter(m=>m.name);
+  }
+  persist();
+  alert('保存しました');
+  renderMyConvert();
+}
+
+// ════════════════════════
+//  SETTINGS
+// ════════════════════════
+const DEFAULT_INSTRUMENTS = [
+  'ピアノ','ヴァイオリン','ヴィオラ','チェロ','ハープ','ギター',
+  'フルート','ピッコロ','オーボエ','クラリネット','バスクラリネット','ファゴット','サクソフォン',
+  'トランペット','ホルン','トロンボーン','チューバ','ユーフォニアム',
+  'ソプラノ','メゾソプラノ','アルト','テノール','バリトン','バス',
+  '打楽器','その他'
+];
+
+function openSettingsModal(){
+  document.getElementById('settings-instruments').value = instrumentList.join('\n');
+  openModal('settings-modal');
+}
+
+function saveInstruments(){
+  const raw = document.getElementById('settings-instruments').value;
+  instrumentList = raw.split('\n').map(s=>s.trim()).filter(Boolean);
+  updateDatalist();
+  persist();
+  closeModal('settings-modal');
+}
+
+function resetInstruments(){
+  if(!confirm('デフォルトのリストに戻しますか？')) return;
+  instrumentList = [...DEFAULT_INSTRUMENTS];
+  document.getElementById('settings-instruments').value = instrumentList.join('\n');
+  updateDatalist();
+  persist();
+}
+
+function updateDatalist(){
+  const dl = document.getElementById('instrument-list');
+  dl.innerHTML = instrumentList.map(i=>`<option value="${esc(i)}">`).join('');
+}
+
+// ════════════════════════
+//  FINANCE
+// ════════════════════════
+const INCOME_CATS = ['参加費','入場料・チケット','スポンサー・協賛金','その他収入'];
+const EXPENSE_CATS = ['会場費','伴奏者謝礼','印刷・プログラム費','機材・音響費','その他支出'];
+const CAT_COLORS = {
+  '参加費':'#2e7d5e','入場料・チケット':'#1a5276','スポンサー・協賛金':'#6c3483','その他収入':'#4a7d3c',
+  '会場費':'#7b1d14','伴奏者謝礼':'#7d4e00','印刷・プログラム費':'#4a4a00','機材・音響費':'#1a3a5c','その他支出':'#4a2020'
+};
+
+let currentTxnType = 'income';
+let currentFinTab = 'txn';
+let viewAllConcerts = false;
+
+function setTxnType(t){
+  currentTxnType = t;
+  document.getElementById('txn-type-income').classList.toggle('active', t==='income');
+  document.getElementById('txn-type-expense').classList.toggle('active', t==='expense');
+  updateTxnCategories();
+}
+function updateTxnCategories(){
+  const cats = currentTxnType==='income' ? INCOME_CATS : EXPENSE_CATS;
+  document.getElementById('tm-category').innerHTML = cats.map(c=>`<option>${c}</option>`).join('');
+}
+
+function openTxnModal(id){
+  populateSel2('tm-concert');
+  editingTxnId = id||null;
+  if(id){
+    const t = transactions.find(x=>x.id===id);
+    document.getElementById('txn-modal-title').textContent = '収支を編集';
+    document.getElementById('tm-concert').value = t.concertId;
+    setTxnType(t.type);
+    document.getElementById('tm-category').value = t.category;
+    document.getElementById('tm-desc').value = t.desc||'';
+    document.getElementById('tm-amount').value = t.amount||'';
+    document.getElementById('tm-date').value = t.date||'';
+    document.getElementById('tm-note').value = t.note||'';
+  } else {
+    document.getElementById('txn-modal-title').textContent = '収支を記録';
+    setTxnType('income');
+    ['tm-desc','tm-amount','tm-note'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('tm-date').value = today();
+    const cid = document.getElementById('fin-concert-sel')?.value;
+    if(cid && !viewAllConcerts) document.getElementById('tm-concert').value = cid;
+  }
+  openModal('txn-modal');
+}
+function saveTxn(){
+  const amount = parseFloat(document.getElementById('tm-amount').value);
+  if(!amount||amount<=0){alert('金額を入力してください');return;}
+  const data = {
+    concertId: document.getElementById('tm-concert').value,
+    type: currentTxnType,
+    category: document.getElementById('tm-category').value,
+    desc: document.getElementById('tm-desc').value.trim(),
+    amount,
+    date: document.getElementById('tm-date').value,
+    note: document.getElementById('tm-note').value.trim(),
+  };
+  if(editingTxnId){
+    const i = transactions.findIndex(x=>x.id===editingTxnId);
+    transactions[i] = {...transactions[i], ...data};
+  } else {
+    transactions.push({id:uid(), ...data});
+  }
+  persist(); closeModal('txn-modal'); renderFinance();
+}
+function deleteTxn(id){
+  if(!confirm('この記録を削除しますか？'))return;
+  transactions = transactions.filter(x=>x.id!==id);
+  persist(); renderFinance();
+}
+
+function switchFinTab(tab, btn){
+  currentFinTab = tab;
+  document.querySelectorAll('.fin-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.fin-section').forEach(s=>s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('fin-'+tab).classList.add('active');
+  renderFinanceTab();
+}
+
+function showAllConcerts(){
+  viewAllConcerts = true;
+  currentFinTab = 'compare';
+  document.querySelectorAll('.fin-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.fin-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.fin-tab')[2].classList.add('active');
+  document.getElementById('fin-compare').classList.add('active');
+  renderFinance();
+}
+
+function fmt(n){ return '¥'+Math.round(n).toLocaleString(); }
+
+function calcTotals(txns){
+  const income  = txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const expense = txns.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  return {income, expense, balance: income-expense};
+}
+
+function renderFinance(){
+  const selEl = document.getElementById('fin-concert-sel');
+  if(!concerts.length){
+    document.getElementById('fin-kpi').innerHTML='';
+    document.getElementById('fin-txn').innerHTML='<div class="empty"><p>演奏会を作成してください</p></div>';
+    return;
+  }
+  const cid = selEl?.value;
+  let txns = viewAllConcerts
+    ? transactions
+    : transactions.filter(t=>t.concertId===cid);
+
+  // participation fee stats
+  const feeEntries = viewAllConcerts
+    ? entries
+    : entries.filter(e=>e.concertId===cid);
+  const feeTotal   = feeEntries.filter(e=>e.feeAmount>0).reduce((s,e)=>s+(e.feeAmount||0),0);
+  const feeCollected = feeEntries.filter(e=>e.feeStatus==='paid').reduce((s,e)=>s+(e.feeAmount||0),0);
+  const feePending = feeTotal - feeCollected;
+  const paidCount  = feeEntries.filter(e=>e.feeStatus==='paid'&&e.feeAmount>0).length;
+  const totalCount = feeEntries.filter(e=>e.feeAmount>0).length;
+
+  const {income,expense,balance} = calcTotals(txns);
+  const balCls = balance>=0?'balance-pos':'balance-neg';
+
+  // ticket tiers for this concert
+  const concert = cid ? concerts.find(c=>c.id===cid) : null;
+  const tiers = (!viewAllConcerts && concert?.ticketTiers?.length)
+    ? concert.ticketTiers.map(t=>`${esc(t.name)} ${fmt(t.price)}`).join('　/　')
+    : null;
+
+  document.getElementById('fin-kpi').innerHTML = `
+    <div class="fin-kpi"><div class="fin-kpi-label">総収入</div><div class="fin-kpi-value income">${fmt(income)}</div><div class="fin-kpi-sub">${txns.filter(t=>t.type==='income').length}件</div></div>
+    <div class="fin-kpi"><div class="fin-kpi-label">総支出</div><div class="fin-kpi-value expense">${fmt(expense)}</div><div class="fin-kpi-sub">${txns.filter(t=>t.type==='expense').length}件</div></div>
+    <div class="fin-kpi"><div class="fin-kpi-label">収支バランス</div><div class="fin-kpi-value ${balCls}">${fmt(balance)}</div><div class="fin-kpi-sub">${balance>=0?'黒字':'赤字'}</div></div>
+    <div class="fin-kpi">
+      <div class="fin-kpi-label">参加費回収</div>
+      <div class="fin-kpi-value income" style="font-size:1.2rem">${fmt(feeCollected)}</div>
+      <div class="fin-kpi-sub" style="margin-top:0.3rem">
+        ${paidCount}/${totalCount}名 回収済み
+        ${feePending>0?`<span style="color:var(--amber)"> ／ 未回収 ${fmt(feePending)}</span>`:''}
+      </div>
+      ${feeTotal>0?`<div class="fee-progress"><div class="fee-progress-bar" style="width:${totalCount?((paidCount/totalCount)*100).toFixed(0):0}%"></div></div>`:''}
+    </div>
+    ${tiers?`<div class="fin-kpi" style="grid-column:1/-1"><div class="fin-kpi-label">入場料設定</div><div style="font-size:0.82rem;color:var(--text2);margin-top:0.3rem">${tiers}</div></div>`:'' }
+  `;
+  renderFinanceTab();
+}
+
+function renderFinanceTab(){
+  const cid = document.getElementById('fin-concert-sel')?.value;
+  let txns = viewAllConcerts
+    ? transactions
+    : transactions.filter(t=>t.concertId===cid);
+
+  if(currentFinTab==='txn')       renderTxnList(txns);
+  if(currentFinTab==='fees')      renderFees(cid);
+  if(currentFinTab==='breakdown') renderBreakdown(txns);
+  if(currentFinTab==='compare')   renderCompare();
+}
+
+function renderTxnList(txns){
+  const el = document.getElementById('fin-txn');
+  const sorted = [...txns].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(!sorted.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">💴</div><p>収支データがまだありません。<br>「収支を記録」から追加してください。</p></div>';
+    return;
+  }
+  const concertName = cid => concerts.find(c=>c.id===cid)?.name||'不明';
+  el.innerHTML = `
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <div class="txn-row header" style="${viewAllConcerts?'grid-template-columns:90px 1fr 130px 100px 80px 80px':''}">
+        <span>日付</span>
+        ${viewAllConcerts?'<span>演奏会</span>':''}
+        <span>内容</span>
+        <span>カテゴリ</span>
+        <span style="text-align:right">金額</span>
+        <span></span>
+      </div>
+      ${sorted.map(t=>{
+        const amtCls = t.type==='income'?'txn-amount-income':'txn-amount-expense';
+        const sign = t.type==='income'?'+':'−';
+        const bg = CAT_COLORS[t.category]||'#333';
+        return `<div class="txn-row" style="${viewAllConcerts?'grid-template-columns:90px 1fr 130px 100px 80px 80px':''}">
+          <span style="color:var(--text3);font-size:0.75rem">${t.date||'—'}</span>
+          ${viewAllConcerts?`<span style="font-size:0.72rem;color:var(--text2)">${esc(concertName(t.concertId))}</span>`:''}
+          <span>${esc(t.desc||t.category)}${t.note?`<span style="font-size:0.68rem;color:var(--text3)"> (${esc(t.note)})</span>`:''}</span>
+          <span><span class="cat-badge" style="background:${bg}22;color:${bg};border:1px solid ${bg}55">${esc(t.category)}</span></span>
+          <span class="${amtCls}">${sign}${fmt(t.amount)}</span>
+          <span class="txn-actions">
+            <button class="btn btn-outline btn-sm" onclick="openTxnModal('${t.id}')">編集</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteTxn('${t.id}')">削除</button>
+          </span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderFees(cid){
+  const el = document.getElementById('fin-fees');
+  const concertList = viewAllConcerts ? concerts : (cid ? [concerts.find(c=>c.id===cid)].filter(Boolean) : []);
+
+  if(!concertList.length){ el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>'; return; }
+
+  let html = '';
+  concertList.forEach(concert => {
+    const list = entries.filter(e=>e.concertId===concert.id&&e.status!=='absent')
+      .sort((a,b)=>(a.order||999)-(b.order||999));
+    const withFee   = list.filter(e=>e.feeAmount>0);
+    const total     = withFee.reduce((s,e)=>s+(e.feeAmount||0),0);
+    const collected = withFee.filter(e=>e.feeStatus==='paid').reduce((s,e)=>s+(e.feeAmount||0),0);
+    const pending   = total - collected;
+    const paidCnt   = withFee.filter(e=>e.feeStatus==='paid').length;
+    const pct       = withFee.length ? Math.round(paidCnt/withFee.length*100) : 0;
+
+    html += `
+      ${viewAllConcerts?`<h3 style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2);margin-bottom:0.8rem;margin-top:1.5rem">${esc(concert.name)}</h3>`:''}
+      <div style="display:flex;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
+          <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">合計参加費</div>
+          <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:var(--text)">${fmt(total)}</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
+          <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">回収済み</div>
+          <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:#6fcf97">${fmt(collected)}</div>
+          <div style="font-size:0.68rem;color:var(--text3);margin-top:0.2rem">${paidCnt}/${withFee.length}名（${pct}%）</div>
+          <div class="fee-progress"><div class="fee-progress-bar" style="width:${pct}%"></div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
+          <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">未回収</div>
+          <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:${pending>0?'#f6c90e':'var(--text3)'}">${fmt(pending)}</div>
+        </div>
+      </div>`;
+
+    if(!list.length){
+      html += '<div class="empty" style="padding:1rem"><p>参加者がいません</p></div>';
+      return;
+    }
+
+    html += `<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1.5rem">
+      <div class="fee-row fee-header" style="grid-template-columns:2rem 1fr 80px 100px 1fr 90px">
+        <span>#</span><span>氏名</span><span style="text-align:right">参加費</span><span style="text-align:center">回収状況</span><span>備考</span><span></span>
+      </div>
+      ${list.map(e=>{
+        const name = e.type==='group'?esc(e.groupName):esc(e.name);
+        const hasFee = e.feeAmount>0;
+        return `<div class="fee-row" style="grid-template-columns:2rem 1fr 80px 100px 1fr 90px">
+          <span style="color:var(--text3)">${e.order||'—'}</span>
+          <span><strong>${name}</strong>${e.kana&&e.type==='solo'?`<span style="font-size:0.7rem;color:var(--text3)"> ${esc(e.kana)}</span>`:''}</span>
+          <span style="text-align:right;font-size:0.82rem;color:var(--text2)">${hasFee?fmt(e.feeAmount):'<span style="color:var(--text3)">—</span>'}</span>
+          <span style="text-align:center">
+            ${hasFee
+              ? `<button class="fee-pill ${e.feeStatus==='paid'?'paid':'unpaid'}" onclick="toggleFeeStatusFin('${e.id}')">${e.feeStatus==='paid'?'✓ 回収済み':'● 未回収'}</button>`
+              : '<span style="font-size:0.7rem;color:var(--text3)">未設定</span>'}
+          </span>
+          <span style="font-size:0.75rem;color:var(--text3)">${esc(e.feeNote||'')}</span>
+          <span><button class="btn btn-outline btn-sm" onclick="openEntryModal('${e.id}')">編集</button></span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function toggleFeeStatusFin(id){
+  const e=entries.find(x=>x.id===id);
+  if(!e) return;
+  e.feeStatus = e.feeStatus==='paid' ? 'unpaid' : 'paid';
+  persist(); renderFinance();
+}
+
+function renderBreakdown(txns){
+  const el = document.getElementById('fin-breakdown');
+  if(!txns.length){el.innerHTML='<div class="empty"><p>データがありません</p></div>';return;}
+
+  const byCategory = {};
+  txns.forEach(t=>{
+    if(!byCategory[t.category]) byCategory[t.category]={type:t.type,total:0,count:0};
+    byCategory[t.category].total+=t.amount;
+    byCategory[t.category].count++;
+  });
+  const maxVal = Math.max(...Object.values(byCategory).map(v=>v.total), 1);
+
+  const incomeCats = Object.entries(byCategory).filter(([,v])=>v.type==='income').sort((a,b)=>b[1].total-a[1].total);
+  const expenseCats = Object.entries(byCategory).filter(([,v])=>v.type==='expense').sort((a,b)=>b[1].total-a[1].total);
+
+  function barRows(cats, type){
+    if(!cats.length) return '<p style="color:var(--text3);font-size:0.8rem;padding:0.5rem 0">記録なし</p>';
+    return `<div class="bar-chart">${cats.map(([cat,v])=>{
+      const pct = (v.total/maxVal*100).toFixed(1);
+      const bg = CAT_COLORS[cat]||'#555';
+      return `<div class="bar-row">
+        <div class="bar-label">${esc(cat)}</div>
+        <div class="bar-track"><div class="bar-fill ${type}" style="width:${pct}%;background:${type==='income'?'linear-gradient(90deg,#2e7d5e,#6fcf97)':'linear-gradient(90deg,#7b1d14,#eb6b5a)'}"></div></div>
+        <div class="bar-val">${fmt(v.total)}<span style="font-size:0.65rem;color:var(--text3)"> (${v.count}件)</span></div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem">
+      <div class="card">
+        <div style="font-size:0.72rem;letter-spacing:0.1em;color:#6fcf97;font-weight:600;margin-bottom:1rem">収入内訳</div>
+        ${barRows(incomeCats,'income')}
+      </div>
+      <div class="card">
+        <div style="font-size:0.72rem;letter-spacing:0.1em;color:#eb6b5a;font-weight:600;margin-bottom:1rem">支出内訳</div>
+        ${barRows(expenseCats,'expense')}
+      </div>
+    </div>`;
+}
+
+function renderCompare(){
+  const el = document.getElementById('fin-compare');
+  if(!concerts.length){el.innerHTML='<div class="empty"><p>演奏会がありません</p></div>';return;}
+
+  const sorted = [...concerts].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const maxIncome  = Math.max(...sorted.map(c=>calcTotals(transactions.filter(t=>t.concertId===c.id)).income), 1);
+  const maxExpense = Math.max(...sorted.map(c=>calcTotals(transactions.filter(t=>t.concertId===c.id)).expense), 1);
+  const maxAbs = Math.max(maxIncome, maxExpense, 1);
+
+  el.innerHTML = `<div class="compare-grid">${sorted.map(c=>{
+    const txns = transactions.filter(t=>t.concertId===c.id);
+    const {income,expense,balance} = calcTotals(txns);
+    const iPct = (income/maxAbs*100).toFixed(1);
+    const ePct = (expense/maxAbs*100).toFixed(1);
+    const balCls = balance>=0?'#6fcf97':'#eb6b5a';
+    return `<div class="compare-card">
+      <div class="compare-card-name">${esc(c.name)}</div>
+      <div style="font-size:0.7rem;color:var(--text3);margin-bottom:0.7rem">${c.date||'日程未定'}</div>
+      <div class="compare-bar-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#6fcf97;margin-bottom:0.2rem"><span>収入</span><span>${fmt(income)}</span></div>
+        <div class="bar-track"><div class="bar-fill income" style="width:${iPct}%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#eb6b5a;margin:0.5rem 0 0.2rem"><span>支出</span><span>${fmt(expense)}</span></div>
+        <div class="bar-track"><div class="bar-fill expense" style="width:${ePct}%"></div></div>
+      </div>
+      <div style="margin-top:0.8rem;padding-top:0.6rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:0.7rem;color:var(--text3)">収支</span>
+        <span style="font-family:'EB Garamond',serif;font-size:1.1rem;color:${balCls}">${fmt(balance)}</span>
+      </div>
+      ${!txns.length?'<div style="font-size:0.7rem;color:var(--text3);margin-top:0.4rem">記録なし</div>':''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ════════════════════════
+//  MODAL HELPERS
+// ════════════════════════
+function openModal(id){ document.getElementById(id+'-overlay').classList.add('open'); }
+function closeModal(id){
+  document.getElementById(id+'-overlay').classList.remove('open');
+  if(id==='concert-modal') editingConcertId=null;
+  if(id==='entry-modal') editingEntryId=null;
+  if(id==='txn-modal') editingTxnId=null;
+}
+
+// ════════════════════════
+//  INIT
+// ════════════════════════
+async function init(){
+  await hydrate();
+  updateDatalist();
+  // seed demo data
+  if(!concerts.length){
+    const cid=uid();
+    concerts.push({
+      id:cid,name:'第1回 春のサロンコンサート',date:today(),
+      time:'14:00',venue:'○○サロン',
+      note:'ご不明な点は主催者までご連絡ください。',
+      code:'spring2025',
+      ticketTiers:[
+        {name:'一般',price:1000},
+        {name:'学生',price:500},
+        {name:'ご招待',price:0}
+      ]
+    });
+    entries.push(
+      {id:uid(),concertId:cid,type:'solo',name:'山田 花子',kana:'やまだ はなこ',
+       email:'hanako@example.com',tel:'090-0000-0001',
+       instrument:'ピアノ',
+       pieces:[
+         {title:'ノクターン Op.9 No.2',composer:'F. Chopin'},
+         {title:'幻想即興曲 Op.66',composer:'F. Chopin'}
+       ],
+       order:1,duration:12,accType:'needed',accName:'',
+       profile:'幼少期よりピアノを学ぶ。現在は地域の音楽教室で活動中。',
+       status:'confirmed',performerCode:'yamada2025',
+       feeAmount:3000,feeStatus:'paid',feeNote:'振込確認済み'},
+      {id:uid(),concertId:cid,type:'group',groupName:'トリオ・ラ・フルール',
+       groupEmail:'trio@example.com',groupTel:'',
+       members:[
+         {name:'佐藤 美咲',instrument:'ヴァイオリン'},
+         {name:'田中 悠',instrument:'チェロ'},
+         {name:'小林 由香',instrument:'ピアノ'}
+       ],
+       pieces:[
+         {title:'ピアノ三重奏曲 第7番「大公」第1楽章',composer:'L. v. Beethoven'}
+       ],
+       order:2,duration:20,
+       profile:'2020年結成。室内楽コンクール入賞。',
+       status:'confirmed',performerCode:'trio2025',
+       feeAmount:5000,feeStatus:'unpaid',feeNote:''},
+      {id:uid(),concertId:cid,type:'solo',name:'鈴木 一郎',kana:'すずき いちろう',
+       email:'ichiro@example.com',tel:'',
+       instrument:'ヴァイオリン',
+       pieces:[
+         {title:'無伴奏パルティータ 第2番 BWV1004 よりシャコンヌ',composer:'J.S. Bach'}
+       ],
+       order:3,duration:15,accType:'none',accName:'',
+       profile:'音楽大学卒。現在ソロ・室内楽で活動中。',
+       status:'pending',performerCode:'suzuki2025',
+       feeAmount:3000,feeStatus:'unpaid',feeNote:''}
+    );
+    transactions.push(
+      {id:uid(),concertId:cid,type:'income',category:'参加費',desc:'参加費（山田 花子）',amount:3000,date:today(),note:''},
+      {id:uid(),concertId:cid,type:'income',category:'参加費',desc:'参加費（トリオ・ラ・フルール）',amount:5000,date:today(),note:''},
+      {id:uid(),concertId:cid,type:'income',category:'入場料・チケット',desc:'当日入場料',amount:12000,date:today(),note:'20名×600円'},
+      {id:uid(),concertId:cid,type:'expense',category:'会場費',desc:'○○サロン使用料',amount:15000,date:today(),note:''},
+      {id:uid(),concertId:cid,type:'expense',category:'印刷・プログラム費',desc:'プログラム冊子印刷',amount:3500,date:today(),note:'30部'},
+      {id:uid(),concertId:cid,type:'expense',category:'機材・音響費',desc:'ピアノ調律',amount:8000,date:today(),note:''}
+    );
+    await persist();
+  }
+
+  // ── URL routing: ?apply=CONCERT_ID shows public apply form ──
+  const params = new URLSearchParams(location.search);
+  const applyCid = params.get('apply');
+  if(applyCid){
+    const concert = concerts.find(c=>c.id===applyCid);
+    if(concert){
+      showApplyScreen(concert);
+      return;
+    }
+  }
+  renderLoginForm();
+}
+
+// ════════════════════════
+//  APPLY SCREEN (public)
+// ════════════════════════
+let applyType = 'solo';
+let applyConcertId = null;
+let applyPieceDragSrc = null;
+
+function showApplyScreen(concert){
+  applyConcertId = concert.id;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='none';
+  document.getElementById('apply-screen').style.display='block';
+
+  document.getElementById('apply-concert-name').textContent = concert.name;
+  const info = [concert.date||'', concert.time||'', concert.venue?'📍'+concert.venue:''].filter(Boolean).join('　');
+  document.getElementById('apply-concert-info').textContent = info;
+
+  // 参加費・伴奏費の案内
+  const feeLines = [];
+  if(concert.entryFeeTiers && concert.entryFeeTiers.length){
+    concert.entryFeeTiers.forEach(t => feeLines.push(`参加費（${t.name}）：${fmt(t.price)}`));
+  }
+  if(concert.accFee)   feeLines.push(`伴奏費：${fmt(concert.accFee)}`);
+  if(concert.feeNote)  feeLines.push(concert.feeNote);
+  const feeInfoEl = document.getElementById('apply-fee-info');
+  if(feeLines.length){
+    feeInfoEl.innerHTML = feeLines.map(l=>`<span>${esc(l)}</span>`).join('<br>');
+    feeInfoEl.style.display='block';
+  } else {
+    feeInfoEl.style.display='none';
+  }
+
+  const flyerImg = document.getElementById('apply-flyer-img');
+  if(concert.flyerData){ flyerImg.src=concert.flyerData; flyerImg.style.display='block'; }
+  else { flyerImg.style.display='none'; }
+
+  const lineBtn = document.getElementById('apply-line-btn');
+  if(concert.lineUrl){ lineBtn.href=concert.lineUrl; lineBtn.style.display='flex'; }
+  else { lineBtn.style.display='none'; }
+
+  // init piece editor
+  addAfPiece();
+  setApplyType('solo');
+}
+
+function setApplyType(t){
+  applyType = t;
+  document.getElementById('af-type-solo').classList.toggle('active', t==='solo');
+  document.getElementById('af-type-group').classList.toggle('active', t==='group');
+  document.getElementById('af-group-fields').style.display = t==='group'?'block':'none';
+  document.getElementById('af-acc-wrap').style.display = t==='solo'?'block':'none';
+}
+function toggleAfAcc(){
+  const v = document.getElementById('af-acc-type').value;
+  document.getElementById('af-acc-name-wrap').style.display = v==='self'?'block':'none';
+}
+function addAfMember(name='', instrument=''){
+  const wrap = document.getElementById('af-member-list');
+  const row = document.createElement('div');
+  row.className = 'member-row';
+  row.innerHTML = `
+    <input type="text" placeholder="氏名" class="member-name-input" value="${esc(name)}">
+    <input type="text" placeholder="楽器" class="member-instrument-input" list="instrument-list" value="${esc(instrument)}">
+    <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
+  wrap.appendChild(row);
+}
+function addAfPiece(title='', composer=''){
+  const list = document.getElementById('af-piece-list');
+  const row = document.createElement('div');
+  row.className = 'piece-row'; row.draggable = true;
+  row.innerHTML = `
+    <span class="piece-drag-handle">⠿</span>
+    <input type="text" placeholder="曲名" class="piece-title" value="${esc(title)}">
+    <input type="text" placeholder="作曲者" class="piece-composer" value="${esc(composer)}">
+    <button class="remove-btn" onclick="this.parentNode.remove()" style="font-size:.75rem;padding:.2rem .4rem">✕</button>`;
+  row.addEventListener('dragstart', e=>{ applyPieceDragSrc=row; row.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+  row.addEventListener('dragend', ()=>{ applyPieceDragSrc=null; list.querySelectorAll('.piece-row').forEach(r=>r.classList.remove('drag-over','dragging')); });
+  row.addEventListener('dragover', e=>{ e.preventDefault(); if(applyPieceDragSrc&&applyPieceDragSrc!==row) row.classList.add('drag-over'); });
+  row.addEventListener('dragleave', ()=>row.classList.remove('drag-over'));
+  row.addEventListener('drop', e=>{ e.preventDefault(); row.classList.remove('drag-over');
+    if(applyPieceDragSrc&&applyPieceDragSrc!==row){ const ns=[...list.children],si=ns.indexOf(applyPieceDragSrc),ti=ns.indexOf(row); si<ti?list.insertBefore(applyPieceDragSrc,row.nextSibling):list.insertBefore(applyPieceDragSrc,row); }
+  });
+  list.appendChild(row);
+}
+
+async function submitApplication(){
+  const name  = document.getElementById('af-name').value.trim();
+  const email = document.getElementById('af-email').value.trim();
+  if(!name){ alert('氏名を入力してください'); return; }
+  if(!email){ alert('メールアドレスを入力してください'); return; }
+
+  const pieces = [...document.querySelectorAll('#af-piece-list .piece-row')].map(r=>({
+    title: r.querySelector('.piece-title').value.trim(),
+    composer: r.querySelector('.piece-composer').value.trim()
+  })).filter(p=>p.title||p.composer);
+
+  const app = {
+    id: uid(),
+    concertId: applyConcertId,
+    submittedAt: new Date().toISOString(),
+    status: 'new', // new | accepted | rejected
+    type: applyType,
+    name, email,
+    kana:       document.getElementById('af-kana').value.trim(),
+    tel:        document.getElementById('af-tel').value.trim(),
+    instrument: document.getElementById('af-instrument').value.trim(),
+    pieces,
+    message:    document.getElementById('af-message').value.trim(),
+  };
+
+  if(applyType === 'group'){
+    app.groupName = document.getElementById('af-group-name').value.trim();
+    app.members = [...document.querySelectorAll('#af-member-list .member-row')].map(r=>({
+      name: r.querySelector('.member-name-input').value.trim(),
+      instrument: r.querySelector('.member-instrument-input').value.trim()
+    })).filter(m=>m.name);
+  } else {
+    app.accType = document.getElementById('af-acc-type').value;
+    app.accName = document.getElementById('af-acc-name').value.trim();
+  }
+
+  applications.push(app);
+  await persist();
+
+  // Build copy text
+  const concert = concerts.find(c=>c.id===applyConcertId);
+  const concertName = concert ? concert.name : '演奏会';
+  const piecesText = app.pieces.length
+    ? app.pieces.map((p,i)=>`${i+1}. ${p.title||''}${p.composer?' / '+p.composer:''}`).join('\n')
+    : '（未記入）';
+  const accText = app.accType==='self' ? `伴奏あり（${app.accName||'未記入'}）`
+    : app.accType==='needed' ? '伴奏者の手配が必要'
+    : app.accType==='none' ? '伴奏なし' : '';
+  const membersText = (app.members||[]).length
+    ? app.members.map(m=>m.name+(m.instrument?`（${m.instrument}）`:'')).join('、') : '';
+
+  const copyLines = [
+    `【申し込み確認】${concertName}`,
+    '',
+    `氏名：${app.name}${app.kana?' （'+app.kana+'）':''}`,
+    `メール：${app.email}`,
+    app.tel        ? `電話：${app.tel}` : null,
+    app.instrument ? `楽器：${app.instrument}` : null,
+    app.type==='group'&&app.groupName ? `グループ名：${app.groupName}` : null,
+    membersText    ? `メンバー：${membersText}` : null,
+    accText        ? `伴奏：${accText}` : null,
+    '',
+    '【演奏曲目】',
+    piecesText,
+    app.message    ? '\n【備考】\n'+app.message : null,
+  ].filter(l=>l!==null).join('\n');
+
+  document.getElementById('apply-form-wrap').style.display='none';
+  document.getElementById('apply-success-wrap').style.display='block';
+
+  // Use a data attribute to avoid quoting issues inside onclick
+  const btn = document.createElement('button');
+  btn.textContent = '📋 申し込み内容をコピー';
+  btn.style.cssText = 'background:var(--surface2);color:var(--gold2);border:1px solid var(--border2);border-radius:6px;padding:0.65rem 1.4rem;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:\'Shippori Mincho\',serif;transition:all 0.2s';
+  btn.onclick = () => {
+    navigator.clipboard.writeText(copyLines).then(() => {
+      btn.textContent = '✓ コピーしました';
+      btn.style.background = 'var(--green-bg)';
+      btn.style.color = '#6fcf97';
+      btn.style.borderColor = 'var(--green)';
+      setTimeout(() => {
+        btn.textContent = '📋 申し込み内容をコピー';
+        btn.style.background = '';
+        btn.style.color = 'var(--gold2)';
+        btn.style.borderColor = '';
+      }, 2500);
+    });
+  };
+
+  const wrap = document.getElementById('apply-mailto-wrap');
+  wrap.innerHTML = `<p style="font-size:0.78rem;color:var(--text3);margin-bottom:0.8rem">申し込み内容をコピーして、${app.email} に確認メールとしてお送りください。</p>`;
+  wrap.appendChild(btn);
+}
+
+// ════════════════════════
+//  FLYER UPLOAD
+// ════════════════════════
+let pendingFlyerData = null;
+
+function handleFlyerUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    pendingFlyerData = e.target.result;
+    const preview = document.getElementById('cm-flyer-preview');
+    preview.src = pendingFlyerData;
+    preview.style.display = 'block';
+    document.getElementById('cm-flyer-placeholder').style.display = 'none';
+    document.getElementById('cm-flyer-clear').style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+function clearFlyer(){
+  pendingFlyerData = null;
+  document.getElementById('cm-flyer-preview').style.display='none';
+  document.getElementById('cm-flyer-preview').src='';
+  document.getElementById('cm-flyer-placeholder').style.display='block';
+  document.getElementById('cm-flyer-clear').style.display='none';
+  document.getElementById('cm-flyer-input').value='';
+}
+
+// ════════════════════════
+//  APPLY LINK
+// ════════════════════════
+function copyApplyLink(){
+  const cid = document.getElementById('app-concert-sel')?.value;
+  if(!cid){ alert('演奏会を選択してください'); return; }
+  const url = location.origin + location.pathname + '?apply=' + cid;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn = document.getElementById('copy-apply-link-btn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ コピーしました';
+    setTimeout(()=>btn.textContent=orig, 2000);
+  });
+}
+
+// ════════════════════════
+//  APPLICATIONS (organizer)
+// ════════════════════════
+function renderApplications(){
+  const cid = document.getElementById('app-concert-sel')?.value;
+  const el  = document.getElementById('application-list');
+  if(!cid){ el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>'; return; }
+
+  const list = applications.filter(a=>a.concertId===cid)
+    .sort((a,b)=>b.submittedAt.localeCompare(a.submittedAt));
+
+  const newCount = list.filter(a=>a.status==='new').length;
+
+  if(!list.length){
+    const concert = concerts.find(c=>c.id===cid);
+    const applyUrl = location.origin + location.pathname + '?apply=' + cid;
+    el.innerHTML=`<div class="empty">
+      <div class="empty-icon">📋</div>
+      <p>まだ申し込みがありません。<br>以下のリンクを参加希望者に共有してください。</p>
+      <div style="margin-top:1rem;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:0.6rem 1rem;font-size:0.75rem;color:var(--gold);word-break:break-all">${applyUrl}</div>
+      <button class="btn btn-gold" style="margin-top:0.8rem" onclick="copyApplyLink()">🔗 リンクをコピー</button>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    ${newCount>0?`<div class="info-box" style="border-color:var(--blue);background:var(--blue-bg)">新しい申し込みが <strong style="color:#74b9ff">${newCount}件</strong> あります</div>`:''}
+    <div style="display:flex;flex-direction:column;gap:0.8rem">
+    ${list.map(a=>{
+      const statusMap = {new:'app-badge-new',accepted:'app-badge-accepted',rejected:'app-badge-rejected'};
+      const statusLabel = {new:'新規',accepted:'承認済み',rejected:'不承認'};
+      const dt = new Date(a.submittedAt).toLocaleDateString('ja-JP',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      const piecesHtml = (a.pieces||[]).map((p,i)=>`<span>${i+1}. ${esc(p.title||'')}${p.composer?` / ${esc(p.composer)}`:''}</span>`).join('<br>');
+      return `<div class="card" style="${a.status==='new'?'border-color:var(--blue)':''}">
+        <div class="card-row">
+          <div>
+            <div class="card-title">${a.type==='group'&&a.groupName?esc(a.groupName)+' ／ ':''} ${esc(a.name)}</div>
+            <div class="card-meta">${dt} ／ ${esc(a.email)} ${a.tel?'／ '+esc(a.tel):''}
+              ${a.instrument?'<br>楽器: '+esc(a.instrument):''}
+              ${a.kana?'　ふりがな: '+esc(a.kana):''}
+            </div>
+          </div>
+          <span class="${statusMap[a.status]||'app-badge-new'}">${statusLabel[a.status]||'新規'}</span>
+        </div>
+        ${piecesHtml?`<div style="font-size:0.75rem;color:var(--text2);margin:0.4rem 0;line-height:1.8">${piecesHtml}</div>`:''}
+        ${a.type==='group'&&a.members?.length?`<div style="font-size:0.75rem;color:var(--text3)">メンバー: ${a.members.map(m=>esc(m.name)+(m.instrument?'（'+esc(m.instrument)+'）':'')).join('　')}</div>`:''}
+        ${a.accType&&a.accType!=='none'?`<div style="font-size:0.75rem;color:var(--text3)">伴奏: ${a.accType==='self'?'自己手配（'+esc(a.accName||'未記入')+'）':'手配が必要'}</div>`:''}
+        ${a.message?`<div style="font-size:0.78rem;color:var(--text2);margin-top:0.5rem;padding:0.5rem 0.7rem;background:var(--surface2);border-radius:5px;border-left:2px solid var(--border2)">${esc(a.message)}</div>`:''}
+        <div class="card-actions">
+          ${a.status!=='accepted'?`<button class="btn btn-green btn-sm" onclick="acceptApplication('${a.id}')">✓ 承認してエントリーに追加</button>`:''}
+          ${a.status==='new'?`<button class="btn btn-outline btn-sm" onclick="rejectApplication('${a.id}')">不承認</button>`:''}
+          <button class="btn btn-danger btn-sm" onclick="deleteApplication('${a.id}')">削除</button>
+        </div>
+      </div>`;
+    }).join('')}
+    </div>`;
+}
+
+async function acceptApplication(id){
+  const a = applications.find(x=>x.id===id);
+  if(!a) return;
+  // Create entry from application
+  const entry = {
+    id: uid(),
+    concertId: a.concertId,
+    type: a.type,
+    name: a.name, kana: a.kana, email: a.email, tel: a.tel,
+    instrument: a.instrument,
+    pieces: a.pieces||[],
+    profile: '', order: 0, duration: 0,
+    status: 'pending',
+    performerCode: '',
+    feeAmount: 0, feeStatus: 'unpaid', feeNote: '',
+  };
+  if(a.type==='group'){
+    entry.groupName = a.groupName;
+    entry.groupEmail = a.email;
+    entry.groupTel = a.tel;
+    entry.members = a.members||[];
+  } else {
+    entry.accType = a.accType||'none';
+    entry.accName = a.accName||'';
+  }
+  entries.push(entry);
+  a.status = 'accepted';
+  await persist();
+  renderApplications();
+  alert(`${a.name} さんをエントリーに追加しました。\n「参加者管理」ページで詳細を編集できます。`);
+}
+
+function rejectApplication(id){
+  const a = applications.find(x=>x.id===id);
+  if(!a) return;
+  a.status = 'rejected';
+  persist(); renderApplications();
+}
+
+function deleteApplication(id){
+  if(!confirm('この申し込みを削除しますか？')) return;
+  applications = applications.filter(x=>x.id!==id);
+  persist(); renderApplications();
+}
+
+init();
+</script>
+</body>
+</html>
