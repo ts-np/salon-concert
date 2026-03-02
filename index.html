@@ -766,20 +766,39 @@ select.status-sel{
 
     <!-- SETTINGS PAGE -->
 
-    <!-- PERFORMER PAGE -->
+    <!-- PERFORMER PAGES -->
+    <div class="page" id="page-my-concert-info">
+      <div class="ph"><h2>演奏会</h2></div>
+      <div id="my-concert-info-content"></div>
+    </div>
+
     <div class="page" id="page-my-concert">
-      <div class="ph"><h2>マイ演奏会</h2></div>
+      <div class="ph"><h2>出演者情報</h2></div>
       <div id="my-concert-content"></div>
     </div>
 
+    <div class="page" id="page-my-program">
+      <div class="ph"><h2>プログラム</h2></div>
+      <div id="my-program-content"></div>
+    </div>
+
     <div class="page" id="page-my-profile">
-      <div class="ph"><h2>プロフィール・出演情報</h2></div>
+      <div class="ph"><h2>出演者情報</h2></div>
       <div id="my-profile-content"></div>
     </div>
   </main>
 </div>
 
-<!-- ══ MODAL: SETTINGS ══ -->
+<!-- ══ MODAL: MY ENTRY EDIT (performer) ══ -->
+<div class="overlay" id="my-entry-edit-modal-overlay">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3 id="my-entry-edit-title">出演者情報を編集</h3>
+      <button class="close-btn" onclick="closeModal('my-entry-edit-modal')">×</button>
+    </div>
+    <div id="my-entry-edit-body"></div>
+  </div>
+</div>
 <div class="overlay" id="settings-modal-overlay">
   <div class="modal">
     <div class="modal-hd">
@@ -813,7 +832,9 @@ select.status-sel{
       <div class="fg"><label>開催日 *</label><input id="cm-date" type="date"></div>
       <div class="fg"><label>開始時刻</label><input id="cm-time" type="time" value="14:00"></div>
       <div class="fg full"><label>会場</label><input id="cm-venue" type="text" placeholder="例：○○サロン"></div>
-      <div class="fg full"><label>演奏者へのメモ（演奏者に表示されます）</label><textarea id="cm-note"></textarea></div>
+      <div class="fg full"><label>演奏会の説明・概要</label><textarea id="cm-description" rows="3" placeholder="演奏会のコンセプトや内容など"></textarea></div>
+      <div class="fg full"><label>ドレスコード・服装</label><input id="cm-dresscode" type="text" placeholder="例：セミフォーマル、自由など"></input></div>
+      <div class="fg full"><label>その他メモ・案内（演奏者に表示されます）</label><textarea id="cm-note"></textarea></div>
       <div class="fg full"><label>招待コード（演奏者がログインに使用）</label><input id="cm-code" type="text" placeholder="例: spring2025"></div>
       <div class="fg full"><label>LINE オープンチャット URL</label><input id="cm-line-url" type="url" placeholder="https://line.me/ti/g2/..."></div>
     </div>
@@ -927,7 +948,7 @@ select.status-sel{
               <option value="needed">伴奏者の手配が必要</option>
             </select>
           </div>
-          <div class="fg" id="acc-name-wrap" style="display:none">
+          <div class="fg" id="acc-name-wrap">
             <label>伴奏者名</label><input id="em-acc-name" type="text" placeholder="伴奏者の氏名">
           </div>
         </div>
@@ -938,13 +959,16 @@ select.status-sel{
     <div id="group-fields" style="display:none">
       <div class="form-grid">
         <div class="fg full"><label>グループ名 *</label><input id="em-group-name" type="text" placeholder="例：トリオ・ラ・フルール"></div>
+        <div class="fg"><label>代表者名</label><input id="em-group-rep" type="text" placeholder="代表者の氏名"></div>
+        <div class="fg"><label>代表者ふりがな</label><input id="em-group-rep-kana" type="text" placeholder="ふりがな"></div>
         <div class="fg"><label>代表者メール</label><input id="em-group-email" type="email"></div>
         <div class="fg"><label>代表者電話</label><input id="em-group-tel" type="tel"></div>
       </div>
       <div class="subsect" style="margin-top:0.9rem">
-        <div class="subsect-title">メンバー（氏名・楽器）</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.4rem">
+        <div class="subsect-title">メンバー</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.4rem">
           <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">氏名</span>
+          <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">ふりがな</span>
           <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">楽器</span>
           <span></span>
         </div>
@@ -974,6 +998,7 @@ select.status-sel{
       <div class="fg"><label>出演順</label><input id="em-order" type="number" min="1"></div>
       <div class="fg"><label>予定演奏時間（分）</label><input id="em-duration" type="number" min="1"></div>
       <div class="fg full"><label>プロフィール・自己紹介</label><textarea id="em-profile" rows="3"></textarea></div>
+      <div class="fg full"><label>メモ（必要機材、連絡事項）</label><textarea id="em-memo" rows="2" placeholder="例：譜面台が必要、当日14時までに入場"></textarea></div>
       <div class="fg">
         <label>参加状況</label>
         <select id="em-status">
@@ -1174,12 +1199,19 @@ function doLogin(){
     // Try concert-level code
     const concert = concerts.find(c=>c.id===cid);
     if(concert && concert.code && concert.code.toLowerCase()===code.toLowerCase()){
-      currentUser = {role:'performer', concertId: cid, name: concert.name+'（参加者）'};
+      currentUser = {role:'performer', concertId: cid, name: concert.name+'（参加者）', entryIds:[]};
     } else {
-      // Try entry-level code
-      const entry = entries.find(e=>e.concertId===cid && e.performerCode && e.performerCode.toLowerCase()===code.toLowerCase());
-      if(!entry){ alert('コードが見つかりません。主催者にお問い合わせください。'); return; }
-      currentUser = {role:'performer', entryId: entry.id, concertId: cid, name: entry.type==='group'? entry.groupName : entry.name};
+      // Try entry-level code — collect ALL entries sharing the same code
+      const matched = entries.filter(e=>e.performerCode && e.performerCode.toLowerCase()===code.toLowerCase());
+      if(!matched.length){ alert('コードが見つかりません。主催者にお問い合わせください。'); return; }
+      const primary = matched.find(e=>e.concertId===cid) || matched[0];
+      currentUser = {
+        role:'performer',
+        entryId: primary.id,   // keep for legacy compat
+        entryIds: matched.map(e=>e.id),
+        concertId: primary.concertId,
+        name: primary.type==='group'? primary.groupName : primary.name
+      };
     }
   }
   startApp();
@@ -1204,8 +1236,8 @@ function startApp(){
     showPage('concerts');
     renderConcerts();
   } else {
-    showPage('my-concert');
-    renderMyConvert();
+    showPage('my-concert-info');
+    renderMyConcertInfo();
   }
 }
 
@@ -1221,8 +1253,9 @@ function buildNav(){
 `;
   } else {
     nav.innerHTML = `
-      <button class="active" onclick="showPage('my-concert',this)">出演情報</button>
-      <button onclick="showPage('my-profile',this)">プロフィール編集</button>`;
+      <button class="active" onclick="showPage('my-concert-info',this)">演奏会</button>
+      <button onclick="showPage('my-concert',this)">出演者情報</button>
+      <button onclick="showPage('my-program',this)">プログラム</button>`;
   }
   // show badge if new applications exist
   updateAppBadge();
@@ -1246,7 +1279,9 @@ function showPage(name, btn){
   if(name==='applications')   { populateSel('app-concert-sel'); renderApplications(); }
   if(name==='program')        { populateSel('prog-concert-sel'); renderProgram(); }
   if(name==='finance')        { populateSel('fin-concert-sel'); renderFinance(); }
+  if(name==='my-concert-info') renderMyConcertInfo();
   if(name==='my-concert')     renderMyConvert();
+  if(name==='my-program')     renderMyProgram();
   if(name==='my-profile')     renderMyProfile();
 }
 
@@ -1306,6 +1341,8 @@ function openConcertModal(id){
     document.getElementById('cm-date').value=c.date||'';
     document.getElementById('cm-time').value=c.time||'14:00';
     document.getElementById('cm-venue').value=c.venue||'';
+    document.getElementById('cm-description').value=c.description||'';
+    document.getElementById('cm-dresscode').value=c.dresscode||'';
     document.getElementById('cm-note').value=c.note||'';
     document.getElementById('cm-code').value=c.code||'';
     document.getElementById('cm-line-url').value=c.lineUrl||'';
@@ -1322,7 +1359,7 @@ function openConcertModal(id){
     } else { clearFlyer(); }
     document.getElementById('concert-modal-title').textContent='演奏会を編集';
   } else {
-    ['cm-name','cm-date','cm-venue','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note'].forEach(i=>document.getElementById(i).value='');
+    ['cm-name','cm-date','cm-venue','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note','cm-description','cm-dresscode'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('cm-time').value='14:00';
     loadTicketTiers([]);
     loadEntryFeeTiers([]);
@@ -1339,6 +1376,8 @@ function saveConcert(){
     date:document.getElementById('cm-date').value,
     time:document.getElementById('cm-time').value,
     venue:document.getElementById('cm-venue').value.trim(),
+    description:document.getElementById('cm-description').value.trim(),
+    dresscode:document.getElementById('cm-dresscode').value.trim(),
     note:document.getElementById('cm-note').value.trim(),
     code:document.getElementById('cm-code').value.trim(),
     lineUrl:document.getElementById('cm-line-url').value.trim(),
@@ -1377,6 +1416,23 @@ function renderConcerts(){
     const past=c.date&&c.date<today();
     const badge=c.date?`<span class="badge ${past?'badge-past':'badge-upcoming'}">${past?'終了':'開催予定'}</span>`:'';
     const applyUrl = location.origin+location.pathname+'?apply='+c.id;
+
+    // 演奏時間集計
+    const concertEntries = entries.filter(e=>e.concertId===c.id&&e.status!=='absent');
+    const totalMins = concertEntries.reduce((s,e)=>s+(parseInt(e.duration)||0),0);
+    const withDuration = concertEntries.filter(e=>parseInt(e.duration)>0).length;
+    const totalH = Math.floor(totalMins/60);
+    const totalM = totalMins%60;
+    const totalStr = totalMins>0
+      ? (totalH>0?`${totalH}時間${totalM>0?totalM+'分':''}`:totalM+'分')
+      : null;
+    const durationHtml = totalStr
+      ? `<div style="margin-top:0.3rem;font-size:0.75rem;color:var(--text3);white-space:nowrap">
+           演奏時間合計 <strong style="color:var(--gold2)">${totalStr}</strong>
+           <span style="font-size:0.68rem;color:var(--text3)">（${withDuration}/${concertEntries.length}名入力済）</span>
+         </div>`
+      : '';
+
     return `<div class="card">
       <div class="card-row" style="gap:1rem">
         <div style="flex:1">
@@ -1398,6 +1454,7 @@ function renderConcerts(){
             ${cnt?`<br><span style="color:#6fcf97">確定 ${confirmed}名</span>`:''}
             ${newApps?`<br><span style="color:#74b9ff">新規申込 ${newApps}件</span>`:''}
           </div>
+          ${durationHtml}
         </div>
       </div>
       <div class="card-actions">
@@ -1452,16 +1509,24 @@ function setType(t){
 }
 function toggleAccFields(){
   const v=document.getElementById('em-acc-type').value;
-  document.getElementById('acc-name-wrap').style.display=v==='self'?'block':'none';
+  const nameInput=document.getElementById('em-acc-name');
+  if(nameInput){
+    const enabled = (v==='self'||v==='needed');
+    nameInput.disabled = !enabled;
+    nameInput.style.opacity = enabled ? '1' : '0.4';
+    nameInput.placeholder = v==='needed' ? '手配予定の伴奏者名（決まっていれば）' : '伴奏者の氏名';
+  }
 }
 
 // ── MEMBER ROWS (name + instrument) ──
-function addMemberField(name='', instrument=''){
+function addMemberField(name='', kana='', instrument=''){
   const wrap=document.getElementById('member-list-fields');
   const row=document.createElement('div');
   row.className='member-row';
+  row.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.3rem';
   row.innerHTML=`
     <input type="text" placeholder="氏名" class="member-name-input" value="${esc(name)}">
+    <input type="text" placeholder="ふりがな" class="member-kana-input" value="${esc(kana)}">
     <input type="text" placeholder="楽器" class="member-instrument-input" list="instrument-list" value="${esc(instrument)}">
     <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
   wrap.appendChild(row);
@@ -1470,6 +1535,7 @@ function getMembers(){
   const rows=document.querySelectorAll('#member-list-fields .member-row');
   return [...rows].map(r=>({
     name: r.querySelector('.member-name-input').value.trim(),
+    kana: r.querySelector('.member-kana-input')?.value.trim()||'',
     instrument: r.querySelector('.member-instrument-input').value.trim()
   })).filter(m=>m.name);
 }
@@ -1541,15 +1607,16 @@ function openEntryModal(id){
     setType(e.type||'solo');
     if(e.type==='group'){
       document.getElementById('em-group-name').value=e.groupName||'';
+      document.getElementById('em-group-rep').value=e.groupRep||'';
+      document.getElementById('em-group-rep-kana').value=e.groupRepKana||'';
       document.getElementById('em-group-email').value=e.groupEmail||'';
       document.getElementById('em-group-tel').value=e.groupTel||'';
       document.getElementById('member-list-fields').innerHTML='';
-      // support old array-of-strings format
       const members=e.members||[];
       if(members.length && typeof members[0]==='string'){
-        members.forEach(m=>addMemberField(m,''));
+        members.forEach(m=>addMemberField(m,'',''));
       } else {
-        members.forEach(m=>addMemberField(m.name||m,m.instrument||''));
+        members.forEach(m=>addMemberField(m.name||m, m.kana||'', m.instrument||''));
       }
     } else {
       document.getElementById('em-name').value=e.name||'';
@@ -1565,6 +1632,7 @@ function openEntryModal(id){
     document.getElementById('em-order').value=e.order||'';
     document.getElementById('em-duration').value=e.duration||'';
     document.getElementById('em-profile').value=e.profile||'';
+    document.getElementById('em-memo').value=e.memo||'';
     document.getElementById('em-status').value=e.status||'pending';
     document.getElementById('em-performer-code').value=e.performerCode||'';
     document.getElementById('em-fee-amount').value=e.feeAmount||'';
@@ -1574,7 +1642,7 @@ function openEntryModal(id){
     document.getElementById('entry-modal-title').textContent='参加者を追加';
     setType('solo');
     ['em-name','em-kana','em-email','em-tel','em-instrument','em-acc-name',
-     'em-group-name','em-group-email','em-group-tel','em-order','em-duration','em-profile','em-performer-code']
+     'em-group-name','em-group-rep','em-group-rep-kana','em-group-email','em-group-tel','em-order','em-duration','em-profile','em-memo','em-performer-code']
       .forEach(i=>document.getElementById(i).value='');
     document.getElementById('em-acc-type').value='none';
     document.getElementById('em-status').value='pending';
@@ -1611,6 +1679,7 @@ function saveEntry(){
     order:parseInt(document.getElementById('em-order').value)||0,
     duration:parseInt(document.getElementById('em-duration').value)||0,
     profile:document.getElementById('em-profile').value.trim(),
+    memo:document.getElementById('em-memo').value.trim(),
     status:document.getElementById('em-status').value,
     performerCode:document.getElementById('em-performer-code').value.trim(),
     feeAmount:parseFloat(document.getElementById('em-fee-amount').value)||0,
@@ -1633,6 +1702,8 @@ function saveEntry(){
     if(!gn){alert('グループ名を入力してください');return;}
     Object.assign(data,{
       groupName:gn,
+      groupRep:document.getElementById('em-group-rep').value.trim(),
+      groupRepKana:document.getElementById('em-group-rep-kana').value.trim(),
       groupEmail:document.getElementById('em-group-email').value.trim(),
       groupTel:document.getElementById('em-group-tel').value.trim(),
       members:getMembers(),
@@ -1926,65 +1997,89 @@ function renderProgram(){
 // ════════════════════════
 //  PERFORMER VIEW
 // ════════════════════════
+function renderMyConcertInfo(){
+  const el=document.getElementById('my-concert-info-content');
+  const cid=currentUser.concertId;
+  const concert=concerts.find(c=>c.id===cid);
+  if(!concert){el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>';return;}
+  el.innerHTML=`
+    <div class="card">
+      <div class="card-title" style="margin-bottom:0.6rem">${esc(concert.name)}</div>
+      <div style="font-size:0.82rem;color:var(--text2);line-height:2">
+        ${concert.date?`<div>📅 ${concert.date}${concert.time?' &ensp;'+concert.time:''}</div>`:''}
+        ${concert.venue?`<div>📍 ${esc(concert.venue)}</div>`:''}
+        ${concert.description?`<div style="margin-top:0.5rem;color:var(--text2)">${esc(concert.description)}</div>`:''}
+        ${concert.dresscode?`<div style="margin-top:0.3rem">👗 ${esc(concert.dresscode)}</div>`:''}
+        ${concert.note?`<div style="margin-top:0.3rem;color:var(--text3)">📝 ${esc(concert.note)}</div>`:''}
+        ${concert.lineUrl?`<div style="margin-top:0.3rem"><a href="${esc(concert.lineUrl)}" target="_blank" style="color:#06c755;text-decoration:none">● LINE オープンチャット</a></div>`:''}
+      </div>
+      ${concert.flyerData?`<div style="margin-top:1rem"><img src="${concert.flyerData}" style="max-width:100%;max-height:320px;border-radius:6px;object-fit:contain"></div>`:''}
+    </div>`;
+}
+
 function renderMyConvert(){
   const el=document.getElementById('my-concert-content');
   const cid=currentUser.concertId;
   const concert=concerts.find(c=>c.id===cid);
   if(!concert){el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>';return;}
 
-  // entry for this performer
-  let myEntry=null;
-  if(currentUser.entryId){
-    myEntry=entries.find(e=>e.id===currentUser.entryId);
-  }
+  const myEntries = (currentUser.entryIds||[currentUser.entryId].filter(Boolean))
+    .map(id=>entries.find(e=>e.id===id)).filter(Boolean);
 
   const statusLabel={pending:'未確認',confirmed:'参加確定',absent:'欠席'};
   const statusBadge={pending:'badge-pending',confirmed:'badge-confirmed',absent:'badge-absent'};
 
-  // Program for this concert (others)
+  if(!myEntries.length){
+    el.innerHTML='<div class="empty"><p>出演エントリーが見つかりません</p></div>';
+    return;
+  }
+
+  el.innerHTML = myEntries.map(e=>`
+    <div class="card" style="border-color:var(--gold-dim);margin-bottom:1rem">
+      <div class="card-row">
+        <div>
+          <div class="card-title">${e.type==='group'?esc(e.groupName):esc(e.name)}</div>
+          <div class="card-meta" style="margin-top:0.3rem">
+            ${esc(concert.name)}
+            &ensp;出演順：${e.order||'未定'}
+            &ensp;演奏時間：${e.duration?e.duration+'分':'未定'}
+            ${e.type==='solo'&&e.accType==='needed'?'<span style="color:#f6c90e;margin-left:0.8rem">⚠ 伴奏者手配が必要です</span>':''}
+            ${e.type==='solo'&&e.accType==='self'?`<span style="color:var(--text2);margin-left:0.8rem">伴奏：${esc(e.accName)||'未入力'}</span>`:''}
+          </div>
+        </div>
+        <span class="badge ${statusBadge[e.status]||'badge-pending'}">${statusLabel[e.status]||'未確認'}</span>
+      </div>
+      ${e.pieces&&e.pieces.length?`<div style="font-size:0.8rem;color:var(--text2);line-height:1.9;margin-top:0.5rem">
+        ${(Array.isArray(e.pieces)?e.pieces:[]).map((p,i)=>`<div>${i+1}. ${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('')}
+      </div>`:'<div style="font-size:0.78rem;color:var(--text3);margin-top:0.4rem">演奏曲目未登録</div>'}
+      <div style="margin-top:0.8rem;text-align:right">
+        <button class="btn btn-gold btn-sm" onclick="openMyEntryEdit('${e.id}')">✏ 編集</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderMyProgram(){
+  const el=document.getElementById('my-program-content');
+  const cid=currentUser.concertId;
+  const concert=concerts.find(c=>c.id===cid);
+  if(!concert){el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>';return;}
+
+  const myIds=new Set((currentUser.entryIds||[currentUser.entryId].filter(Boolean)));
   const list=entries.filter(e=>e.concertId===cid&&e.status!=='absent').sort((a,b)=>(a.order||999)-(b.order||999));
-  let mins=0;
-  if(concert.time){const[h,m]=concert.time.split(':').map(Number);mins=h*60+m;}
 
   el.innerHTML=`
-    <div class="info-box">
-      <strong>${esc(concert.name)}</strong><br>
-      ${concert.date||'日程未定'} ${concert.time||''} ${concert.venue?'｜ '+esc(concert.venue):''}<br>
-      ${concert.note?esc(concert.note):''}
-    </div>
-
-    ${myEntry?`<div class="card" style="border-color:var(--gold-dim)">
-      <div class="card-row">
-        <div class="card-title">${myEntry.type==='group'?esc(myEntry.groupName):esc(myEntry.name)}</div>
-        <span class="badge ${statusBadge[myEntry.status]||'badge-pending'}">${statusLabel[myEntry.status]||'未確認'}</span>
-      </div>
-      <div class="card-meta">
-        出演順：${myEntry.order||'未定'} &ensp; 演奏時間：${myEntry.duration?myEntry.duration+'分':'未定'}
-        ${myEntry.type==='solo'&&myEntry.accType==='needed'?'<span style="color:#f6c90e;margin-left:1rem">⚠ 伴奏者手配が必要です</span>':''}
-        ${myEntry.type==='solo'&&myEntry.accType==='self'?`<span style="color:var(--text2);margin-left:1rem">伴奏：${esc(myEntry.accName)||'未入力'}</span>`:''}
-      </div>
-      ${myEntry.pieces&&myEntry.pieces.length?`<div style="font-size:0.8rem;color:var(--text2);line-height:1.9;margin-top:0.3rem">
-        ${(Array.isArray(myEntry.pieces)?myEntry.pieces:[]).map((p,i)=>`<div>${i+1}. ${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('')}
-      </div>`:''}
-    </div>`:''}
-
-    <h3 style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text3);letter-spacing:0.08em;margin:1.5rem 0 0.8rem">演奏会プログラム</h3>
+    <div style="font-size:0.78rem;color:var(--text3);margin-bottom:1rem">${esc(concert.name)}${concert.date?' — '+concert.date:''}</div>
     <div class="prog-wrap">
       <div class="prog-body">
         ${list.map((e,i)=>{
-          const start=concert.time?fmtTime(mins):'';
-          mins+=(e.duration||0);
-          const end=(concert.time&&e.duration)?`〜${fmtTime(mins)}`:'';
-          const isMe=myEntry&&e.id===myEntry.id;
-          return `<div class="prog-item" style="${isMe?'background:var(--gold-dim);margin:0 -1.5rem;padding:1rem 1.5rem;border-radius:4px':''}">
-            <div class="prog-num" style="${isMe?'border-color:var(--gold);color:var(--gold2)':''}">${e.order||i+1}</div>
+          return `<div class="prog-item">
+            <div class="prog-num">${e.order||i+1}</div>
             <div>
               <div class="prog-name">${e.type==='group'?esc(e.groupName):esc(e.name)}</div>
               ${(()=>{
                 const pa=Array.isArray(e.pieces)?e.pieces:(e.pieces?[{title:e.pieces,composer:''}]:[]);
-                return pa.map((p,i)=>`<div style="font-size:0.78rem;color:var(--text2)">${pa.length>1?`${i+1}. `:''}${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('');
+                return pa.map((p,pi)=>`<div style="font-size:0.78rem;color:var(--text2)">${pa.length>1?`${pi+1}. `:''}${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('');
               })()}
-              ${start?`<div class="prog-time">${start}${end}</div>`:''}
             </div>
           </div>`;
         }).join('')}
@@ -1994,18 +2089,134 @@ function renderMyConvert(){
 
 function renderMyProfile(){
   const el=document.getElementById('my-profile-content');
-  if(!currentUser.entryId){
-    el.innerHTML='<div class="empty"><p>プロフィール編集はエントリーコードでログインした場合のみ利用できます</p></div>';
+  const myIds=(currentUser.entryIds||[currentUser.entryId].filter(Boolean));
+  if(!myIds.length){
+    el.innerHTML='<div class="empty"><p>出演者情報の編集はエントリーコードでログインした場合のみ利用できます</p></div>';
     return;
   }
-  const e=entries.find(x=>x.id===currentUser.entryId);
-  if(!e){el.innerHTML='<div class="empty"><p>データが見つかりません</p></div>';return;}
+  const myEntries=myIds.map(id=>entries.find(e=>e.id===id)).filter(Boolean);
+  if(!myEntries.length){el.innerHTML='<div class="empty"><p>データが見つかりません</p></div>';return;}
 
-  const feeHtml = e.feeAmount > 0 ? `
-    <div class="subsect" style="margin-top:1rem;border-color:var(--border)">
+  const statusLabel={pending:'未確認',confirmed:'参加確定',absent:'欠席'};
+  const statusBadge={pending:'badge-pending',confirmed:'badge-confirmed',absent:'badge-absent'};
+
+  el.innerHTML=myEntries.map(e=>{
+    const concert=concerts.find(c=>c.id===e.concertId);
+    const pieces=Array.isArray(e.pieces)?e.pieces:(e.pieces?e.pieces.split('\n').map(l=>({title:l,composer:''})):[]);
+    return `<div class="card" style="margin-bottom:1rem">
+      <div class="card-row">
+        <div>
+          <div class="card-title">${e.type==='group'?esc(e.groupName):esc(e.name)}</div>
+          <div class="card-meta">${esc(concert?concert.name:'—')} &ensp; 出演順：${e.order||'未定'} &ensp; ${e.duration?e.duration+'分':'時間未定'}</div>
+        </div>
+        <span class="badge ${statusBadge[e.status]||'badge-pending'}">${statusLabel[e.status]||'未確認'}</span>
+      </div>
+      ${pieces.length?`<div style="font-size:0.78rem;color:var(--text2);line-height:1.9;margin-top:0.4rem">
+        ${pieces.map((p,i)=>`<div>${i+1}. ${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('')}
+      </div>`:'<div style="font-size:0.78rem;color:var(--text3);margin-top:0.3rem">演奏曲目未登録</div>'}
+      <div style="margin-top:0.8rem;text-align:right">
+        <button class="btn btn-gold btn-sm" onclick="openMyEntryEdit('${e.id}')">✏ 編集</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openMyEntryEdit(entryId){
+  const e=entries.find(x=>x.id===entryId);
+  if(!e)return;
+  const concert=concerts.find(c=>c.id===e.concertId);
+  document.getElementById('my-entry-edit-title').textContent=
+    (e.type==='group'?e.groupName:e.name)+'　の情報を編集';
+
+  const body=document.getElementById('my-entry-edit-body');
+  body.innerHTML=`
+    <div class="form-grid">
+      <div class="fg full">
+        <label>演奏会</label>
+        <div style="padding:0.5rem 0.75rem;background:var(--surface2);border-radius:6px;font-size:0.85rem;color:var(--text2);border:1px solid var(--border)">${esc(concert?concert.name:'—')}</div>
+      </div>
+    </div>
+
+    ${e.type==='solo'?`
+    <div class="form-grid" style="margin-top:0.8rem">
+      <div class="fg"><label>氏名</label><input id="mpe-name" type="text" value="${esc(e.name||'')}"></div>
+      <div class="fg"><label>ふりがな</label><input id="mpe-kana" type="text" value="${esc(e.kana||'')}"></div>
+      <div class="fg"><label>メールアドレス</label><input id="mpe-email" type="email" value="${esc(e.email||'')}"></div>
+      <div class="fg"><label>電話番号</label><input id="mpe-tel" type="tel" value="${esc(e.tel||'')}"></div>
+      <div class="fg full"><label>楽器</label><input id="mpe-instrument" type="text" list="instrument-list" value="${esc(e.instrument||'')}"></div>
+    </div>
+    <div class="subsect" style="margin-top:0.9rem">
+      <div class="subsect-title">伴奏</div>
+      <div class="form-grid">
+        <div class="fg">
+          <label>伴奏の有無</label>
+          <select id="mpe-acc-type" onchange="toggleMpeAcc()">
+            <option value="none" ${e.accType==='none'||!e.accType?'selected':''}>伴奏なし</option>
+            <option value="self" ${e.accType==='self'?'selected':''}>自己手配（伴奏者あり）</option>
+            <option value="needed" ${e.accType==='needed'?'selected':''}>伴奏者の手配が必要</option>
+          </select>
+        </div>
+        <div class="fg"><label>伴奏者名</label>
+          <input id="mpe-acc-name" type="text" value="${esc(e.accName||'')}" placeholder="伴奏者の氏名"></div>
+      </div>
+    </div>`
+
+    :e.type==='group'?`
+    <div class="form-grid" style="margin-top:0.8rem">
+      <div class="fg full"><label>グループ名</label><input id="mpe-group-name" type="text" value="${esc(e.groupName||'')}"></div>
+      <div class="fg"><label>代表者名</label><input id="mpe-group-rep" type="text" value="${esc(e.groupRep||'')}"></div>
+      <div class="fg"><label>代表者ふりがな</label><input id="mpe-group-rep-kana" type="text" value="${esc(e.groupRepKana||'')}"></div>
+      <div class="fg"><label>メールアドレス（代表）</label><input id="mpe-email" type="email" value="${esc(e.groupEmail||'')}"></div>
+      <div class="fg"><label>電話番号（代表）</label><input id="mpe-tel" type="tel" value="${esc(e.groupTel||'')}"></div>
+    </div>
+    <div class="subsect" style="margin-top:0.9rem">
+      <div class="subsect-title">メンバー</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.4rem">
+        <span style="font-size:0.68rem;color:var(--text3)">氏名</span>
+        <span style="font-size:0.68rem;color:var(--text3)">ふりがな</span>
+        <span style="font-size:0.68rem;color:var(--text3)">楽器</span><span></span>
+      </div>
+      <div id="mpe-member-list"></div>
+      <button class="btn btn-outline btn-sm" onclick="addMpeMember()">＋ メンバーを追加</button>
+    </div>`:''}
+
+    <!-- 演奏曲目 -->
+    <div class="subsect" style="margin-top:1rem">
+      <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>演奏曲目</span>
+        <span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">☰ ドラッグで順番変更</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1.4rem 1fr 1fr auto;gap:0.3rem 0.4rem;margin-bottom:0.4rem;padding:0 0.5rem">
+        <span></span>
+        <span style="font-size:0.68rem;color:var(--text3)">曲名</span>
+        <span style="font-size:0.68rem;color:var(--text3)">作曲者</span><span></span>
+      </div>
+      <div class="piece-list" id="mpe-piece-list"></div>
+      <button class="btn btn-outline btn-sm" onclick="addMpePieceRow()">＋ 曲を追加</button>
+    </div>
+
+    <!-- プロフィール・メモ -->
+    <div class="form-grid" style="margin-top:1rem">
+      <div class="fg full"><label>プロフィール・自己紹介</label>
+        <textarea id="mpe-profile" rows="3">${esc(e.profile||'')}</textarea></div>
+      <div class="fg full"><label>メモ（必要機材、連絡事項）</label>
+        <textarea id="mpe-organizer-memo" rows="2" placeholder="例：譜面台が必要">${esc(e.memo||'')}</textarea></div>
+      <div class="fg full"><label>自分用メモ（自分だけに表示されます）</label>
+        <textarea id="mpe-private-memo" rows="2" placeholder="練習メモなど">${esc(e.privateMemo||'')}</textarea></div>
+    </div>
+
+    <!-- 出演順・時間（表示のみ） -->
+    <div class="form-grid" style="margin-top:0.5rem">
+      <div class="fg"><label>出演順</label>
+        <div style="padding:0.5rem 0.75rem;background:var(--surface2);border-radius:6px;font-size:0.85rem;color:var(--text2);border:1px solid var(--border)">${e.order||'未定'}</div></div>
+      <div class="fg"><label>演奏時間</label>
+        <div style="padding:0.5rem 0.75rem;background:var(--surface2);border-radius:6px;font-size:0.85rem;color:var(--text2);border:1px solid var(--border)">${e.duration?e.duration+'分':'未定'}</div></div>
+    </div>
+
+    ${e.feeAmount>0?`
+    <div class="subsect" style="margin-top:1rem">
       <div class="subsect-title" style="display:flex;align-items:center;gap:0.5rem">
-        <span>参加費</span>
-        <span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">（主催者のみ変更可）</span>
+        <span>参加費</span><span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">（主催者のみ変更可）</span>
       </div>
       <div style="display:flex;align-items:center;gap:1.2rem;padding:0.6rem 0">
         <div>
@@ -2014,90 +2225,41 @@ function renderMyProfile(){
         </div>
         <div>
           <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.2rem">回収状況</div>
-          <span class="fee-pill ${e.feeStatus==='paid'?'paid':'unpaid'}" style="cursor:default;pointer-events:none">
-            ${e.feeStatus==='paid'?'✓ 回収済み':'● 未回収'}
-          </span>
+          <span class="fee-pill ${e.feeStatus==='paid'?'paid':'unpaid'}" style="cursor:default;pointer-events:none">${e.feeStatus==='paid'?'✓ 回収済み':'● 未回収'}</span>
         </div>
-        ${e.feeNote?`<div style="font-size:0.75rem;color:var(--text3)">${esc(e.feeNote)}</div>`:''}
       </div>
-    </div>` : '';
+    </div>`:''}
 
-  el.innerHTML=`
-    <div class="card">
-      <div class="card-title" style="margin-bottom:1rem">${e.type==='group'?esc(e.groupName):esc(e.name)}</div>
-      <div class="form-grid">
-        ${e.type==='solo'?`
-        <div class="fg"><label>メールアドレス</label><input id="mp-email" type="email" value="${esc(e.email||'')}"></div>
-        <div class="fg"><label>電話番号</label><input id="mp-tel" type="tel" value="${esc(e.tel||'')}"></div>
-        <div class="fg full"><label>楽器</label><input id="mp-instrument" type="text" list="instrument-list" value="${esc(e.instrument||'')}" placeholder="例：ピアノ"></div>
-        <div class="fg"><label>伴奏の有無</label>
-          <select id="mp-acc-type" onchange="toggleMpAcc()">
-            <option value="none" ${e.accType==='none'||!e.accType?'selected':''}>伴奏なし</option>
-            <option value="self" ${e.accType==='self'?'selected':''}>自己手配（伴奏者あり）</option>
-            <option value="needed" ${e.accType==='needed'?'selected':''}>伴奏者の手配が必要</option>
-          </select>
-        </div>
-        <div class="fg" id="mp-acc-name-wrap" style="display:${e.accType==='self'?'flex':'none'}"><label>伴奏者名</label>
-          <input id="mp-acc-name" type="text" value="${esc(e.accName||'')}"></div>
-        `: e.type==='group'?`
-        <div class="fg full"><label>グループ名</label><input id="mp-group-name" type="text" value="${esc(e.groupName||'')}"></div>
-        <div class="fg"><label>メールアドレス（代表）</label><input id="mp-email" type="email" value="${esc(e.groupEmail||'')}"></div>
-        <div class="fg"><label>電話番号（代表）</label><input id="mp-tel" type="tel" value="${esc(e.groupTel||'')}"></div>
-        <div class="fg full">
-          <label>メンバー</label>
-          <div id="mp-member-list" style="margin-bottom:0.4rem"></div>
-          <button class="btn btn-outline btn-sm" onclick="addMpMember()">＋ メンバーを追加</button>
-        </div>
-        `:''}
-        <div class="fg full"><label>プロフィール・自己紹介</label>
-          <textarea id="mp-profile" rows="4">${esc(e.profile||'')}</textarea></div>
-      </div>
-
-      <div class="subsect" style="margin-top:1rem">
-        <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
-          <span>演奏曲目</span>
-          <span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">☰ ドラッグで順番変更</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1.4rem 1fr 1fr auto;gap:0.3rem 0.4rem;margin-bottom:0.4rem;padding:0 0.5rem">
-          <span></span>
-          <span style="font-size:0.68rem;color:var(--text3)">曲名</span>
-          <span style="font-size:0.68rem;color:var(--text3)">作曲者</span>
-          <span></span>
-        </div>
-        <div class="piece-list" id="mp-piece-list"></div>
-        <button class="btn btn-outline btn-sm" onclick="addMpPieceRow()">＋ 曲を追加</button>
-      </div>
-
-      ${feeHtml}
-
-      <div style="margin-top:1rem;display:flex;justify-content:flex-end">
-        <button class="btn btn-gold" onclick="saveMyProfile()">保存</button>
-      </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('my-entry-edit-modal')">キャンセル</button>
+      <button class="btn btn-gold" onclick="saveMyEntryEdit('${entryId}')">保存</button>
     </div>`;
 
-  // グループメンバー編集
+  // 伴奏初期状態
+  if(e.type==='solo') toggleMpeAcc();
+
+  // グループメンバー
   if(e.type==='group'){
-    const ml = document.getElementById('mp-member-list');
-    window.addMpMember = (name='', instrument='') => {
-      const row = document.createElement('div');
-      row.className = 'member-row';
-      row.innerHTML = `
+    const ml=document.getElementById('mpe-member-list');
+    window.addMpeMember=(name='',kana='',instrument='')=>{
+      const row=document.createElement('div');
+      row.className='member-row';
+      row.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.3rem';
+      row.innerHTML=`
         <input type="text" placeholder="氏名" class="member-name-input" value="${esc(name)}">
+        <input type="text" placeholder="ふりがな" class="member-kana-input" value="${esc(kana)}">
         <input type="text" placeholder="楽器" class="member-instrument-input" list="instrument-list" value="${esc(instrument)}">
         <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
       ml.appendChild(row);
     };
-    const members = e.members||[];
-    if(members.length){
-      members.forEach(m=>addMpMember(typeof m==='string'?m:m.name||'', typeof m==='string'?'':m.instrument||''));
-    } else {
-      addMpMember();
-    }
+    const members=e.members||[];
+    if(members.length) members.forEach(m=>addMpeMember(typeof m==='string'?m:m.name||'', typeof m==='string'?'':m.kana||'', typeof m==='string'?'':m.instrument||''));
+    else addMpeMember();
   }
 
-  // 曲目エディタ
-  const listEl=document.getElementById('mp-piece-list');
-  function addMpRow(title='',composer=''){
+  // 曲目
+  const listEl=document.getElementById('mpe-piece-list');
+  function addMpeRow(title='',composer=''){
     const row=document.createElement('div');
     row.className='piece-row';row.draggable=true;
     row.innerHTML=`
@@ -2115,42 +2277,60 @@ function renderMyProfile(){
       si<ti?listEl.insertBefore(ds,row.nextSibling):listEl.insertBefore(ds,row);}});
     listEl.appendChild(row);
   }
-  window.addMpPieceRow=()=>addMpRow();
+  window.addMpePieceRow=()=>addMpeRow();
   const pa=Array.isArray(e.pieces)?e.pieces:(e.pieces?e.pieces.split('\n').map(l=>({title:l,composer:''})):[]);
-  if(pa.length) pa.forEach(p=>addMpRow(p.title||'',p.composer||''));
-  else addMpRow();
+  if(pa.length) pa.forEach(p=>addMpeRow(p.title||'',p.composer||''));
+  else addMpeRow();
+
+  openModal('my-entry-edit-modal');
 }
-function toggleMpAcc(){
-  const v=document.getElementById('mp-acc-type')?.value;
-  const w=document.getElementById('mp-acc-name-wrap');
-  if(w) w.style.display=v==='self'?'flex':'none';
+
+function toggleMpeAcc(){
+  const v=document.getElementById('mpe-acc-type')?.value;
+  const nameInput=document.getElementById('mpe-acc-name');
+  if(nameInput){
+    const enabled=(v==='self'||v==='needed');
+    nameInput.disabled=!enabled;
+    nameInput.style.opacity=enabled?'1':'0.4';
+    nameInput.placeholder=v==='needed'?'手配予定の伴奏者名（決まっていれば）':'伴奏者の氏名';
+  }
 }
-function saveMyProfile(){
-  const e=entries.find(x=>x.id===currentUser.entryId);
+
+function saveMyEntryEdit(entryId){
+  const e=entries.find(x=>x.id===entryId);
   if(!e)return;
-  e.pieces=[...document.querySelectorAll('#mp-piece-list .piece-row')].map(r=>({
+  e.pieces=[...document.querySelectorAll('#mpe-piece-list .piece-row')].map(r=>({
     title:r.querySelector('.piece-title').value.trim(),
     composer:r.querySelector('.piece-composer').value.trim()
   })).filter(p=>p.title||p.composer);
-  e.profile=document.getElementById('mp-profile').value.trim();
+  e.profile=document.getElementById('mpe-profile').value.trim();
+  e.memo=document.getElementById('mpe-organizer-memo').value.trim();
+  e.privateMemo=document.getElementById('mpe-private-memo').value.trim();
   if(e.type==='solo'){
-    e.email=document.getElementById('mp-email').value.trim();
-    e.tel=document.getElementById('mp-tel').value.trim();
-    e.instrument=document.getElementById('mp-instrument').value.trim();
-    e.accType=document.getElementById('mp-acc-type').value;
-    e.accName=document.getElementById('mp-acc-name')?.value.trim()||'';
+    e.name=document.getElementById('mpe-name').value.trim();
+    e.kana=document.getElementById('mpe-kana').value.trim();
+    e.email=document.getElementById('mpe-email').value.trim();
+    e.tel=document.getElementById('mpe-tel').value.trim();
+    e.instrument=document.getElementById('mpe-instrument').value.trim();
+    e.accType=document.getElementById('mpe-acc-type').value;
+    e.accName=document.getElementById('mpe-acc-name')?.value.trim()||'';
   } else if(e.type==='group'){
-    e.groupName=document.getElementById('mp-group-name').value.trim();
-    e.groupEmail=document.getElementById('mp-email').value.trim();
-    e.groupTel=document.getElementById('mp-tel').value.trim();
-    e.members=[...document.querySelectorAll('#mp-member-list .member-row')].map(r=>({
+    e.groupName=document.getElementById('mpe-group-name').value.trim();
+    e.groupRep=document.getElementById('mpe-group-rep').value.trim();
+    e.groupRepKana=document.getElementById('mpe-group-rep-kana').value.trim();
+    e.groupEmail=document.getElementById('mpe-email').value.trim();
+    e.groupTel=document.getElementById('mpe-tel').value.trim();
+    e.members=[...document.querySelectorAll('#mpe-member-list .member-row')].map(r=>({
       name:r.querySelector('.member-name-input').value.trim(),
+      kana:r.querySelector('.member-kana-input')?.value.trim()||'',
       instrument:r.querySelector('.member-instrument-input').value.trim()
     })).filter(m=>m.name);
   }
   persist();
-  alert('保存しました');
+  closeModal('my-entry-edit-modal');
+  renderMyProfile();
   renderMyConvert();
+  alert('保存しました');
 }
 
 // ════════════════════════
@@ -2539,7 +2719,12 @@ function renderCompare(){
 // ════════════════════════
 //  MODAL HELPERS
 // ════════════════════════
-function openModal(id){ document.getElementById(id+'-overlay').classList.add('open'); }
+function openModal(id){
+  const overlay = document.getElementById(id+'-overlay');
+  overlay.classList.add('open');
+  const modal = overlay.querySelector('.modal');
+  if(modal) modal.scrollTop = 0;
+}
 function closeModal(id){
   document.getElementById(id+'-overlay').classList.remove('open');
   if(id==='concert-modal') editingConcertId=null;
