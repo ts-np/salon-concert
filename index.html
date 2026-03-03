@@ -1323,6 +1323,7 @@ async function persist(){
       updatedAt: Date.now()
     };
     try{
+      _lastWriteAt = Date.now();
       await window._fbSet(window._fbRef(window._fbDb, 'salonConcert'), data);
     }catch(e){ console.warn('Firebase write error:', e); }
   }, 300);
@@ -1345,14 +1346,16 @@ async function hydrate(){
 }
 
 // リアルタイム同期リスナー（ログイン後に開始）
+let _lastWriteAt = 0;
+
 function startRealtimeSync(){
   if(!window._fbDb || window._realtimeStarted) return;
   window._realtimeStarted = true;
   window._fbOnValue(window._fbRef(window._fbDb, 'salonConcert'), snapshot=>{
     if(!snapshot.exists()) return;
     const data = snapshot.val();
-    // 自分が書き込んだ直後は無視（300ms以内）
-    if(_persistTimer) return;
+    // 自分が書き込んだデータが即座に返ってくる場合はスキップ（500ms以内）
+    if(data.updatedAt && (Date.now() - _lastWriteAt) < 500) return;
     if(data.concerts)     concerts      = data.concerts;
     if(data.entries)      entries       = data.entries;
     if(data.transactions) transactions  = data.transactions;
@@ -2620,12 +2623,12 @@ function openMyEntryEdit(entryId){
         <textarea id="mpe-private-memo" rows="2" placeholder="練習メモなど">${esc(e.privateMemo||'')}</textarea></div>
     </div>
 
-    <!-- 出演順・時間（表示のみ） -->
+    <!-- 出演順・時間 -->
     <div class="form-grid" style="margin-top:0.5rem">
       <div class="fg"><label>出演順</label>
         <div style="padding:0.5rem 0.75rem;background:var(--surface2);border-radius:6px;font-size:0.85rem;color:var(--text2);border:1px solid var(--border)">${e.order||'未定'}</div></div>
-      <div class="fg"><label>演奏時間</label>
-        <div style="padding:0.5rem 0.75rem;background:var(--surface2);border-radius:6px;font-size:0.85rem;color:var(--text2);border:1px solid var(--border)">${e.duration?e.duration+'分':'未定'}</div></div>
+      <div class="fg"><label>予定演奏時間（分）</label>
+        <input id="mpe-duration" type="number" min="1" placeholder="例：10" value="${e.duration||''}"></div>
     </div>
 
     ${e.feeAmount>0?`
@@ -2720,6 +2723,8 @@ function saveMyEntryEdit(entryId){
   })).filter(p=>p.title||p.composer);
   e.profile=document.getElementById('mpe-profile').value.trim();
   e.memo=document.getElementById('mpe-organizer-memo').value.trim();
+  const durVal = document.getElementById('mpe-duration')?.value;
+  if(durVal !== undefined) e.duration = parseInt(durVal)||0;
   e.privateMemo=document.getElementById('mpe-private-memo').value.trim();
   if(e.type==='solo'){
     e.name=document.getElementById('mpe-name').value.trim();
