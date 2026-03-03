@@ -3186,56 +3186,34 @@ function renderCompare(){
 // 編集系モーダル：変更検知のため初期状態を記録
 const EDIT_MODALS = ['concert-modal','entry-modal','txn-modal','my-entry-edit-modal'];
 
-function snapshotModal(id){
-  const modal = document.getElementById(id+'-overlay')?.querySelector('.modal');
-  if(!modal) return '';
-  return [...modal.querySelectorAll('input,textarea,select')].map(el=>el.value).join('|');
-}
-
-function isDirty(id){
-  const overlay = document.getElementById(id+'-overlay');
-  if(!overlay || !overlay._initSnapshot) return false;
-  return overlay._initSnapshot !== snapshotModal(id);
-}
-
-function confirmClose(id){
-  if(EDIT_MODALS.includes(id) && isDirty(id)){
-    return confirm('保存されていない変更があります。閉じますか？');
-  }
-  return true;
-}
-
 function openModal(id){
   const overlay = document.getElementById(id+'-overlay');
   overlay.classList.add('open');
   const modal = overlay.querySelector('.modal');
   if(modal) modal.scrollTop = 0;
-  // 初期状態を記録（少し待ってDOMが描画されてから）
-  if(EDIT_MODALS.includes(id)){
-    setTimeout(()=>{ overlay._initSnapshot = snapshotModal(id); }, 50);
+
+  // 編集系モーダルは背景タップで閉じない、それ以外は閉じる
+  if(!EDIT_MODALS.includes(id)){
+    overlay._closeHandler = e => {
+      if(e.target === overlay) closeModal(id);
+    };
+    overlay.addEventListener('click', overlay._closeHandler);
   }
-  // オーバーレイタップで閉じる（確認あり）
-  overlay._closeHandler = e => {
-    if(e.target === overlay){
-      if(confirmClose(id)) closeModal(id);
-    }
-  };
-  overlay.addEventListener('click', overlay._closeHandler);
 }
 
 function closeModal(id){
   const overlay = document.getElementById(id+'-overlay');
   overlay.classList.remove('open');
   if(overlay._closeHandler){ overlay.removeEventListener('click', overlay._closeHandler); delete overlay._closeHandler; }
-  delete overlay._initSnapshot;
   if(id==='concert-modal') editingConcertId=null;
   if(id==='entry-modal') editingEntryId=null;
   if(id==='txn-modal') editingTxnId=null;
 }
 
-// × ボタン・キャンセルボタンにも確認を挟む
 function closeModalWithConfirm(id){
-  if(confirmClose(id)) closeModal(id);
+  if(confirm('保存されていない変更がある場合は失われます。閉じますか？')){
+    closeModal(id);
+  }
 }
 
 // ════════════════════════
