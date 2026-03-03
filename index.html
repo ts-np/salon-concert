@@ -1078,7 +1078,7 @@ select.status-sel{
         <div class="fg"><label>氏名 *</label><input id="em-name" type="text" placeholder="山田 花子"></div>
         <div class="fg"><label>ふりがな</label><input id="em-kana" type="text" placeholder="やまだ はなこ"></div>
         <div class="fg"><label>メール</label><input id="em-email" type="email"></div>
-        <div class="fg"><label>電話</label><input id="em-tel" type="tel"></div>
+        <div class="fg"><label>電話</label><input id="em-tel" type="tel" inputmode="numeric"></div>
         <div class="fg full"><label>楽器</label><input id="em-instrument" type="text" list="instrument-list" placeholder="例：ピアノ、ヴァイオリン、フルート"></div>
       </div>
       <div class="subsect" style="margin-top:0.9rem">
@@ -1106,7 +1106,7 @@ select.status-sel{
         <div class="fg"><label>代表者名</label><input id="em-group-rep" type="text" placeholder="代表者の氏名"></div>
         <div class="fg"><label>代表者ふりがな</label><input id="em-group-rep-kana" type="text" placeholder="ふりがな"></div>
         <div class="fg"><label>代表者メール</label><input id="em-group-email" type="email"></div>
-        <div class="fg"><label>代表者電話</label><input id="em-group-tel" type="tel"></div>
+        <div class="fg"><label>代表者電話</label><input id="em-group-tel" type="tel" inputmode="numeric"></div>
       </div>
       <div class="subsect" style="margin-top:0.9rem">
         <div class="subsect-title">メンバー</div>
@@ -1924,6 +1924,37 @@ function setType(t){
   document.getElementById('group-fields').style.display=t==='group'?'block':'none';
   document.getElementById('type-solo-btn').classList.toggle('active',t==='solo');
   document.getElementById('type-group-btn').classList.toggle('active',t==='group');
+
+  if(!editingEntryId){
+    if(t==='solo'){
+      // グループ→ソロ：代表者情報を引き継ぐ
+      const rep  = document.getElementById('em-group-rep')?.value  || '';
+      const repK = document.getElementById('em-group-rep-kana')?.value || '';
+      const repM = document.getElementById('em-group-email')?.value || '';
+      const repT = document.getElementById('em-group-tel')?.value  || '';
+      document.getElementById('em-name').value  = rep;
+      document.getElementById('em-kana').value  = repK;
+      document.getElementById('em-email').value = repM;
+      document.getElementById('em-tel').value   = repT;
+      const acc=document.getElementById('em-acc-type'); if(acc) acc.value='none';
+      document.getElementById('em-instrument').value='';
+      document.getElementById('em-acc-name').value='';
+      toggleAccFields();
+    } else {
+      // ソロ→グループ：氏名情報を代表者に引き継ぐ
+      const name = document.getElementById('em-name')?.value  || '';
+      const kana = document.getElementById('em-kana')?.value  || '';
+      const mail = document.getElementById('em-email')?.value || '';
+      const tel  = document.getElementById('em-tel')?.value   || '';
+      document.getElementById('em-group-rep').value      = name;
+      document.getElementById('em-group-rep-kana').value = kana;
+      document.getElementById('em-group-email').value    = mail;
+      document.getElementById('em-group-tel').value      = tel;
+      document.getElementById('em-group-name').value = '';
+      const ml=document.getElementById('member-list-fields');
+      if(ml){ ml.innerHTML=''; addMemberField(); }
+    }
+  }
 }
 function toggleAccFields(){
   const v=document.getElementById('em-acc-type').value;
