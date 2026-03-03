@@ -825,6 +825,7 @@ select.status-sel{
       <div class="ph">
         <h2>参加者管理</h2>
         <div class="ph-actions">
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0">📂 CSVインポート<input type="file" accept=".csv,text/csv" onchange="importCSV(event)" style="display:none"></label>
           <button class="btn btn-gold" onclick="openEntryModal()">＋ 参加者を追加</button>
         </div>
       </div>
@@ -917,7 +918,7 @@ select.status-sel{
   <div class="modal">
     <div class="modal-hd">
       <h3 id="my-entry-edit-title">出演者情報を編集</h3>
-      <button class="close-btn" onclick="closeModal('my-entry-edit-modal')">×</button>
+      <button class="close-btn" onclick="closeModalWithConfirm('my-entry-edit-modal')">×</button>
     </div>
     <div id="my-entry-edit-body"></div>
   </div>
@@ -968,7 +969,7 @@ select.status-sel{
   <div class="modal">
     <div class="modal-hd">
       <h3 id="concert-modal-title">演奏会を作成</h3>
-      <button class="close-btn" onclick="closeModal('concert-modal')">×</button>
+      <button class="close-btn" onclick="closeModalWithConfirm('concert-modal')">×</button>
     </div>
     <div class="form-grid">
       <div class="fg full"><label>演奏会名 *</label><input id="cm-name" type="text" placeholder="例：第3回 春のサロンコンサート"></div>
@@ -1044,7 +1045,7 @@ select.status-sel{
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('concert-modal')">キャンセル</button>
+      <button class="btn btn-outline" onclick="closeModalWithConfirm('concert-modal')">キャンセル</button>
       <button class="btn btn-gold" onclick="saveConcert()">保存</button>
     </div>
   </div>
@@ -1055,7 +1056,7 @@ select.status-sel{
   <div class="modal">
     <div class="modal-hd">
       <h3 id="entry-modal-title">参加者を追加</h3>
-      <button class="close-btn" onclick="closeModal('entry-modal')">×</button>
+      <button class="close-btn" onclick="closeModalWithConfirm('entry-modal')">×</button>
     </div>
 
     <div class="form-grid">
@@ -1179,7 +1180,7 @@ select.status-sel{
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('entry-modal')">キャンセル</button>
+      <button class="btn btn-outline" onclick="closeModalWithConfirm('entry-modal')">キャンセル</button>
       <button class="btn btn-gold" onclick="saveEntry()">保存</button>
     </div>
   </div>
@@ -1190,7 +1191,7 @@ select.status-sel{
   <div class="modal" style="max-width:480px">
     <div class="modal-hd">
       <h3 id="txn-modal-title">収支を記録</h3>
-      <button class="close-btn" onclick="closeModal('txn-modal')">×</button>
+      <button class="close-btn" onclick="closeModalWithConfirm('txn-modal')">×</button>
     </div>
     <div class="form-grid">
       <div class="fg full"><label>演奏会</label><select id="tm-concert"></select></div>
@@ -1211,7 +1212,7 @@ select.status-sel{
       <div class="fg full"><label>備考</label><input id="tm-note" type="text" placeholder="領収書No.など"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('txn-modal')">キャンセル</button>
+      <button class="btn btn-outline" onclick="closeModalWithConfirm('txn-modal')">キャンセル</button>
       <button class="btn btn-gold" onclick="saveTxn()">保存</button>
     </div>
   </div>
@@ -1435,6 +1436,152 @@ function doLogin(){
     }
   }
   startApp();
+}
+
+// ════════════════════════
+//  CSV IMPORT
+// ════════════════════════
+function importCSV(event){
+  const file = event.target.files[0];
+  if(!file){ return; }
+  const cid = document.getElementById('p-concert-sel')?.value;
+  if(!cid){ alert('先に演奏会を選択してください'); event.target.value=''; return; }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const text = e.target.result;
+      const rows = parseCSV(text);
+      if(rows.length < 2){ alert('データが見つかりません'); return; }
+
+      const headers = rows[0].map(h => h.trim());
+
+      // 列インデックスを名前で探す
+      const col = name => {
+        const idx = headers.findIndex(h => h.includes(name));
+        return idx >= 0 ? idx : -1;
+      };
+
+      const iName    = col('名前');
+      const iEmail   = col('メール');
+      const iPhone   = col('電話');
+      const iContact = col('連絡方法');
+      const iType    = col('出演形態');
+      const iInst    = col('楽器');
+      const iGroup   = col('グループ名');
+      const iCount   = col('出演人数');
+      const iMembers = col('メンバー');
+      const iDur     = col('予定演奏時間');
+      const iAcc     = col('伴奏');
+      const iMemo    = col('メモ');
+
+      let added = 0;
+      const dataRows = rows.slice(1).filter(r => r.some(c => c.trim()));
+
+      for(const row of dataRows){
+        const get = i => (i >= 0 && i < row.length) ? row[i].trim() : '';
+
+        const name      = get(iName);
+        const email     = get(iEmail);
+        const tel       = get(iPhone);
+        const contact   = get(iContact);
+        const typeRaw   = get(iType).toLowerCase();
+        const inst      = get(iInst);
+        const groupName = get(iGroup);
+        const membersRaw= get(iMembers);
+        const duration  = parseInt(get(iDur)) || 0;
+        const accRaw    = get(iAcc).toLowerCase();
+        const memo      = get(iMemo);
+
+        if(!name) continue;
+
+        // ソロ／グループ判定
+        const isGroup = typeRaw.includes('グループ') || typeRaw.includes('アンサンブル') ||
+                        typeRaw.includes('group') || typeRaw.includes('ensemble') ||
+                        typeRaw.includes('合奏') || typeRaw.includes('重奏') ||
+                        typeRaw.includes('合唱') || typeRaw.includes('重唱') ||
+                        !!groupName;
+
+        // 伴奏判定
+        let accType = 'none';
+        if(accRaw.includes('あり') || accRaw.includes('自己') || accRaw === 'あり') accType = 'self';
+        else if(accRaw.includes('手配') || accRaw.includes('必要') || accRaw.includes('依頼')) accType = 'needed';
+
+        // メモ（連絡方法も追記）
+        const memoFull = [memo, contact ? '連絡方法：' + get(iContact) : ''].filter(Boolean).join('\n');
+
+        // メンバーパース（「山田 花子（ヴァイオリン）、田中 悠（チェロ）」形式）
+        const members = membersRaw ? membersRaw.split(/[、,，\n]/).map(m => {
+          const match = m.match(/(.+?)[\（(](.+?)[\）)]/);
+          if(match) return { name: match[1].trim(), kana: '', instrument: match[2].trim() };
+          return { name: m.trim(), kana: '', instrument: inst || '' };
+        }).filter(m => m.name) : [];
+
+        const entry = {
+          id: uid(),
+          concertId: cid,
+          type: isGroup ? 'group' : 'solo',
+          status: 'pending',
+          order: entries.filter(e=>e.concertId===cid).length + added + 1,
+          duration,
+          memo: memoFull,
+          pieces: [],
+          // ソロ
+          name: isGroup ? '' : name,
+          kana: '',
+          email: isGroup ? '' : email,
+          tel:   isGroup ? '' : tel,
+          instrument: isGroup ? '' : inst,
+          accType: isGroup ? 'none' : accType,
+          accName: '',
+          profile: '',
+          // グループ
+          groupName: isGroup ? (groupName || name) : '',
+          groupRep: isGroup ? name : '',
+          groupRepKana: '',
+          groupEmail: isGroup ? email : '',
+          groupTel:   isGroup ? tel : '',
+          members: isGroup ? members : [],
+        };
+        entries.push(entry);
+        added++;
+      }
+
+      persist();
+      renderParticipants();
+      alert(`${added}件のデータを取り込みました`);
+    } catch(err){
+      console.error(err);
+      alert('CSVの読み込みに失敗しました。\n文字コードはUTF-8で保存してください。');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// CSVパーサー（ダブルクォート対応）
+function parseCSV(text){
+  const rows = [];
+  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  for(const line of lines){
+    if(!line.trim()) continue;
+    const cols = [];
+    let cur = '', inQ = false;
+    for(let i = 0; i < line.length; i++){
+      const c = line[i];
+      if(c === '"'){
+        if(inQ && line[i+1] === '"'){ cur += '"'; i++; }
+        else inQ = !inQ;
+      } else if(c === ',' && !inQ){
+        cols.push(cur); cur = '';
+      } else {
+        cur += c;
+      }
+    }
+    cols.push(cur);
+    rows.push(cols);
+  }
+  return rows;
 }
 
 function exportData(){
@@ -2499,7 +2646,7 @@ function openMyEntryEdit(entryId){
     </div>`:''}
 
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('my-entry-edit-modal')">キャンセル</button>
+      <button class="btn btn-outline" onclick="closeModalWithConfirm('my-entry-edit-modal')">キャンセル</button>
       <button class="btn btn-gold" onclick="saveMyEntryEdit('${entryId}')">保存</button>
     </div>`;
 
@@ -3000,22 +3147,59 @@ function renderCompare(){
 // ════════════════════════
 //  MODAL HELPERS
 // ════════════════════════
+// 編集系モーダル：変更検知のため初期状態を記録
+const EDIT_MODALS = ['concert-modal','entry-modal','txn-modal','my-entry-edit-modal'];
+
+function snapshotModal(id){
+  const modal = document.getElementById(id+'-overlay')?.querySelector('.modal');
+  if(!modal) return '';
+  return [...modal.querySelectorAll('input,textarea,select')].map(el=>el.value).join('|');
+}
+
+function isDirty(id){
+  const overlay = document.getElementById(id+'-overlay');
+  if(!overlay || !overlay._initSnapshot) return false;
+  return overlay._initSnapshot !== snapshotModal(id);
+}
+
+function confirmClose(id){
+  if(EDIT_MODALS.includes(id) && isDirty(id)){
+    return confirm('保存されていない変更があります。閉じますか？');
+  }
+  return true;
+}
+
 function openModal(id){
   const overlay = document.getElementById(id+'-overlay');
   overlay.classList.add('open');
   const modal = overlay.querySelector('.modal');
   if(modal) modal.scrollTop = 0;
-  // スマホ：オーバーレイタップで閉じる
-  overlay._closeHandler = e => { if(e.target===overlay) closeModal(id); };
+  // 初期状態を記録（少し待ってDOMが描画されてから）
+  if(EDIT_MODALS.includes(id)){
+    setTimeout(()=>{ overlay._initSnapshot = snapshotModal(id); }, 50);
+  }
+  // オーバーレイタップで閉じる（確認あり）
+  overlay._closeHandler = e => {
+    if(e.target === overlay){
+      if(confirmClose(id)) closeModal(id);
+    }
+  };
   overlay.addEventListener('click', overlay._closeHandler);
 }
+
 function closeModal(id){
   const overlay = document.getElementById(id+'-overlay');
   overlay.classList.remove('open');
   if(overlay._closeHandler){ overlay.removeEventListener('click', overlay._closeHandler); delete overlay._closeHandler; }
+  delete overlay._initSnapshot;
   if(id==='concert-modal') editingConcertId=null;
   if(id==='entry-modal') editingEntryId=null;
   if(id==='txn-modal') editingTxnId=null;
+}
+
+// × ボタン・キャンセルボタンにも確認を挟む
+function closeModalWithConfirm(id){
+  if(confirmClose(id)) closeModal(id);
 }
 
 // ════════════════════════
