@@ -542,8 +542,10 @@ select.status-sel{
 #participant-tbody tr.drag-over{outline:2px solid var(--gold);outline-offset:-2px;background:var(--gold-dim);}
 
 @media print{
-  header,nav,.ph-actions,.sel-bar,.card-actions,.btn,#app>main>.ph{display:none!important}
+  header,nav,.ph-actions,.sel-bar,.card-actions,button,#app>main>.ph{display:none!important}
   body{background:white;color:black}
+
+  /* プログラム印刷 */
   .prog-wrap{border:none}
   .prog-header{background:white;color:black}
   .prog-title{color:#333}
@@ -551,6 +553,36 @@ select.status-sel{
   .prog-name{color:#222}
   .prog-pieces{color:#555}
   .prog-num{border-color:#ccc;color:#888}
+
+  /* スケジュール印刷 */
+  #schedule-print-area .card{
+    background:white!important;border:1px solid #ccc!important;
+    box-shadow:none!important;margin-bottom:1.2rem;page-break-inside:avoid;
+  }
+  #schedule-print-area [style*="background:var(--surface2)"]{background:#f5f5f5!important}
+  #schedule-print-area [style*="color:var(--gold2)"]{color:#8a6a1a!important}
+  #schedule-print-area [style*="color:var(--text2)"]{color:#444!important}
+  #schedule-print-area [style*="color:var(--text3)"]{color:#888!important}
+  #schedule-print-area [style*="color:var(--text)"]{color:#222!important}
+  #schedule-print-area [style*="border:1px solid var(--border)"]{border-color:#ddd!important}
+  #schedule-print-area [style*="border-top:1px solid var(--border)"]{border-color:#ddd!important}
+
+  /* 出演者スケジュール印刷 */
+  #my-schedule-content .sched-print-card{
+    background:white!important;border:1px solid #ccc!important;
+    box-shadow:none!important;margin-bottom:1.2rem;page-break-inside:avoid;
+  }
+  #my-schedule-content [style*="background:rgba(201"]{background:#fff8e8!important}
+  #my-schedule-content [style*="color:var(--gold2)"]{color:#8a6a1a!important}
+  #my-schedule-content [style*="color:var(--text2)"]{color:#444!important}
+  #my-schedule-content [style*="color:var(--text3)"]{color:#888!important}
+  #my-schedule-content [style*="border:1px solid var(--border)"]{border-color:#ddd!important}
+  #my-schedule-content [style*="border-top:1px solid var(--border)"]{border-color:#ddd!important}
+  #my-schedule-content [style*="background:var(--surface2)"]{background:#f5f5f5!important}
+  /* 印刷時はスケジュールタブのみ表示 */
+  .fin-tabs{display:none!important}
+  #my-program-content{display:none!important}
+  #my-schedule-content{display:block!important}
 }
 
 /* ══ RESPONSIVE ══ */
@@ -673,6 +705,73 @@ select.status-sel{
   nav button{font-size:0.65rem;padding:0.6rem 0.6rem}
   .fin-summary-grid{grid-template-columns:1fr}
 }
+
+/* ══ 出演者向けスマホ表示：大きく読みやすく ══ */
+@media(max-width:600px){
+  /* 出演者ナビ：大きめに */
+  .performer-nav button{
+    font-size:0.85rem !important;
+    padding:0.75rem 1.1rem !important;
+    letter-spacing:0.03em !important;
+  }
+
+  /* 出演者ページ全体：余白を広く */
+  #page-my-concert-info,
+  #page-my-concert,
+  #page-my-program,
+  #page-my-profile{
+    font-size:1rem;
+  }
+
+  /* 演奏会情報カード */
+  #my-concert-info-content .card{
+    padding:1.3rem 1.1rem;
+    font-size:0.95rem;
+    line-height:2.1;
+  }
+  #my-concert-info-content .card-title{
+    font-size:1.25rem !important;
+  }
+
+  /* 出演者情報カード */
+  #my-concert-content .card{
+    padding:1.3rem 1.1rem;
+  }
+  #my-concert-content .card-title{
+    font-size:1.15rem !important;
+  }
+  #my-concert-content .card-meta{
+    font-size:0.88rem !important;
+    line-height:1.9 !important;
+  }
+  #my-concert-content .btn-gold{
+    font-size:0.9rem !important;
+    padding:0.55rem 1.2rem !important;
+  }
+
+  /* 曲目リスト */
+  #my-concert-content [style*="font-size:0.8rem"]{
+    font-size:0.9rem !important;
+    line-height:2 !important;
+  }
+
+  /* プログラム */
+  #my-program-content .prog-item{
+    gap:0 0.9rem;
+    padding:0.9rem 0;
+  }
+  #my-program-content .prog-num{
+    width:2.2rem !important;
+    height:2.2rem !important;
+    font-size:0.9rem !important;
+  }
+  #my-program-content .prog-name{
+    font-size:1.05rem !important;
+  }
+  #my-program-content [style*="font-size:0.78rem"]{
+    font-size:0.88rem !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -787,7 +886,7 @@ select.status-sel{
     <div class="login-sub">演奏会管理システム</div>
     <div class="login-tabs">
       <button onclick="setLoginMode('organizer',this)">主催者</button>
-      <button class="active" onclick="setLoginMode('performer',this)">演奏者</button>
+      <button class="active" onclick="setLoginMode('performer',this)">出演者</button>
     </div>
     <div class="login-form" id="login-form">
       <!-- dynamic -->
@@ -849,6 +948,19 @@ select.status-sel{
       <div id="program-output"></div>
     </div>
 
+    <div class="page" id="page-schedule">
+      <div class="ph">
+        <h2>スケジュール</h2>
+        <div class="ph-actions">
+          <button class="btn btn-outline btn-sm" onclick="printSchedule()">🖨 印刷</button>
+        </div>
+      </div>
+      <div class="sel-bar">
+        <select id="sched-concert-sel" onchange="renderSchedule()"></select>
+      </div>
+      <div id="schedule-content"></div>
+    </div>
+
     <div class="page" id="page-finance">
       <div class="ph">
         <h2>Finance</h2>
@@ -899,8 +1011,18 @@ select.status-sel{
     </div>
 
     <div class="page" id="page-my-program">
-      <div class="ph"><h2>プログラム</h2></div>
+      <div class="ph">
+        <h2>プログラム</h2>
+        <div class="ph-actions">
+          <button class="btn btn-outline btn-sm" onclick="printMySchedule()">🖨 印刷</button>
+        </div>
+      </div>
+      <div class="fin-tabs" style="margin-bottom:1rem">
+        <button class="fin-tab active" id="my-prog-tab-program" onclick="switchMyProgTab('program',this)">プログラム</button>
+        <button class="fin-tab" id="my-prog-tab-schedule" onclick="switchMyProgTab('schedule',this)">スケジュール</button>
+      </div>
       <div id="my-program-content"></div>
+      <div id="my-schedule-content" style="display:none"></div>
     </div>
 
     <div class="page" id="page-my-profile">
@@ -971,7 +1093,11 @@ select.status-sel{
     <div class="form-grid">
       <div class="fg full"><label>演奏会名 *</label><input id="cm-name" type="text" placeholder="例：第3回 春のサロンコンサート"></div>
       <div class="fg"><label>開催日 *</label><input id="cm-date" type="date"></div>
-      <div class="fg"><label>開始時刻</label><input id="cm-time" type="time" value="14:00"></div>
+      <div class="fg"><label>本番開始時刻</label><input id="cm-time" type="time" value="14:00"></div>
+      <div class="fg"><label>リハーサル開始時刻</label><input id="cm-rehearsal-time" type="time"></div>
+      <div class="fg"><label>リハ持ち時間（分）</label><input id="cm-rehearsal-duration" type="number" min="1" value="10" inputmode="numeric"></div>
+      <div class="fg"><label>リハ入れ替え（分）</label><input id="cm-rehearsal-gap" type="number" min="0" value="2" inputmode="numeric"></div>
+      <div class="fg"><label>本番奏者間（分）</label><input id="cm-performance-gap" type="number" min="0" value="3" inputmode="numeric"></div>
       <div class="fg full"><label>会場</label><input id="cm-venue" type="text" placeholder="例：○○サロン"></div>
       <div class="fg full"><label>演奏会の説明・概要</label><textarea id="cm-description" rows="3" placeholder="演奏会のコンセプトや内容など"></textarea></div>
       <div class="fg full"><label>ドレスコード・服装</label><input id="cm-dresscode" type="text" placeholder="例：セミフォーマル、自由など"></input></div>
@@ -1372,9 +1498,10 @@ function refreshCurrentPage(){
   else if(id==='page-participants') renderParticipants();
   else if(id==='page-applications') renderApplications();
   else if(id==='page-program')   renderProgram();
+  else if(id==='page-schedule')  renderSchedule();
   else if(id==='page-my-concert-info') renderMyConcertInfo();
   else if(id==='page-my-concert')      renderMyConvert();
-  else if(id==='page-my-program')      renderMyProgram();
+  else if(id==='page-my-program')      { renderMyProgram(); renderMySchedule(); }
   else if(id==='page-my-profile')      renderMyProfile();
 }
 
@@ -1397,9 +1524,11 @@ function renderLoginForm(){
       <button class="btn btn-gold" onclick="doLogin()">ログイン</button>`;
     n.textContent = '';
   } else {
-    const opts = concerts.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    // 開催予定の演奏会のみ（過去除外）、演奏会名（開催日）形式で表示
+    const upcomingConcerts = concerts.filter(c=>!c.date || c.date >= today()).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    const opts = upcomingConcerts.map(c=>`<option value="${c.id}">${esc(c.name)}${c.date?' ('+c.date+')':''}</option>`).join('');
     f.innerHTML = `
-      <select id="perf-concert">${opts||'<option disabled>演奏会がありません</option>'}</select>
+      <select id="perf-concert">${opts||'<option disabled>開催予定の演奏会がありません</option>'}</select>
       <input type="text" id="perf-code" placeholder="ログインコード" onkeydown="if(event.key==='Enter')doLogin()">
       <button class="btn btn-gold" onclick="doLogin()">ログイン</button>`;
     n.textContent = '主催者から受け取ったコードでログインしてください';
@@ -1664,9 +1793,11 @@ function buildNav(){
       <button onclick="showPage('participants',this)">参加者管理</button>
       <button onclick="showPage('applications',this)" id="nav-applications">申し込み管理</button>
       <button onclick="showPage('program',this)">プログラム</button>
+      <button onclick="showPage('schedule',this)">スケジュール</button>
       <button onclick="showPage('finance',this)">Finance</button>
 `;
   } else {
+    nav.className = 'performer-nav';
     nav.innerHTML = `
       <button class="active" onclick="showPage('my-concert-info',this)">演奏会</button>
       <button onclick="showPage('my-concert',this)">出演者情報</button>
@@ -1693,10 +1824,11 @@ function showPage(name, btn){
   if(name==='participants')   { populateSel('p-concert-sel'); renderParticipants(); }
   if(name==='applications')   { populateSel('app-concert-sel'); renderApplications(); }
   if(name==='program')        { populateSel('prog-concert-sel'); renderProgram(); }
+  if(name==='schedule')       { populateSel('sched-concert-sel'); renderSchedule(); }
   if(name==='finance')        { populateSel('fin-concert-sel'); renderFinance(); }
   if(name==='my-concert-info') renderMyConcertInfo();
   if(name==='my-concert')     renderMyConvert();
-  if(name==='my-program')     renderMyProgram();
+  if(name==='my-program')     { renderMyProgram(); renderMySchedule(); }
   if(name==='my-profile')     renderMyProfile();
 }
 
@@ -1755,6 +1887,10 @@ function openConcertModal(id){
     document.getElementById('cm-name').value=c.name;
     document.getElementById('cm-date').value=c.date||'';
     document.getElementById('cm-time').value=c.time||'14:00';
+    document.getElementById('cm-rehearsal-time').value=c.rehearsalTime||'';
+    document.getElementById('cm-rehearsal-duration').value=c.rehearsalDuration??10;
+    document.getElementById('cm-rehearsal-gap').value=c.rehearsalGap??2;
+    document.getElementById('cm-performance-gap').value=c.performanceGap??3;
     document.getElementById('cm-venue').value=c.venue||'';
     document.getElementById('cm-description').value=c.description||'';
     document.getElementById('cm-dresscode').value=c.dresscode||'';
@@ -1776,6 +1912,10 @@ function openConcertModal(id){
   } else {
     ['cm-name','cm-date','cm-venue','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note','cm-description','cm-dresscode'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('cm-time').value='14:00';
+    document.getElementById('cm-rehearsal-time').value='';
+    document.getElementById('cm-rehearsal-duration').value=10;
+    document.getElementById('cm-rehearsal-gap').value=2;
+    document.getElementById('cm-performance-gap').value=3;
     loadTicketTiers([]);
     loadEntryFeeTiers([]);
     clearFlyer();
@@ -1790,6 +1930,10 @@ function saveConcert(){
     name,
     date:document.getElementById('cm-date').value,
     time:document.getElementById('cm-time').value,
+    rehearsalTime:document.getElementById('cm-rehearsal-time').value,
+    rehearsalDuration:Number(document.getElementById('cm-rehearsal-duration').value)||10,
+    rehearsalGap:Number(document.getElementById('cm-rehearsal-gap').value)||2,
+    performanceGap:Number(document.getElementById('cm-performance-gap').value)||3,
     venue:document.getElementById('cm-venue').value.trim(),
     description:document.getElementById('cm-description').value.trim(),
     dresscode:document.getElementById('cm-dresscode').value.trim(),
@@ -2380,6 +2524,147 @@ function copyProgramText(btn){
   });
 }
 
+// ════════════════════════
+//  SCHEDULE
+// ════════════════════════
+// 分→"HH:MM"変換（基準時刻 "HH:MM" から offset分後）
+function addMinutes(base, offset){
+  if(!base) return '';
+  const [h,m] = base.split(':').map(Number);
+  const total = h*60 + m + offset;
+  return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;
+}
+
+// リハ順管理（concertIdごとに保存）
+let schedRehearsalOrders = {}; // { concertId: [entryId, ...] }
+
+function getRehearsalOrder(cid, list){
+  const saved = schedRehearsalOrders[cid];
+  if(saved){
+    // 既存順を維持しつつ新規追加分を末尾に
+    const known = saved.filter(id=>list.find(e=>e.id===id));
+    const newOnes = list.filter(e=>!saved.includes(e.id)).map(e=>e.id);
+    return [...known, ...newOnes];
+  }
+  return list.map(e=>e.id);
+}
+
+function renderSchedule(){
+  const cid = document.getElementById('sched-concert-sel')?.value;
+  const el  = document.getElementById('schedule-content');
+  if(!cid){ el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>'; return; }
+  const concert = concerts.find(c=>c.id===cid);
+  if(!concert){ el.innerHTML='<div class="empty"><p>演奏会が見つかりません</p></div>'; return; }
+
+  const perfList = entries.filter(e=>e.concertId===cid&&e.status!=='absent')
+    .sort((a,b)=>(a.order||999)-(b.order||999));
+
+  const rDur = concert.rehearsalDuration ?? 10;
+  const rGap = concert.rehearsalGap ?? 2;
+  const pGap = concert.performanceGap ?? 3;
+  const rTime = concert.rehearsalTime || '';
+  const pTime = concert.time || '';
+
+  // リハ順
+  const rhOrder = getRehearsalOrder(cid, perfList);
+  const rhList  = rhOrder.map(id=>perfList.find(e=>e.id===id)).filter(Boolean);
+
+  // ── HTML生成 ──
+  let html = `<div id="schedule-print-area">`;
+
+  // ── リハーサルブロック ──
+  html += `<div class="card" style="margin-bottom:1.2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div style="font-family:'EB Garamond',serif;font-size:1.05rem;color:var(--gold2)">
+        リハーサル
+        ${rTime?`<span style="font-size:0.85rem;color:var(--text2);margin-left:0.8rem">開始 ${rTime}</span>`:'<span style="font-size:0.75rem;color:var(--text3);margin-left:0.5rem">（演奏会設定で開始時刻を入力）</span>'}
+      </div>
+      <div style="font-size:0.72rem;color:var(--text3)">${rDur}分／人　入替${rGap}分</div>
+    </div>
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:60px 80px 1fr 40px;padding:0.5rem 0.8rem;background:var(--surface2);font-size:0.7rem;color:var(--text3);font-weight:700;letter-spacing:0.06em">
+        <span>開始</span><span>終了</span><span>出演者</span><span style="text-align:center">↕</span>
+      </div>
+      ${rhList.map((e,i)=>{
+        const start = rTime ? addMinutes(rTime, i*(rDur+rGap)) : '';
+        const end   = rTime ? addMinutes(rTime, i*(rDur+rGap)+rDur) : '';
+        const name  = e.type==='group' ? esc(e.groupName) : esc(e.name);
+        return `<div style="display:grid;grid-template-columns:60px 80px 1fr 40px;padding:0.55rem 0.8rem;border-top:1px solid var(--border);align-items:center">
+          <span style="font-size:0.82rem;color:var(--gold2);font-family:'EB Garamond',serif">${start||'—'}</span>
+          <span style="font-size:0.78rem;color:var(--text3)">${end?'〜'+end:''}</span>
+          <span style="font-size:0.88rem">${name}</span>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            ${i>0?`<button class="btn btn-outline btn-sm" style="padding:0 0.35rem;font-size:0.7rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',-1)">↑</button>`:'<span style="width:24px"></span>'}
+            ${i<rhList.length-1?`<button class="btn btn-outline btn-sm" style="padding:0 0.35rem;font-size:0.7rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',1)">↓</button>`:'<span style="width:24px"></span>'}
+          </span>
+        </div>`;
+      }).join('')}
+    </div>
+    ${rTime?`<div style="margin-top:0.6rem;font-size:0.75rem;color:var(--text3);text-align:right">
+      リハ終了予定：${addMinutes(rTime, rhList.length*(rDur+rGap)-rGap)}
+    </div>`:''}
+  </div>`;
+
+  // ── 本番ブロック ──
+  html += `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div style="font-family:'EB Garamond',serif;font-size:1.05rem;color:var(--gold2)">
+        本番
+        ${pTime?`<span style="font-size:0.85rem;color:var(--text2);margin-left:0.8rem">開始 ${pTime}</span>`:'<span style="font-size:0.75rem;color:var(--text3);margin-left:0.5rem">（演奏会設定で開始時刻を入力）</span>'}
+      </div>
+      <div style="font-size:0.72rem;color:var(--text3)">奏者間 ${pGap}分</div>
+    </div>
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:60px 80px 1fr 60px;padding:0.5rem 0.8rem;background:var(--surface2);font-size:0.7rem;color:var(--text3);font-weight:700;letter-spacing:0.06em">
+        <span>開始</span><span>終了</span><span>出演者</span><span style="text-align:right">時間</span>
+      </div>
+      ${(()=>{
+        let offset = 0;
+        return perfList.map((e,i)=>{
+          const dur   = parseInt(e.duration)||0;
+          const start = pTime ? addMinutes(pTime, offset) : '';
+          const end   = (pTime && dur) ? addMinutes(pTime, offset+dur) : '';
+          const name  = e.type==='group' ? esc(e.groupName) : esc(e.name);
+          if(i>0) offset += pGap;
+          offset += dur;
+          return `<div style="display:grid;grid-template-columns:60px 80px 1fr 60px;padding:0.55rem 0.8rem;border-top:1px solid var(--border);align-items:center">
+            <span style="font-size:0.82rem;color:var(--gold2);font-family:'EB Garamond',serif">${start||'—'}</span>
+            <span style="font-size:0.78rem;color:var(--text3)">${end?'〜'+end:''}</span>
+            <span style="font-size:0.88rem">${e.order?`<span style="font-size:0.72rem;color:var(--text3);margin-right:0.4rem">${e.order}.</span>`:''}${name}</span>
+            <span style="text-align:right;font-size:0.78rem;color:var(--text3)">${dur?dur+'分':'未定'}</span>
+          </div>`;
+        }).join('');
+      })()}
+    </div>
+    ${pTime?`<div style="margin-top:0.6rem;font-size:0.75rem;color:var(--text3);text-align:right">
+      本番終了予定：${addMinutes(pTime, perfList.reduce((s,e,i)=>{
+        const d=parseInt(e.duration)||0;
+        return s + d + (i>0?pGap:0);
+      },0))}
+    </div>`:''}
+  </div>`;
+
+  html += '</div>'; // schedule-print-area
+  el.innerHTML = html;
+}
+
+function moveRehearsal(cid, entryId, dir){
+  const list = entries.filter(e=>e.concertId===cid&&e.status!=='absent')
+    .sort((a,b)=>(a.order||999)-(b.order||999));
+  const order = getRehearsalOrder(cid, list);
+  const idx = order.indexOf(entryId);
+  if(idx<0) return;
+  const newIdx = idx+dir;
+  if(newIdx<0||newIdx>=order.length) return;
+  [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
+  schedRehearsalOrders[cid] = order;
+  renderSchedule();
+}
+
+function printSchedule(){
+  window.print();
+}
+
 function renderProgram(){
   const cid=document.getElementById('prog-concert-sel')?.value;
   const el=document.getElementById('program-output');
@@ -2502,6 +2787,109 @@ function renderMyConvert(){
         <button class="btn btn-gold btn-sm" onclick="openMyEntryEdit('${e.id}')">✏ 編集</button>
       </div>
     </div>`).join('');
+}
+
+function switchMyProgTab(tab, btn){
+  document.querySelectorAll('#page-my-program .fin-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('my-program-content').style.display  = tab==='program'  ? '' : 'none';
+  document.getElementById('my-schedule-content').style.display = tab==='schedule' ? '' : 'none';
+}
+
+function renderMySchedule(){
+  const el = document.getElementById('my-schedule-content');
+  if(!el) return;
+  const cid = currentUser?.concertId;
+  const concert = concerts.find(c=>c.id===cid);
+  if(!concert){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
+
+  const perfList = entries.filter(e=>e.concertId===cid&&e.status!=='absent')
+    .sort((a,b)=>(a.order||999)-(b.order||999));
+
+  const rDur = concert.rehearsalDuration ?? 10;
+  const rGap = concert.rehearsalGap ?? 2;
+  const pGap = concert.performanceGap ?? 3;
+  const rTime = concert.rehearsalTime || '';
+  const pTime = concert.time || '';
+
+  const myIds = new Set(currentUser.entryIds||[currentUser.entryId].filter(Boolean));
+
+  // リハ順
+  const rhOrder = getRehearsalOrder(cid, perfList);
+  const rhList  = rhOrder.map(id=>perfList.find(e=>e.id===id)).filter(Boolean);
+
+  const rowStyle = (isMe) => isMe
+    ? 'display:grid;align-items:center;padding:0.6rem 0.8rem;border-top:1px solid #c9a85c44;background:rgba(201,168,92,0.1)'
+    : 'display:grid;align-items:center;padding:0.6rem 0.8rem;border-top:1px solid var(--border)';
+
+  // ── リハーサル ──
+  let rHtml = `<div class="sched-print-card card" style="margin-bottom:1.2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
+      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">リハーサル
+        ${rTime?`<span style="font-size:0.82rem;color:var(--text2);margin-left:0.6rem">開始 ${rTime}</span>`:''}
+      </div>
+      <div style="font-size:0.7rem;color:var(--text3)">${rDur}分／人　入替${rGap}分</div>
+    </div>
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:60px 1fr;padding:0.4rem 0.8rem;background:var(--surface2);font-size:0.7rem;color:var(--text3);font-weight:700">
+        <span>時刻</span><span>出演者</span>
+      </div>
+      ${rhList.map((e,i)=>{
+        const isMe = myIds.has(e.id);
+        const start = rTime ? addMinutes(rTime, i*(rDur+rGap)) : '';
+        const end   = rTime ? addMinutes(rTime, i*(rDur+rGap)+rDur) : '';
+        const name  = e.type==='group' ? esc(e.groupName) : esc(e.name);
+        return `<div style="${rowStyle(isMe)}grid-template-columns:60px 1fr">
+          <span style="font-size:0.85rem;color:${isMe?'var(--gold2)':'var(--text2)'};font-family:'EB Garamond',serif">${start||'—'}</span>
+          <div>
+            <span style="font-size:0.9rem;${isMe?'font-weight:700;color:var(--gold2)':''}">${name}</span>
+            ${rTime?`<span style="font-size:0.72rem;color:var(--text3);margin-left:0.4rem">〜${end}</span>`:''}
+            ${isMe?'<span style="font-size:0.7rem;color:var(--gold2);margin-left:0.5rem">← あなた</span>':''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+
+  // ── 本番 ──
+  let offset = 0;
+  let rHtml2 = `<div class="sched-print-card card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
+      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">本番
+        ${pTime?`<span style="font-size:0.82rem;color:var(--text2);margin-left:0.6rem">開始 ${pTime}</span>`:''}
+      </div>
+      <div style="font-size:0.7rem;color:var(--text3)">奏者間 ${pGap}分</div>
+    </div>
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:60px 1fr 50px;padding:0.4rem 0.8rem;background:var(--surface2);font-size:0.7rem;color:var(--text3);font-weight:700">
+        <span>時刻</span><span>出演者</span><span style="text-align:right">時間</span>
+      </div>
+      ${perfList.map((e,i)=>{
+        const isMe = myIds.has(e.id);
+        const dur  = parseInt(e.duration)||0;
+        const start = pTime ? addMinutes(pTime, offset) : '';
+        const end   = (pTime&&dur) ? addMinutes(pTime, offset+dur) : '';
+        const name  = e.type==='group' ? esc(e.groupName) : esc(e.name);
+        if(i>0) offset += pGap;
+        offset += dur;
+        return `<div style="${rowStyle(isMe)}grid-template-columns:60px 1fr 50px">
+          <span style="font-size:0.85rem;color:${isMe?'var(--gold2)':'var(--text2)'};font-family:'EB Garamond',serif">${start||'—'}</span>
+          <div>
+            ${e.order?`<span style="font-size:0.7rem;color:var(--text3);margin-right:0.3rem">${e.order}.</span>`:''}
+            <span style="font-size:0.9rem;${isMe?'font-weight:700;color:var(--gold2)':''}">${name}</span>
+            ${isMe?'<span style="font-size:0.7rem;color:var(--gold2);margin-left:0.5rem">← あなた</span>':''}
+          </div>
+          <span style="text-align:right;font-size:0.78rem;color:var(--text3)">${dur?dur+'分':'未定'}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+
+  el.innerHTML = `<div id="my-schedule-print-area">${rHtml}${rHtml2}</div>`;
+}
+
+function printMySchedule(){
+  window.print();
 }
 
 function renderMyProgram(){
