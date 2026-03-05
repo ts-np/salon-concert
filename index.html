@@ -1093,17 +1093,32 @@ select.status-sel{
     <div class="form-grid">
       <div class="fg full"><label>演奏会名 *</label><input id="cm-name" type="text" placeholder="例：第3回 春のサロンコンサート"></div>
       <div class="fg"><label>開催日 *</label><input id="cm-date" type="date"></div>
-      <div class="fg"><label>本番開始時刻</label><input id="cm-time" type="time" value="14:00"></div>
-      <div class="fg"><label>リハーサル開始時刻</label><input id="cm-rehearsal-time" type="time"></div>
-      <div class="fg"><label>リハ持ち時間（分）</label><input id="cm-rehearsal-duration" type="number" min="1" value="10" inputmode="numeric"></div>
-      <div class="fg"><label>リハ入れ替え（分）</label><input id="cm-rehearsal-gap" type="number" min="0" value="2" inputmode="numeric"></div>
-      <div class="fg"><label>本番奏者間（分）</label><input id="cm-performance-gap" type="number" min="0" value="3" inputmode="numeric"></div>
       <div class="fg full"><label>会場</label><input id="cm-venue" type="text" placeholder="例：○○サロン"></div>
       <div class="fg full"><label>演奏会の説明・概要</label><textarea id="cm-description" rows="3" placeholder="演奏会のコンセプトや内容など"></textarea></div>
       <div class="fg full"><label>ドレスコード・服装</label><input id="cm-dresscode" type="text" placeholder="例：セミフォーマル、自由など"></input></div>
       <div class="fg full"><label>その他メモ・案内（演奏者に表示されます）</label><textarea id="cm-note"></textarea></div>
       <div class="fg full"><label>招待コード（演奏者がログインに使用）</label><input id="cm-code" type="text" placeholder="例: spring2025"></div>
       <div class="fg full"><label>LINE オープンチャット URL</label><input id="cm-line-url" type="url" placeholder="https://line.me/ti/g2/..."></div>
+
+      <div class="fg full" style="margin-top:0.4rem">
+        <div style="font-size:0.7rem;letter-spacing:0.1em;color:var(--gold2);font-weight:600;margin-bottom:0.5rem">▸ 会場タイムライン</div>
+      </div>
+      <div class="fg"><label>会場利用開始</label><input id="cm-venue-start" type="time"></div>
+      <div class="fg"><label>開場（お客様入場）</label><input id="cm-venue-open" type="time"></div>
+      <div class="fg"><label>本番開始</label><input id="cm-time" type="time" value="14:00"></div>
+      <div class="fg"><label>会場利用終了</label><input id="cm-venue-end" type="time"></div>
+
+      <div class="fg full" style="margin-top:0.4rem">
+        <div style="font-size:0.7rem;letter-spacing:0.1em;color:var(--gold2);font-weight:600;margin-bottom:0.5rem">▸ リハーサル</div>
+      </div>
+      <div class="fg"><label>リハーサル開始</label><input id="cm-rehearsal-time" type="time"></div>
+      <div class="fg"><label>リハ持ち時間（分）</label><input id="cm-rehearsal-duration" type="number" min="1" value="10" inputmode="numeric"></div>
+      <div class="fg"><label>リハ奏者間（分）</label><input id="cm-rehearsal-gap" type="number" min="0" value="2" inputmode="numeric"></div>
+
+      <div class="fg full" style="margin-top:0.4rem">
+        <div style="font-size:0.7rem;letter-spacing:0.1em;color:var(--gold2);font-weight:600;margin-bottom:0.5rem">▸ 本番</div>
+      </div>
+      <div class="fg"><label>本番奏者間（分）</label><input id="cm-performance-gap" type="number" min="0" value="3" inputmode="numeric"></div>
     </div>
 
     <!-- チラシアップロード -->
@@ -1886,7 +1901,10 @@ function openConcertModal(id){
     const c=concerts.find(x=>x.id===id);
     document.getElementById('cm-name').value=c.name;
     document.getElementById('cm-date').value=c.date||'';
+    document.getElementById('cm-venue-start').value=c.venueStart||'';
+    document.getElementById('cm-venue-open').value=c.venueOpen||'';
     document.getElementById('cm-time').value=c.time||'14:00';
+    document.getElementById('cm-venue-end').value=c.venueEnd||'';
     document.getElementById('cm-rehearsal-time').value=c.rehearsalTime||'';
     document.getElementById('cm-rehearsal-duration').value=c.rehearsalDuration??10;
     document.getElementById('cm-rehearsal-gap').value=c.rehearsalGap??2;
@@ -1912,6 +1930,9 @@ function openConcertModal(id){
   } else {
     ['cm-name','cm-date','cm-venue','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note','cm-description','cm-dresscode'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('cm-time').value='14:00';
+    document.getElementById('cm-venue-start').value='';
+    document.getElementById('cm-venue-open').value='';
+    document.getElementById('cm-venue-end').value='';
     document.getElementById('cm-rehearsal-time').value='';
     document.getElementById('cm-rehearsal-duration').value=10;
     document.getElementById('cm-rehearsal-gap').value=2;
@@ -1929,7 +1950,10 @@ function saveConcert(){
   const data={
     name,
     date:document.getElementById('cm-date').value,
+    venueStart:document.getElementById('cm-venue-start').value,
+    venueOpen:document.getElementById('cm-venue-open').value,
     time:document.getElementById('cm-time').value,
+    venueEnd:document.getElementById('cm-venue-end').value,
     rehearsalTime:document.getElementById('cm-rehearsal-time').value,
     rehearsalDuration:Number(document.getElementById('cm-rehearsal-duration').value)||10,
     rehearsalGap:Number(document.getElementById('cm-rehearsal-gap').value)||2,
@@ -2527,26 +2551,43 @@ function copyProgramText(btn){
 // ════════════════════════
 //  SCHEDULE
 // ════════════════════════
-// 分→"HH:MM"変換（基準時刻 "HH:MM" から offset分後）
 function addMinutes(base, offset){
   if(!base) return '';
   const [h,m] = base.split(':').map(Number);
   const total = h*60 + m + offset;
-  return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;
+  return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0');
 }
+function timeToMin(t){ if(!t) return null; const [h,m]=t.split(':').map(Number); return h*60+m; }
 
-// リハ順管理（concertIdごとに保存）
-let schedRehearsalOrders = {}; // { concertId: [entryId, ...] }
+let schedRehearsalOrders = {};
+// 休憩データ: { concertId: [ {afterIndex: number, duration: number} ] }
+let schedBreaks = {};
 
 function getRehearsalOrder(cid, list){
   const saved = schedRehearsalOrders[cid];
   if(saved){
-    // 既存順を維持しつつ新規追加分を末尾に
     const known = saved.filter(id=>list.find(e=>e.id===id));
     const newOnes = list.filter(e=>!saved.includes(e.id)).map(e=>e.id);
     return [...known, ...newOnes];
   }
   return list.map(e=>e.id);
+}
+
+function getBreaks(cid){ return schedBreaks[cid] || []; }
+
+function addBreak(cid, afterIndex){
+  if(!schedBreaks[cid]) schedBreaks[cid]=[];
+  schedBreaks[cid].push({afterIndex, duration:15});
+  renderSchedule();
+}
+function removeBreak(cid, bi){
+  schedBreaks[cid].splice(bi,1);
+  renderSchedule();
+}
+function updateBreakDuration(cid, bi, val){
+  if(!schedBreaks[cid]) return;
+  schedBreaks[cid][bi].duration = parseInt(val)||0;
+  renderSchedule();
 }
 
 function renderSchedule(){
@@ -2559,93 +2600,169 @@ function renderSchedule(){
   const perfList = entries.filter(e=>e.concertId===cid&&e.status!=='absent')
     .sort((a,b)=>(a.order||999)-(b.order||999));
 
-  const rDur = concert.rehearsalDuration ?? 10;
-  const rGap = concert.rehearsalGap ?? 2;
-  const pGap = concert.performanceGap ?? 3;
+  const rDur  = concert.rehearsalDuration ?? 10;
+  const rGap  = concert.rehearsalGap ?? 2;
+  const pGap  = concert.performanceGap ?? 3;
   const rTime = concert.rehearsalTime || '';
   const pTime = concert.time || '';
+  const vStart  = concert.venueStart  || '';
+  const vOpen   = concert.venueOpen   || '';
+  const vEnd    = concert.venueEnd    || '';
 
-  // リハ順
   const rhOrder = getRehearsalOrder(cid, perfList);
   const rhList  = rhOrder.map(id=>perfList.find(e=>e.id===id)).filter(Boolean);
+  const breaks  = getBreaks(cid);
 
-  // ── HTML生成 ──
-  let html = `<div id="schedule-print-area">`;
+  // ══ タイムラインバー ══
+  const tStart = timeToMin(vStart||rTime||pTime);
+  const tEnd   = timeToMin(vEnd);
+  let timelineHtml = '';
+  if(tStart!==null && tEnd!==null && tEnd>tStart){
+    const span = tEnd - tStart;
+    const bar = (label, t, color, bold=false) => {
+      if(!t) return '';
+      const m = timeToMin(t);
+      if(m===null) return '';
+      const pct = Math.max(0,Math.min(100,((m-tStart)/span*100))).toFixed(1);
+      return `<div style="position:absolute;left:${pct}%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;top:0">
+        <div style="font-size:0.65rem;color:${color};font-weight:${bold?700:400};white-space:nowrap">${label}</div>
+        <div style="width:2px;height:28px;background:${color}"></div>
+        <div style="font-size:0.68rem;color:${color}">${t}</div>
+      </div>`;
+    };
+    const pEnd = pTime ? addMinutes(pTime, perfList.reduce((s,e,i)=>s+(parseInt(e.duration)||0)+(i>0?pGap:0),0)
+      + breaks.reduce((s,b)=>s+(b.duration||0),0)) : '';
+    timelineHtml = `
+      <div class="card" style="margin-bottom:1.2rem;overflow:visible">
+        <div style="font-size:0.72rem;color:var(--text3);margin-bottom:1rem;letter-spacing:0.08em">タイムライン</div>
+        <div style="position:relative;height:60px;margin:0 1rem 0.5rem">
+          <div style="position:absolute;left:0;right:0;top:28px;height:4px;background:var(--border);border-radius:2px"></div>
+          ${bar('会場利用開始',vStart,'#6fcf97',true)}
+          ${bar('開場',vOpen,'#c49ed4')}
+          ${bar('本番開始',pTime,'var(--gold2)',true)}
+          ${bar('本番終了',pEnd,'var(--gold2)')}
+          ${bar('会場終了',vEnd,'#eb5757',true)}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.4rem 1.2rem;margin-top:0.4rem;font-size:0.7rem">
+          ${[['会場利用開始',vStart,'#6fcf97'],['開場',vOpen,'#c49ed4'],['本番開始',pTime,'var(--gold2)'],['本番終了',pEnd,'var(--gold2)'],['会場終了',vEnd,'#eb5757']]
+            .filter(([,t])=>t)
+            .map(([l,t,c])=>`<span style="color:${c}">${l} <strong>${t}</strong></span>`).join('')}
+        </div>
+      </div>`;
+  }
 
-  // ── リハーサルブロック ──
-  html += `<div class="card" style="margin-bottom:1.2rem">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-      <div style="font-family:'EB Garamond',serif;font-size:1.05rem;color:var(--gold2)">
-        リハーサル
-        ${rTime?`<span style="font-size:0.85rem;color:var(--text2);margin-left:0.8rem">開始 ${rTime}</span>`:'<span style="font-size:0.75rem;color:var(--text3);margin-left:0.5rem">（演奏会設定で開始時刻を入力）</span>'}
+  // ══ リハーサルブロック ══
+  let rhRows = '';
+  rhList.forEach((e,i)=>{
+    const start = rTime ? addMinutes(rTime, i*(rDur+rGap)) : '';
+    const end   = rTime ? addMinutes(rTime, i*(rDur+rGap)+rDur) : '';
+    const name  = e.type==='group' ? esc(e.groupName) : esc(e.name);
+    rhRows += `<div style="display:grid;grid-template-columns:55px 55px 1fr 44px;padding:0.5rem 0.8rem;border-top:1px solid var(--border);align-items:center">
+      <span style="font-size:0.82rem;color:var(--gold2);font-family:'EB Garamond',serif">${start||'—'}</span>
+      <span style="font-size:0.78rem;color:var(--text3)">${end||''}</span>
+      <span style="font-size:0.88rem">${name}</span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:1px">
+        ${i>0?`<button class="btn btn-outline btn-sm" style="padding:0 0.3rem;font-size:0.68rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',-1)">↑</button>`:'<span style="height:20px"></span>'}
+        ${i<rhList.length-1?`<button class="btn btn-outline btn-sm" style="padding:0 0.3rem;font-size:0.68rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',1)">↓</button>`:'<span style="height:20px"></span>'}
+      </span>
+    </div>`;
+    // リハ奏者間の行
+    if(i < rhList.length-1){
+      const gapStart = rTime ? addMinutes(rTime, i*(rDur+rGap)+rDur) : '';
+      rhRows += `<div style="display:grid;grid-template-columns:55px 55px 1fr 44px;padding:0.25rem 0.8rem;border-top:1px solid var(--border);background:var(--surface2);align-items:center;opacity:0.7">
+        <span style="font-size:0.75rem;color:var(--text3)">${gapStart}</span>
+        <span></span>
+        <span style="font-size:0.72rem;color:var(--text3)">── 入替 ${rGap}分 ──</span>
+        <span></span>
+      </div>`;
+    }
+  });
+  const rhEnd = rTime && rhList.length ? addMinutes(rTime, rhList.length*(rDur+rGap)-rGap) : '';
+
+  const rhHtml = `<div class="card" style="margin-bottom:1.2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
+      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">リハーサル
+        ${rTime?`<span style="font-size:0.82rem;color:var(--text2);margin-left:0.6rem">開始 ${rTime}</span>`:'<span style="font-size:0.72rem;color:var(--text3);margin-left:0.4rem">（演奏会設定で開始時刻を入力）</span>'}
       </div>
-      <div style="font-size:0.72rem;color:var(--text3)">${rDur}分／人　入替${rGap}分</div>
+      <span style="font-size:0.7rem;color:var(--text3)">${rDur}分／人　入替${rGap}分</span>
     </div>
     <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-      <div style="display:grid;grid-template-columns:60px 80px 1fr 40px;padding:0.5rem 0.8rem;background:var(--surface2);font-size:0.7rem;color:var(--text3);font-weight:700;letter-spacing:0.06em">
+      <div style="display:grid;grid-template-columns:55px 55px 1fr 44px;padding:0.4rem 0.8rem;background:var(--surface2);font-size:0.68rem;color:var(--text3);font-weight:700">
         <span>開始</span><span>終了</span><span>出演者</span><span style="text-align:center">↕</span>
       </div>
-      ${rhList.map((e,i)=>{
-        const start = rTime ? addMinutes(rTime, i*(rDur+rGap)) : '';
-        const end   = rTime ? addMinutes(rTime, i*(rDur+rGap)+rDur) : '';
-        const name  = e.type==='group' ? esc(e.groupName) : esc(e.name);
-        return `<div style="display:grid;grid-template-columns:60px 80px 1fr 40px;padding:0.55rem 0.8rem;border-top:1px solid var(--border);align-items:center">
-          <span style="font-size:0.82rem;color:var(--gold2);font-family:'EB Garamond',serif">${start||'—'}</span>
-          <span style="font-size:0.78rem;color:var(--text3)">${end?'〜'+end:''}</span>
-          <span style="font-size:0.88rem">${name}</span>
-          <span style="display:flex;flex-direction:column;align-items:center;gap:2px">
-            ${i>0?`<button class="btn btn-outline btn-sm" style="padding:0 0.35rem;font-size:0.7rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',-1)">↑</button>`:'<span style="width:24px"></span>'}
-            ${i<rhList.length-1?`<button class="btn btn-outline btn-sm" style="padding:0 0.35rem;font-size:0.7rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',1)">↓</button>`:'<span style="width:24px"></span>'}
-          </span>
-        </div>`;
-      }).join('')}
+      ${rhRows}
     </div>
-    ${rTime?`<div style="margin-top:0.6rem;font-size:0.75rem;color:var(--text3);text-align:right">
-      リハ終了予定：${addMinutes(rTime, rhList.length*(rDur+rGap)-rGap)}
-    </div>`:''}
+    ${rhEnd?`<div style="margin-top:0.5rem;font-size:0.72rem;color:var(--text3);text-align:right">リハ終了予定：${rhEnd}</div>`:''}
   </div>`;
 
-  // ── 本番ブロック ──
-  html += `<div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-      <div style="font-family:'EB Garamond',serif;font-size:1.05rem;color:var(--gold2)">
-        本番
-        ${pTime?`<span style="font-size:0.85rem;color:var(--text2);margin-left:0.8rem">開始 ${pTime}</span>`:'<span style="font-size:0.75rem;color:var(--text3);margin-left:0.5rem">（演奏会設定で開始時刻を入力）</span>'}
+  // ══ 本番ブロック ══
+  let perfRows = '';
+  let offset = 0;
+  perfList.forEach((e,i)=>{
+    // 奏者間（2人目以降）
+    if(i>0){
+      const gapStart = pTime ? addMinutes(pTime, offset) : '';
+      perfRows += `<div style="display:grid;grid-template-columns:55px 55px 1fr 55px;padding:0.25rem 0.8rem;border-top:1px solid var(--border);background:var(--surface2);align-items:center;opacity:0.7">
+        <span style="font-size:0.75rem;color:var(--text3)">${gapStart}</span>
+        <span></span>
+        <span style="font-size:0.72rem;color:var(--text3)">── 奏者間 ${pGap}分 ──</span>
+        <span></span>
+      </div>`;
+      offset += pGap;
+    }
+    // 休憩（このインデックスの後）
+    const myBreaks = breaks.map((b,bi)=>({...b,bi})).filter(b=>b.afterIndex===i);
+
+    const dur   = parseInt(e.duration)||0;
+    const start = pTime ? addMinutes(pTime, offset) : '';
+    offset += dur;
+    const end   = (pTime&&dur) ? addMinutes(pTime, offset) : '';
+    const name  = e.type==='group' ? esc(e.groupName) : esc(e.name);
+    perfRows += `<div style="display:grid;grid-template-columns:55px 55px 1fr 55px;padding:0.5rem 0.8rem;border-top:1px solid var(--border);align-items:center">
+      <span style="font-size:0.82rem;color:var(--gold2);font-family:'EB Garamond',serif">${start||'—'}</span>
+      <span style="font-size:0.78rem;color:var(--text3)">${end||''}</span>
+      <span style="font-size:0.88rem">${e.order?`<span style="font-size:0.7rem;color:var(--text3);margin-right:0.3rem">${e.order}.</span>`:''}${name}</span>
+      <span style="text-align:right;font-size:0.78rem;color:var(--text3)">${dur?dur+'分':'未定'}</span>
+    </div>
+    <div style="text-align:right;padding:0.1rem 0.8rem 0.3rem;border-top:none">
+      <button class="btn btn-outline btn-sm" style="font-size:0.65rem;padding:0.15rem 0.5rem" onclick="addBreak('${cid}',${i})">＋ 休憩を追加</button>
+    </div>`;
+
+    // 休憩行
+    myBreaks.forEach(({duration,bi})=>{
+      const bStart = pTime ? addMinutes(pTime, offset) : '';
+      offset += duration||0;
+      perfRows += `<div style="display:grid;grid-template-columns:55px 55px 1fr 55px;padding:0.3rem 0.8rem;border-top:1px solid var(--border);background:rgba(101,180,101,0.08);align-items:center">
+        <span style="font-size:0.8rem;color:#6fcf97">${bStart}</span>
+        <span></span>
+        <span style="font-size:0.82rem;color:#6fcf97">🎵 休憩
+          <input type="number" value="${duration}" min="1" style="width:40px;margin-left:0.4rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.1rem 0.3rem;font-size:0.75rem" onchange="updateBreakDuration('${cid}',${bi},this.value)" inputmode="numeric">分
+        </span>
+        <span style="text-align:right"><button class="btn btn-outline btn-sm" style="font-size:0.65rem;padding:0.15rem 0.5rem;color:#eb5757" onclick="removeBreak('${cid}',${bi})">削除</button></span>
+      </div>`;
+    });
+  });
+  const perfTotalMin = perfList.reduce((s,e,i)=>(parseInt(e.duration)||0)+(i>0?pGap:0)+s,0)
+    + breaks.reduce((s,b)=>s+(b.duration||0),0);
+  const perfEnd = pTime ? addMinutes(pTime, perfTotalMin) : '';
+
+  const perfHtml = `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
+      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">本番
+        ${pTime?`<span style="font-size:0.82rem;color:var(--text2);margin-left:0.6rem">開始 ${pTime}</span>`:'<span style="font-size:0.72rem;color:var(--text3);margin-left:0.4rem">（演奏会設定で開始時刻を入力）</span>'}
       </div>
-      <div style="font-size:0.72rem;color:var(--text3)">奏者間 ${pGap}分</div>
+      <span style="font-size:0.7rem;color:var(--text3)">奏者間 ${pGap}分</span>
     </div>
     <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-      <div style="display:grid;grid-template-columns:60px 80px 1fr 60px;padding:0.5rem 0.8rem;background:var(--surface2);font-size:0.7rem;color:var(--text3);font-weight:700;letter-spacing:0.06em">
+      <div style="display:grid;grid-template-columns:55px 55px 1fr 55px;padding:0.4rem 0.8rem;background:var(--surface2);font-size:0.68rem;color:var(--text3);font-weight:700">
         <span>開始</span><span>終了</span><span>出演者</span><span style="text-align:right">時間</span>
       </div>
-      ${(()=>{
-        let offset = 0;
-        return perfList.map((e,i)=>{
-          const dur   = parseInt(e.duration)||0;
-          const start = pTime ? addMinutes(pTime, offset) : '';
-          const end   = (pTime && dur) ? addMinutes(pTime, offset+dur) : '';
-          const name  = e.type==='group' ? esc(e.groupName) : esc(e.name);
-          if(i>0) offset += pGap;
-          offset += dur;
-          return `<div style="display:grid;grid-template-columns:60px 80px 1fr 60px;padding:0.55rem 0.8rem;border-top:1px solid var(--border);align-items:center">
-            <span style="font-size:0.82rem;color:var(--gold2);font-family:'EB Garamond',serif">${start||'—'}</span>
-            <span style="font-size:0.78rem;color:var(--text3)">${end?'〜'+end:''}</span>
-            <span style="font-size:0.88rem">${e.order?`<span style="font-size:0.72rem;color:var(--text3);margin-right:0.4rem">${e.order}.</span>`:''}${name}</span>
-            <span style="text-align:right;font-size:0.78rem;color:var(--text3)">${dur?dur+'分':'未定'}</span>
-          </div>`;
-        }).join('');
-      })()}
+      ${perfRows}
     </div>
-    ${pTime?`<div style="margin-top:0.6rem;font-size:0.75rem;color:var(--text3);text-align:right">
-      本番終了予定：${addMinutes(pTime, perfList.reduce((s,e,i)=>{
-        const d=parseInt(e.duration)||0;
-        return s + d + (i>0?pGap:0);
-      },0))}
-    </div>`:''}
+    ${perfEnd?`<div style="margin-top:0.5rem;font-size:0.72rem;color:var(--text3);text-align:right">本番終了予定：${perfEnd}</div>`:''}
   </div>`;
 
-  html += '</div>'; // schedule-print-area
-  el.innerHTML = html;
+  el.innerHTML = `<div id="schedule-print-area">${timelineHtml}${rhHtml}${perfHtml}</div>`;
 }
 
 function moveRehearsal(cid, entryId, dir){
