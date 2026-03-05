@@ -1095,7 +1095,6 @@ select.status-sel{
       <div class="fg"><label>開催日 *</label><input id="cm-date" type="date"></div>
       <div class="fg full"><label>会場</label><input id="cm-venue" type="text" placeholder="例：○○サロン"></div>
       <div class="fg full"><label>演奏会の説明・概要</label><textarea id="cm-description" rows="3" placeholder="演奏会のコンセプトや内容など"></textarea></div>
-      <div class="fg full"><label>ドレスコード・服装</label><input id="cm-dresscode" type="text" placeholder="例：セミフォーマル、自由など"></input></div>
       <div class="fg full"><label>その他メモ・案内（演奏者に表示されます）</label><textarea id="cm-note"></textarea></div>
       <div class="fg full"><label>招待コード（演奏者がログインに使用）</label><input id="cm-code" type="text" placeholder="例: spring2025"></div>
       <div class="fg full"><label>LINE オープンチャット URL</label><input id="cm-line-url" type="url" placeholder="https://line.me/ti/g2/..."></div>
@@ -1911,7 +1910,6 @@ function openConcertModal(id){
     document.getElementById('cm-performance-gap').value=c.performanceGap??3;
     document.getElementById('cm-venue').value=c.venue||'';
     document.getElementById('cm-description').value=c.description||'';
-    document.getElementById('cm-dresscode').value=c.dresscode||'';
     document.getElementById('cm-note').value=c.note||'';
     document.getElementById('cm-code').value=c.code||'';
     document.getElementById('cm-line-url').value=c.lineUrl||'';
@@ -1928,7 +1926,7 @@ function openConcertModal(id){
     } else { clearFlyer(); }
     document.getElementById('concert-modal-title').textContent='演奏会を編集';
   } else {
-    ['cm-name','cm-date','cm-venue','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note','cm-description','cm-dresscode'].forEach(i=>document.getElementById(i).value='');
+    ['cm-name','cm-date','cm-venue','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note','cm-description'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('cm-time').value='14:00';
     document.getElementById('cm-venue-start').value='';
     document.getElementById('cm-venue-open').value='';
@@ -1960,7 +1958,6 @@ function saveConcert(){
     performanceGap:Number(document.getElementById('cm-performance-gap').value)||3,
     venue:document.getElementById('cm-venue').value.trim(),
     description:document.getElementById('cm-description').value.trim(),
-    dresscode:document.getElementById('cm-dresscode').value.trim(),
     note:document.getElementById('cm-note').value.trim(),
     code:document.getElementById('cm-code').value.trim(),
     lineUrl:document.getElementById('cm-line-url').value.trim(),
@@ -2857,7 +2854,6 @@ function renderMyConcertInfo(){
         ${concert.date?`<div>📅 ${concert.date}${concert.time?' &ensp;'+concert.time:''}</div>`:''}
         ${concert.venue?`<div>📍 ${esc(concert.venue)}</div>`:''}
         ${concert.description?`<div style="margin-top:0.5rem;color:var(--text2)">${esc(concert.description)}</div>`:''}
-        ${concert.dresscode?`<div style="margin-top:0.3rem">👗 ${esc(concert.dresscode)}</div>`:''}
         ${concert.note?`<div style="margin-top:0.3rem;color:var(--text3)">📝 ${esc(concert.note)}</div>`:''}
         ${concert.lineUrl?`<div style="margin-top:0.3rem"><a href="${esc(concert.lineUrl)}" target="_blank" style="color:#06c755;text-decoration:none">● LINE オープンチャット</a></div>`:''}
       </div>
