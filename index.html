@@ -237,7 +237,7 @@ tbody td{padding:0.65rem 0.9rem;vertical-align:middle}
 .modal-hd h3{font-family:'EB Garamond',serif;font-size:1.2rem;font-weight:400;color:var(--gold2)}
 .close-btn{background:none;border:none;color:var(--text3);font-size:1.4rem;cursor:pointer;padding:0.2rem 0.4rem;line-height:1}
 .close-btn:hover{color:var(--text)}
-.modal-footer{display:flex;gap:0.6rem;justify-content:flex-end;margin-top:1.2rem;padding-top:0.8rem;border-top:1px solid var(--border)}
+.modal-footer{display:flex;gap:0.6rem;justify-content:flex-end;margin-top:1.2rem;padding-top:0.8rem;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--surface);z-index:1}
 
 /* ── SECTION ── */
 .subsect{
@@ -858,7 +858,6 @@ select.status-sel{
       </div>
       <div class="sel-bar">
         <select id="fin-concert-sel" onchange="renderFinance()"></select>
-        <button class="btn btn-outline btn-sm" onclick="showAllConcerts()">全演奏会比較</button>
       </div>
       <!-- KPI row -->
       <div class="fin-summary-grid" id="fin-kpi"></div>
@@ -867,12 +866,10 @@ select.status-sel{
         <button class="fin-tab active" onclick="switchFinTab('txn',this)">収支明細</button>
         <button class="fin-tab" onclick="switchFinTab('fees',this)">参加費管理</button>
         <button class="fin-tab" onclick="switchFinTab('breakdown',this)">費目内訳</button>
-        <button class="fin-tab" onclick="switchFinTab('compare',this)">演奏会比較</button>
       </div>
       <div class="fin-section active" id="fin-txn"></div>
       <div class="fin-section" id="fin-fees"></div>
       <div class="fin-section" id="fin-breakdown"></div>
-      <div class="fin-section" id="fin-compare"></div>
     </div>
 
     <div class="page" id="page-applications">
@@ -1036,7 +1033,7 @@ select.status-sel{
       <div class="form-grid">
         <div class="fg">
           <label>伴奏費（円）</label>
-          <input id="cm-acc-fee" type="number" min="0" placeholder="例：5000">
+          <input id="cm-acc-fee" type="number" min="0" placeholder="例：5000" inputmode="numeric">
         </div>
         <div class="fg full">
           <label>費用に関する備考</label>
@@ -1139,8 +1136,8 @@ select.status-sel{
 
     <!-- COMMON: REST -->
     <div class="form-grid" style="margin-top:1rem">
-      <div class="fg"><label>出演順</label><input id="em-order" type="number" min="1"></div>
-      <div class="fg"><label>予定演奏時間（分）</label><input id="em-duration" type="number" min="1"></div>
+      <div class="fg"><label>出演順</label><input id="em-order" type="number" min="1" inputmode="numeric"></div>
+      <div class="fg"><label>予定演奏時間（分）</label><input id="em-duration" type="number" min="1" inputmode="numeric"></div>
       <div class="fg full"><label>プロフィール・自己紹介</label><textarea id="em-profile" rows="3"></textarea></div>
       <div class="fg full"><label>メモ（必要機材、連絡事項）</label><textarea id="em-memo" rows="2" placeholder="例：譜面台が必要、当日14時までに入場"></textarea></div>
       <div class="fg">
@@ -1163,7 +1160,7 @@ select.status-sel{
       <div class="form-grid">
         <div class="fg">
           <label>参加費（円）</label>
-          <input id="em-fee-amount" type="number" min="0" placeholder="3000">
+          <input id="em-fee-amount" type="number" min="0" placeholder="3000" inputmode="numeric">
         </div>
         <div class="fg">
           <label>回収状況</label>
@@ -1207,7 +1204,7 @@ select.status-sel{
         <select id="tm-category"></select>
       </div>
       <div class="fg full"><label>内容・メモ</label><input id="tm-desc" type="text" placeholder="例：○○ホール使用料"></div>
-      <div class="fg"><label>金額（円）</label><input id="tm-amount" type="number" min="0" placeholder="10000"></div>
+      <div class="fg"><label>金額（円）</label><input id="tm-amount" type="number" min="0" placeholder="10000" inputmode="numeric"></div>
       <div class="fg"><label>日付</label><input id="tm-date" type="date"></div>
       <div class="fg full"><label>備考</label><input id="tm-note" type="text" placeholder="領収書No.など"></div>
     </div>
@@ -1712,7 +1709,7 @@ function addTicketTierRow(name='', price=''){
   row.className = 'ticket-row';
   row.innerHTML = `
     <input type="text" placeholder="例：一般、学生、シニア" class="tier-name" value="${esc(name)}">
-    <input type="number" placeholder="1000" min="0" class="tier-price" value="${price}">
+    <input type="number" placeholder="1000" min="0" class="tier-price" value="${price}" inputmode="numeric">
     <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
   wrap.appendChild(row);
 }
@@ -1734,7 +1731,7 @@ function addEntryFeeTierRow(name='', price=''){
   row.className = 'ticket-row';
   row.innerHTML = `
     <input type="text" placeholder="例：ソロ、グループ、学生" class="tier-name" value="${esc(name)}">
-    <input type="number" placeholder="3000" min="0" class="tier-price" value="${price}">
+    <input type="number" placeholder="3000" min="0" class="tier-price" value="${price}" inputmode="numeric">
     <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
   wrap.appendChild(row);
 }
@@ -2659,7 +2656,7 @@ function openMyEntryEdit(entryId){
       <div class="fg"><label>出演順</label>
         <div style="padding:0.5rem 0.75rem;background:var(--surface2);border-radius:6px;font-size:0.85rem;color:var(--text2);border:1px solid var(--border)">${e.order||'未定'}</div></div>
       <div class="fg"><label>予定演奏時間（分）</label>
-        <input id="mpe-duration" type="number" min="1" placeholder="例：10" value="${e.duration||''}"></div>
+        <input id="mpe-duration" type="number" min="1" placeholder="例：10" value="${e.duration||''}" inputmode="numeric"></div>
     </div>
 
     ${e.feeAmount>0?`
@@ -2846,7 +2843,6 @@ const CAT_COLORS = {
 
 let currentTxnType = 'income';
 let currentFinTab = 'txn';
-let viewAllConcerts = false;
 
 function setTxnType(t){
   currentTxnType = t;
@@ -2878,7 +2874,7 @@ function openTxnModal(id){
     ['tm-desc','tm-amount','tm-note'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('tm-date').value = today();
     const cid = document.getElementById('fin-concert-sel')?.value;
-    if(cid && !viewAllConcerts) document.getElementById('tm-concert').value = cid;
+    if(cid) document.getElementById('tm-concert').value = cid;
   }
   openModal('txn-modal');
 }
@@ -2917,16 +2913,6 @@ function switchFinTab(tab, btn){
   renderFinanceTab();
 }
 
-function showAllConcerts(){
-  viewAllConcerts = true;
-  currentFinTab = 'compare';
-  document.querySelectorAll('.fin-tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.fin-section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.fin-tab')[2].classList.add('active');
-  document.getElementById('fin-compare').classList.add('active');
-  renderFinance();
-}
-
 function fmt(n){ return '¥'+Math.round(n).toLocaleString(); }
 
 function calcTotals(txns){
@@ -2943,14 +2929,10 @@ function renderFinance(){
     return;
   }
   const cid = selEl?.value;
-  let txns = viewAllConcerts
-    ? transactions
-    : transactions.filter(t=>t.concertId===cid);
+  const txns = transactions.filter(t=>t.concertId===cid);
 
   // participation fee stats
-  const feeEntries = viewAllConcerts
-    ? entries
-    : entries.filter(e=>e.concertId===cid);
+  const feeEntries = entries.filter(e=>e.concertId===cid);
   const feeTotal   = feeEntries.filter(e=>e.feeAmount>0).reduce((s,e)=>s+(e.feeAmount||0),0);
   const feeCollected = feeEntries.filter(e=>e.feeStatus==='paid').reduce((s,e)=>s+(e.feeAmount||0),0);
   const feePending = feeTotal - feeCollected;
@@ -2962,7 +2944,7 @@ function renderFinance(){
 
   // ticket tiers for this concert
   const concert = cid ? concerts.find(c=>c.id===cid) : null;
-  const tiers = (!viewAllConcerts && concert?.ticketTiers?.length)
+  const tiers = (concert?.ticketTiers?.length)
     ? concert.ticketTiers.map(t=>`${esc(t.name)} ${fmt(t.price)}`).join('　/　')
     : null;
 
@@ -2986,14 +2968,10 @@ function renderFinance(){
 
 function renderFinanceTab(){
   const cid = document.getElementById('fin-concert-sel')?.value;
-  let txns = viewAllConcerts
-    ? transactions
-    : transactions.filter(t=>t.concertId===cid);
-
+  const txns = transactions.filter(t=>t.concertId===cid);
   if(currentFinTab==='txn')       renderTxnList(txns);
   if(currentFinTab==='fees')      renderFees(cid);
   if(currentFinTab==='breakdown') renderBreakdown(txns);
-  if(currentFinTab==='compare')   renderCompare();
 }
 
 function renderTxnList(txns){
@@ -3003,12 +2981,10 @@ function renderTxnList(txns){
     el.innerHTML='<div class="empty"><div class="empty-icon">💴</div><p>収支データがまだありません。<br>「収支を記録」から追加してください。</p></div>';
     return;
   }
-  const concertName = cid => concerts.find(c=>c.id===cid)?.name||'不明';
   el.innerHTML = `
     <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-      <div class="txn-row header" style="${viewAllConcerts?'grid-template-columns:90px 1fr 130px 100px 80px 80px':''}">
+      <div class="txn-row header">
         <span>日付</span>
-        ${viewAllConcerts?'<span>演奏会</span>':''}
         <span>内容</span>
         <span>カテゴリ</span>
         <span style="text-align:right">金額</span>
@@ -3018,9 +2994,8 @@ function renderTxnList(txns){
         const amtCls = t.type==='income'?'txn-amount-income':'txn-amount-expense';
         const sign = t.type==='income'?'+':'−';
         const bg = CAT_COLORS[t.category]||'#333';
-        return `<div class="txn-row" style="${viewAllConcerts?'grid-template-columns:90px 1fr 130px 100px 80px 80px':''}">
+        return `<div class="txn-row">
           <span style="color:var(--text3);font-size:0.75rem">${t.date||'—'}</span>
-          ${viewAllConcerts?`<span style="font-size:0.72rem;color:var(--text2)">${esc(concertName(t.concertId))}</span>`:''}
           <span>${esc(t.desc||t.category)}${t.note?`<span style="font-size:0.68rem;color:var(--text3)"> (${esc(t.note)})</span>`:''}</span>
           <span><span class="cat-badge" style="background:${bg}22;color:${bg};border:1px solid ${bg}55">${esc(t.category)}</span></span>
           <span class="${amtCls}">${sign}${fmt(t.amount)}</span>
@@ -3033,12 +3008,33 @@ function renderTxnList(txns){
     </div>`;
 }
 
+let feeViewMode = 'concert'; // 'concert' | 'person'
+
 function renderFees(cid){
   const el = document.getElementById('fin-fees');
-  const concertList = viewAllConcerts ? concerts : (cid ? [concerts.find(c=>c.id===cid)].filter(Boolean) : []);
-
+  const concertList = cid ? [concerts.find(c=>c.id===cid)].filter(Boolean) : [];
   if(!concertList.length){ el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>'; return; }
 
+  // 切り替えボタン
+  const toggleHtml = `
+    <div style="display:flex;gap:0.4rem;margin-bottom:1.2rem">
+      <button class="btn btn-sm ${feeViewMode==='concert'?'btn-gold':'btn-outline'}" onclick="setFeeViewMode('concert')">出演者別</button>
+      <button class="btn btn-sm ${feeViewMode==='person'?'btn-gold':'btn-outline'}" onclick="setFeeViewMode('person')">人別</button>
+    </div>`;
+
+  if(feeViewMode==='concert'){
+    el.innerHTML = toggleHtml + buildFeeConcertView(concertList);
+  } else {
+    el.innerHTML = toggleHtml + buildFeePersonView(concertList);
+  }
+}
+
+function setFeeViewMode(mode){
+  feeViewMode = mode;
+  renderFinance();
+}
+
+function buildFeeConcertView(concertList){
   let html = '';
   concertList.forEach(concert => {
     const list = entries.filter(e=>e.concertId===concert.id&&e.status!=='absent')
@@ -3051,7 +3047,7 @@ function renderFees(cid){
     const pct       = withFee.length ? Math.round(paidCnt/withFee.length*100) : 0;
 
     html += `
-      ${viewAllConcerts?`<h3 style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2);margin-bottom:0.8rem;margin-top:1.5rem">${esc(concert.name)}</h3>`:''}
+      ${concertList.length>1?`<h3 style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2);margin-bottom:0.8rem;margin-top:1.5rem">${esc(concert.name)}</h3>`:''}
       <div style="display:flex;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
           <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">合計参加費</div>
@@ -3069,10 +3065,7 @@ function renderFees(cid){
         </div>
       </div>`;
 
-    if(!list.length){
-      html += '<div class="empty" style="padding:1rem"><p>参加者がいません</p></div>';
-      return;
-    }
+    if(!list.length){ html += '<div class="empty" style="padding:1rem"><p>参加者がいません</p></div>'; return; }
 
     html += `<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1.5rem">
       <div class="fee-row fee-header" style="grid-template-columns:2rem 1fr 80px 100px 1fr 90px">
@@ -3096,9 +3089,117 @@ function renderFees(cid){
       }).join('')}
     </div>`;
   });
-  el.innerHTML = html;
+  return html;
 }
 
+function buildFeePersonView(concertList){
+  const concertIds = new Set(concertList.map(c=>c.id));
+  const targetEntries = entries.filter(e=>concertIds.has(e.concertId)&&e.status!=='absent');
+
+  // 個人単位に展開（ソロ→本人、グループ→メンバー全員）
+  // キー：ふりがなあり → 氏名＋ふりがな、なし → 氏名のみ
+  const personMap = {};
+  const addPerson = (name, kana, label, entry) => {
+    if(!name) return;
+    const key = kana ? (name+'|'+kana) : name;
+    if(!personMap[key]) personMap[key] = { name, kana, appearances:[] };
+    personMap[key].appearances.push({ label, entry });
+  };
+
+  targetEntries.forEach(e=>{
+    const concert = concerts.find(c=>c.id===e.concertId);
+    const cName = concert ? concert.name : '—';
+    if(e.type==='solo'){
+      addPerson(e.name, e.kana||'', cName+'（ソロ）', e);
+    } else {
+      const members = e.members||[];
+      if(members.length){
+        members.forEach(m=>{
+          const mName = typeof m==='string'?m:(m.name||'');
+          const mKana = typeof m==='string'?'':(m.kana||'');
+          const mInst = typeof m==='string'?'':(m.instrument||'');
+          addPerson(mName, mKana, cName+'（'+esc(e.groupName)+(mInst?'・'+mInst:'')+'）', e);
+        });
+      } else {
+        addPerson(e.groupRep||e.groupName, e.groupRepKana||'', cName+'（'+esc(e.groupName)+'）', e);
+      }
+    }
+  });
+
+  const persons = Object.values(personMap).sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+  if(!persons.length) return '<div class="empty"><p>参加者がいません</p></div>';
+
+  // 全体サマリー（エントリー重複なし）
+  const counted = new Set();
+  let totalAll=0, collectedAll=0;
+  persons.forEach(p=>p.appearances.forEach(({entry})=>{
+    if(counted.has(entry.id)) return;
+    counted.add(entry.id);
+    totalAll += entry.feeAmount||0;
+    if(entry.feeStatus==='paid') collectedAll += entry.feeAmount||0;
+  }));
+  const pendingAll = totalAll - collectedAll;
+
+  const kpiBox = (label, val, color) =>
+    `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
+      <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">${label}</div>
+      <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:${color}">${val}</div>
+    </div>`;
+
+  let html =
+    '<div style="display:flex;gap:0.8rem;margin-bottom:1.2rem;flex-wrap:wrap">' +
+    kpiBox('合計参加費', fmt(totalAll), 'var(--text)') +
+    kpiBox('回収済み', fmt(collectedAll), '#6fcf97') +
+    kpiBox('未回収', fmt(pendingAll), pendingAll>0?'#f6c90e':'var(--text3)') +
+    '</div>' +
+    '<p style="font-size:0.72rem;color:var(--text3);margin-bottom:0.8rem">' +
+    '※ グループの参加費はメンバー各行に表示。回収状況の変更はグループ全体に反映されます。</p>' +
+    '<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">';
+
+  persons.forEach((p,pi)=>{
+    const isLast = pi===persons.length-1;
+    // その人の合計（重複エントリーなし）
+    const pCounted = new Set();
+    let pTotal=0, pCollected=0;
+    p.appearances.forEach(({entry})=>{
+      if(pCounted.has(entry.id)) return;
+      pCounted.add(entry.id);
+      pTotal += entry.feeAmount||0;
+      if(entry.feeStatus==='paid') pCollected += entry.feeAmount||0;
+    });
+    const pPending = pTotal - pCollected;
+
+    html += '<div style="border-bottom:'+(isLast?'none':'1px solid var(--border)')+'">'+
+      '<div style="padding:0.65rem 1rem;background:var(--surface2);display:flex;align-items:center;gap:0.6rem">'+
+      '<span style="font-weight:700;font-size:0.88rem;color:var(--text)">'+esc(p.name)+'</span>'+
+      (p.kana?'<span style="font-size:0.72rem;color:var(--text3)">'+esc(p.kana)+'</span>':'')+
+      '<span style="font-size:0.68rem;color:var(--text3)">'+p.appearances.length+'件出演</span>'+
+      '<span style="margin-left:auto;display:flex;align-items:center;gap:0.8rem">'+
+      (pTotal?'<span style="font-family:\'EB Garamond\',serif;font-size:1rem;color:var(--text)">'+fmt(pTotal)+'</span>':'')+
+      (pPending>0?'<span style="font-size:0.72rem;color:#f6c90e">未回収 '+fmt(pPending)+'</span>':
+       (pTotal?'<span style="font-size:0.72rem;color:#6fcf97">完納</span>':''))+
+      '</span>'+
+      '</div>'+
+      p.appearances.map(({label,entry})=>{
+        const hasFee = entry.feeAmount>0;
+        const pill = hasFee
+          ? '<button class="fee-pill '+(entry.feeStatus==='paid'?'paid':'unpaid')+'" onclick="toggleFeeStatusFin(\''+ entry.id +'\')">'+
+            (entry.feeStatus==='paid'?'✓ 回収済み':'● 未回収')+'</button>'
+          : '<span style="font-size:0.7rem;color:var(--text3)">未設定</span>';
+        const amt = hasFee ? fmt(entry.feeAmount) : '<span style="color:var(--text3)">—</span>';
+        return '<div style="display:grid;grid-template-columns:1fr 80px 110px 80px;gap:0.5rem 0.8rem;align-items:center;padding:0.5rem 1rem 0.5rem 1.5rem;border-top:1px solid var(--border)">'+
+          '<div style="font-size:0.8rem;color:var(--text2)">'+label+'</div>'+
+          '<div style="text-align:right;font-size:0.82rem;color:var(--text2)">'+amt+'</div>'+
+          '<div style="text-align:center">'+pill+'</div>'+
+          '<div style="text-align:right"><button class="btn btn-outline btn-sm" onclick="openEntryModal(\''+ entry.id +'\')">'+
+          '編集</button></div></div>';
+      }).join('') +
+      '</div>';
+  });
+
+  html += '</div>';
+  return html;
+}
 function toggleFeeStatusFin(id){
   const e=entries.find(x=>x.id===id);
   if(!e) return;
@@ -3188,6 +3289,13 @@ const EDIT_MODALS = ['concert-modal','entry-modal','txn-modal','my-entry-edit-mo
 
 function openModal(id){
   const overlay = document.getElementById(id+'-overlay');
+
+  // 既存のイベントリスナーを必ず除去してから開く
+  if(overlay._closeHandler){
+    overlay.removeEventListener('click', overlay._closeHandler);
+    delete overlay._closeHandler;
+  }
+
   overlay.classList.add('open');
   const modal = overlay.querySelector('.modal');
   if(modal) modal.scrollTop = 0;
