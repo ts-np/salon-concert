@@ -1367,12 +1367,12 @@ select.status-sel{
       <div style="background:var(--surface2);border-radius:8px;overflow:hidden">
 
         <!-- 参加費行 -->
-        <div style="display:grid;grid-template-columns:auto 7rem 1fr auto;align-items:center;gap:0.4rem 0.6rem;padding:0.55rem 0.8rem;border-bottom:1px solid var(--border)">
-          <span style="font-size:0.75rem;color:var(--text2);font-weight:600;white-space:nowrap">参加費 <span id="em-fee-member-count" style="font-size:0.7rem;color:var(--text3);font-weight:400"></span></span>
+        <div style="display:grid;grid-template-columns:auto 7rem auto auto 1fr;align-items:center;gap:0.4rem 0.6rem;padding:0.55rem 0.8rem;border-bottom:1px solid var(--border)">
+          <span style="font-size:0.75rem;color:var(--text2);font-weight:600;white-space:nowrap">参加費</span>
           <input id="em-fee-amount" type="number" min="0" placeholder="0" inputmode="numeric" oninput="updateFeeTotal()" style="text-align:right;font-family:'EB Garamond',serif;font-size:0.95rem">
-          <span id="em-fee-per-label" style="display:none;font-size:0.7rem;color:var(--text3)">円 / 人</span>
+          <span id="em-fee-per-label" style="display:none;font-size:0.7rem;color:var(--text3);white-space:nowrap">円 / 人</span>
+          <span id="em-fee-member-count" style="font-size:0.7rem;color:var(--text3);white-space:nowrap"></span>
           <input id="em-fee-note" type="text" placeholder="備考" style="font-size:0.75rem">
-          <span style="font-size:0.68rem;color:var(--text3);white-space:nowrap">円</span>
         </div>
 
         <!-- 伴奏代（伴奏者手配が必要な場合のみ） -->
@@ -3728,8 +3728,9 @@ function renderMySchedule(){
     const start=rTime?addMinutes(rTime,i*(rDur+rGap)):'';
     const end=rTime?addMinutes(rTime,i*(rDur+rGap)+rDur):'';
     const name=e.type==='group'?e.groupName:e.name;
+    const instrTag=e.type==='solo'&&e.instrument?` <span style="font-size:0.72rem;color:var(--text3)">(${instrAbbr(e.instrument)})</span>`:'';
     const isMe=myIdsForCid.has(e.id);
-    rows.push({time:start,end,duration:rDur,category:'リハーサル',content:name,person:personStr(e),note:'',rowType:'rehearsal',isMe});
+    rows.push({time:start,end,duration:rDur,category:'リハーサル',content:name,instrTag,person:personStr(e),note:'',rowType:'rehearsal',isMe});
     if(i<rhList.length-1) rows.push({time:end,duration:rGap,category:'_gap',content:'── 入替 '+rGap+'分 ──',rowType:'gap'});
   });
 
@@ -3750,8 +3751,9 @@ function renderMySchedule(){
     pOffset+=dur;
     const end=(pTime&&dur)?addMinutes(pTime,pOffset):'';
     const name=e.type==='group'?e.groupName:e.name;
+    const instrTag=e.type==='solo'&&e.instrument?` <span style="font-size:0.72rem;color:var(--text3)">(${instrAbbr(e.instrument)})</span>`:'';
     const isMe=myIdsForCid.has(e.id);
-    rows.push({time:start,end,duration:dur||null,category:'本番',content:(e.order?e.order+'. ':'')+name,person:personStr(e),note:'',rowType:'performance',isMe});
+    rows.push({time:start,end,duration:dur||null,category:'本番',content:(e.order?e.order+'. ':'')+name,instrTag,person:personStr(e),note:'',rowType:'performance',isMe});
     breaks.filter(b=>b.afterEntryIndex===i).forEach(b=>{
       const bs=pTime?addMinutes(pTime,pOffset):'';
       pOffset+=b.duration||0;
@@ -3786,7 +3788,7 @@ function renderMySchedule(){
       <td style="padding:0.45rem 0.5rem;vertical-align:top;text-align:right">${r.duration?`<span style="font-size:0.78rem;color:var(--text3)">${r.duration}分</span>`:''}</td>
       <td style="padding:0.45rem 0.5rem;vertical-align:top">${(!r.category||r.category.startsWith('_'))?'':catBadge(r.category)}</td>
       <td style="padding:0.45rem 0.6rem;vertical-align:top;font-size:${isGap?'0.75':'0.85'}rem;color:${isGap?'var(--text3)':(r.isMe?'var(--text)':'var(--text2)')}">
-        ${isGap?`<span style="color:var(--text3)">${esc(r.content||'')}</span>`:esc(r.content||'')}${meTag}
+        ${isGap?`<span style="color:var(--text3)">${esc(r.content||'')}</span>`:esc(r.content||'')}${r.instrTag||''}${meTag}
       </td>
       <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.78rem;color:var(--text2)">${esc(r.person||'')}</td>
       <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.75rem;color:var(--text3)">${esc(r.note||'')}</td>
