@@ -2556,212 +2556,80 @@ function addMinutes(base, offset){
 }
 function timeToMin(t){ if(!t) return null; const [h,m]=t.split(':').map(Number); return h*60+m; }
 
+// ════════════════════════
+//  SCHEDULE (unified timeline)
+// ════════════════════════
 let schedRehearsalOrders = {};
-// 休憩データ: { concertId: [ {afterIndex: number, duration: number} ] }
+// 自由追加イベント: { concertId: [ {id, time, duration, category, content, person, note} ] }
+let schedCustomEvents = {};
+// 本番休憩: { concertId: [ {afterEntryIndex, duration, note} ] }
 let schedBreaks = {};
 
 function getRehearsalOrder(cid, list){
   const saved = schedRehearsalOrders[cid];
   if(saved){
-    const known = saved.filter(id=>list.find(e=>e.id===id));
-    const newOnes = list.filter(e=>!saved.includes(e.id)).map(e=>e.id);
+    const known   = saved.filter(id => list.find(e => e.id===id));
+    const newOnes = list.filter(e => !saved.includes(e.id)).map(e => e.id);
     return [...known, ...newOnes];
   }
-  return list.map(e=>e.id);
+  return list.map(e => e.id);
 }
 
-function getBreaks(cid){ return schedBreaks[cid] || []; }
+// ── カテゴリ色 ──
+const SCHED_CAT_COLORS = {
+  '会場準備': '#6fcf97',
+  'リハーサル': '#56aee0',
+  '休憩':       '#c49ed4',
+  '本番':       '#d4b46a',
+  'その他':     '#9a8a6a',
+};
+function catColor(cat){ return SCHED_CAT_COLORS[cat] || '#9a8a6a'; }
 
+// ── 時間ユーティリティ ──
+function addMinutes(base, offset){
+  if(!base) return '';
+  const [h,m] = base.split(':').map(Number);
+  const total = h*60 + m + offset;
+  return String(Math.floor(total/60)).padStart(2,'0') + ':' + String(total%60).padStart(2,'0');
+}
+function timeToMin(t){ if(!t) return null; const [h,m]=t.split(':').map(Number); return h*60+m; }
+function minDiff(a,b){ const ma=timeToMin(a),mb=timeToMin(b); if(ma==null||mb==null)return null; return mb-ma; }
+
+// ── 自由追加イベント管理 ──
+function getCustomEvents(cid){ return schedCustomEvents[cid] || []; }
+function addCustomEvent(cid){
+  if(!schedCustomEvents[cid]) schedCustomEvents[cid]=[];
+  schedCustomEvents[cid].push({id:'ce-'+Date.now(), time:'', duration:30, category:'その他', content:'', person:'', note:''});
+  renderSchedule();
+}
+function removeCustomEvent(cid, idx){
+  schedCustomEvents[cid].splice(idx,1);
+  renderSchedule();
+}
+function updateCustomEvent(cid, idx, field, val){
+  if(!schedCustomEvents[cid]) return;
+  schedCustomEvents[cid][idx][field] = field==='duration' ? (parseInt(val)||0) : val;
+  renderSchedule();
+}
+
+// ── 本番休憩管理 ──
+function getBreaks(cid){ return schedBreaks[cid] || []; }
 function addBreak(cid, afterIndex){
   if(!schedBreaks[cid]) schedBreaks[cid]=[];
-  schedBreaks[cid].push({afterIndex, duration:15});
+  schedBreaks[cid].push({afterEntryIndex:afterIndex, duration:20, note:''});
   renderSchedule();
 }
 function removeBreak(cid, bi){
   schedBreaks[cid].splice(bi,1);
   renderSchedule();
 }
-function updateBreakDuration(cid, bi, val){
+function updateBreak(cid, bi, field, val){
   if(!schedBreaks[cid]) return;
-  schedBreaks[cid][bi].duration = parseInt(val)||0;
+  schedBreaks[cid][bi][field] = field==='duration'?(parseInt(val)||0):val;
   renderSchedule();
 }
 
-function renderSchedule(){
-  const cid = document.getElementById('sched-concert-sel')?.value;
-  const el  = document.getElementById('schedule-content');
-  if(!cid){ el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>'; return; }
-  const concert = concerts.find(c=>c.id===cid);
-  if(!concert){ el.innerHTML='<div class="empty"><p>演奏会が見つかりません</p></div>'; return; }
-
-  const perfList = entries.filter(e=>e.concertId===cid&&e.status!=='absent')
-    .sort((a,b)=>(a.order||999)-(b.order||999));
-
-  const rDur  = concert.rehearsalDuration ?? 10;
-  const rGap  = concert.rehearsalGap ?? 2;
-  const pGap  = concert.performanceGap ?? 3;
-  const rTime = concert.rehearsalTime || '';
-  const pTime = concert.time || '';
-  const vStart  = concert.venueStart  || '';
-  const vOpen   = concert.venueOpen   || '';
-  const vEnd    = concert.venueEnd    || '';
-
-  const rhOrder = getRehearsalOrder(cid, perfList);
-  const rhList  = rhOrder.map(id=>perfList.find(e=>e.id===id)).filter(Boolean);
-  const breaks  = getBreaks(cid);
-
-  // ══ タイムラインバー ══
-  const tStart = timeToMin(vStart||rTime||pTime);
-  const tEnd   = timeToMin(vEnd);
-  let timelineHtml = '';
-  if(tStart!==null && tEnd!==null && tEnd>tStart){
-    const span = tEnd - tStart;
-    const bar = (label, t, color, bold=false) => {
-      if(!t) return '';
-      const m = timeToMin(t);
-      if(m===null) return '';
-      const pct = Math.max(0,Math.min(100,((m-tStart)/span*100))).toFixed(1);
-      return `<div style="position:absolute;left:${pct}%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;top:0">
-        <div style="font-size:0.65rem;color:${color};font-weight:${bold?700:400};white-space:nowrap">${label}</div>
-        <div style="width:2px;height:28px;background:${color}"></div>
-        <div style="font-size:0.68rem;color:${color}">${t}</div>
-      </div>`;
-    };
-    const pEnd = pTime ? addMinutes(pTime, perfList.reduce((s,e,i)=>s+(parseInt(e.duration)||0)+(i>0?pGap:0),0)
-      + breaks.reduce((s,b)=>s+(b.duration||0),0)) : '';
-    timelineHtml = `
-      <div class="card" style="margin-bottom:1.2rem;overflow:visible">
-        <div style="font-size:0.72rem;color:var(--text3);margin-bottom:1rem;letter-spacing:0.08em">タイムライン</div>
-        <div style="position:relative;height:60px;margin:0 1rem 0.5rem">
-          <div style="position:absolute;left:0;right:0;top:28px;height:4px;background:var(--border);border-radius:2px"></div>
-          ${bar('会場利用開始',vStart,'#6fcf97',true)}
-          ${bar('開場',vOpen,'#c49ed4')}
-          ${bar('本番開始',pTime,'var(--gold2)',true)}
-          ${bar('本番終了',pEnd,'var(--gold2)')}
-          ${bar('会場終了',vEnd,'#eb5757',true)}
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:0.4rem 1.2rem;margin-top:0.4rem;font-size:0.7rem">
-          ${[['会場利用開始',vStart,'#6fcf97'],['開場',vOpen,'#c49ed4'],['本番開始',pTime,'var(--gold2)'],['本番終了',pEnd,'var(--gold2)'],['会場終了',vEnd,'#eb5757']]
-            .filter(([,t])=>t)
-            .map(([l,t,c])=>`<span style="color:${c}">${l} <strong>${t}</strong></span>`).join('')}
-        </div>
-      </div>`;
-  }
-
-  // ══ リハーサルブロック ══
-  let rhRows = '';
-  rhList.forEach((e,i)=>{
-    const start = rTime ? addMinutes(rTime, i*(rDur+rGap)) : '';
-    const end   = rTime ? addMinutes(rTime, i*(rDur+rGap)+rDur) : '';
-    const name  = e.type==='group' ? esc(e.groupName) : esc(e.name);
-    rhRows += `<div style="display:grid;grid-template-columns:55px 55px 1fr 44px;padding:0.5rem 0.8rem;border-top:1px solid var(--border);align-items:center">
-      <span style="font-size:0.82rem;color:var(--gold2);font-family:'EB Garamond',serif">${start||'—'}</span>
-      <span style="font-size:0.78rem;color:var(--text3)">${end||''}</span>
-      <span style="font-size:0.88rem">${name}</span>
-      <span style="display:flex;flex-direction:column;align-items:center;gap:1px">
-        ${i>0?`<button class="btn btn-outline btn-sm" style="padding:0 0.3rem;font-size:0.68rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',-1)">↑</button>`:'<span style="height:20px"></span>'}
-        ${i<rhList.length-1?`<button class="btn btn-outline btn-sm" style="padding:0 0.3rem;font-size:0.68rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',1)">↓</button>`:'<span style="height:20px"></span>'}
-      </span>
-    </div>`;
-    // リハ奏者間の行
-    if(i < rhList.length-1){
-      const gapStart = rTime ? addMinutes(rTime, i*(rDur+rGap)+rDur) : '';
-      rhRows += `<div style="display:grid;grid-template-columns:55px 55px 1fr 44px;padding:0.25rem 0.8rem;border-top:1px solid var(--border);background:var(--surface2);align-items:center;opacity:0.7">
-        <span style="font-size:0.75rem;color:var(--text3)">${gapStart}</span>
-        <span></span>
-        <span style="font-size:0.72rem;color:var(--text3)">── 入替 ${rGap}分 ──</span>
-        <span></span>
-      </div>`;
-    }
-  });
-  const rhEnd = rTime && rhList.length ? addMinutes(rTime, rhList.length*(rDur+rGap)-rGap) : '';
-
-  const rhHtml = `<div class="card" style="margin-bottom:1.2rem">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
-      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">リハーサル
-        ${rTime?`<span style="font-size:0.82rem;color:var(--text2);margin-left:0.6rem">開始 ${rTime}</span>`:'<span style="font-size:0.72rem;color:var(--text3);margin-left:0.4rem">（演奏会設定で開始時刻を入力）</span>'}
-      </div>
-      <span style="font-size:0.7rem;color:var(--text3)">${rDur}分／人　入替${rGap}分</span>
-    </div>
-    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-      <div style="display:grid;grid-template-columns:55px 55px 1fr 44px;padding:0.4rem 0.8rem;background:var(--surface2);font-size:0.68rem;color:var(--text3);font-weight:700">
-        <span>開始</span><span>終了</span><span>出演者</span><span style="text-align:center">↕</span>
-      </div>
-      ${rhRows}
-    </div>
-    ${rhEnd?`<div style="margin-top:0.5rem;font-size:0.72rem;color:var(--text3);text-align:right">リハ終了予定：${rhEnd}</div>`:''}
-  </div>`;
-
-  // ══ 本番ブロック ══
-  let perfRows = '';
-  let offset = 0;
-  perfList.forEach((e,i)=>{
-    // 奏者間（2人目以降）
-    if(i>0){
-      const gapStart = pTime ? addMinutes(pTime, offset) : '';
-      perfRows += `<div style="display:grid;grid-template-columns:55px 55px 1fr 55px;padding:0.25rem 0.8rem;border-top:1px solid var(--border);background:var(--surface2);align-items:center;opacity:0.7">
-        <span style="font-size:0.75rem;color:var(--text3)">${gapStart}</span>
-        <span></span>
-        <span style="font-size:0.72rem;color:var(--text3)">── 奏者間 ${pGap}分 ──</span>
-        <span></span>
-      </div>`;
-      offset += pGap;
-    }
-    // 休憩（このインデックスの後）
-    const myBreaks = breaks.map((b,bi)=>({...b,bi})).filter(b=>b.afterIndex===i);
-
-    const dur   = parseInt(e.duration)||0;
-    const start = pTime ? addMinutes(pTime, offset) : '';
-    offset += dur;
-    const end   = (pTime&&dur) ? addMinutes(pTime, offset) : '';
-    const name  = e.type==='group' ? esc(e.groupName) : esc(e.name);
-    perfRows += `<div style="display:grid;grid-template-columns:55px 55px 1fr 55px;padding:0.5rem 0.8rem;border-top:1px solid var(--border);align-items:center">
-      <span style="font-size:0.82rem;color:var(--gold2);font-family:'EB Garamond',serif">${start||'—'}</span>
-      <span style="font-size:0.78rem;color:var(--text3)">${end||''}</span>
-      <span style="font-size:0.88rem">${e.order?`<span style="font-size:0.7rem;color:var(--text3);margin-right:0.3rem">${e.order}.</span>`:''}${name}</span>
-      <span style="text-align:right;font-size:0.78rem;color:var(--text3)">${dur?dur+'分':'未定'}</span>
-    </div>
-    <div style="text-align:right;padding:0.1rem 0.8rem 0.3rem;border-top:none">
-      <button class="btn btn-outline btn-sm" style="font-size:0.65rem;padding:0.15rem 0.5rem" onclick="addBreak('${cid}',${i})">＋ 休憩を追加</button>
-    </div>`;
-
-    // 休憩行
-    myBreaks.forEach(({duration,bi})=>{
-      const bStart = pTime ? addMinutes(pTime, offset) : '';
-      offset += duration||0;
-      perfRows += `<div style="display:grid;grid-template-columns:55px 55px 1fr 55px;padding:0.3rem 0.8rem;border-top:1px solid var(--border);background:rgba(101,180,101,0.08);align-items:center">
-        <span style="font-size:0.8rem;color:#6fcf97">${bStart}</span>
-        <span></span>
-        <span style="font-size:0.82rem;color:#6fcf97">🎵 休憩
-          <input type="number" value="${duration}" min="1" style="width:40px;margin-left:0.4rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.1rem 0.3rem;font-size:0.75rem" onchange="updateBreakDuration('${cid}',${bi},this.value)" inputmode="numeric">分
-        </span>
-        <span style="text-align:right"><button class="btn btn-outline btn-sm" style="font-size:0.65rem;padding:0.15rem 0.5rem;color:#eb5757" onclick="removeBreak('${cid}',${bi})">削除</button></span>
-      </div>`;
-    });
-  });
-  const perfTotalMin = perfList.reduce((s,e,i)=>(parseInt(e.duration)||0)+(i>0?pGap:0)+s,0)
-    + breaks.reduce((s,b)=>s+(b.duration||0),0);
-  const perfEnd = pTime ? addMinutes(pTime, perfTotalMin) : '';
-
-  const perfHtml = `<div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
-      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">本番
-        ${pTime?`<span style="font-size:0.82rem;color:var(--text2);margin-left:0.6rem">開始 ${pTime}</span>`:'<span style="font-size:0.72rem;color:var(--text3);margin-left:0.4rem">（演奏会設定で開始時刻を入力）</span>'}
-      </div>
-      <span style="font-size:0.7rem;color:var(--text3)">奏者間 ${pGap}分</span>
-    </div>
-    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-      <div style="display:grid;grid-template-columns:55px 55px 1fr 55px;padding:0.4rem 0.8rem;background:var(--surface2);font-size:0.68rem;color:var(--text3);font-weight:700">
-        <span>開始</span><span>終了</span><span>出演者</span><span style="text-align:right">時間</span>
-      </div>
-      ${perfRows}
-    </div>
-    ${perfEnd?`<div style="margin-top:0.5rem;font-size:0.72rem;color:var(--text3);text-align:right">本番終了予定：${perfEnd}</div>`:''}
-  </div>`;
-
-  el.innerHTML = `<div id="schedule-print-area">${timelineHtml}${rhHtml}${perfHtml}</div>`;
-}
-
+// ── リハ順並べ替え ──
 function moveRehearsal(cid, entryId, dir){
   const list = entries.filter(e=>e.concertId===cid&&e.status!=='absent')
     .sort((a,b)=>(a.order||999)-(b.order||999));
@@ -2770,9 +2638,304 @@ function moveRehearsal(cid, entryId, dir){
   if(idx<0) return;
   const newIdx = idx+dir;
   if(newIdx<0||newIdx>=order.length) return;
-  [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
+  [order[idx],order[newIdx]] = [order[newIdx],order[idx]];
   schedRehearsalOrders[cid] = order;
   renderSchedule();
+}
+
+// ── メインレンダー ──
+function renderSchedule(){
+  const cid = document.getElementById('sched-concert-sel')?.value;
+  const el  = document.getElementById('schedule-content');
+  if(!cid){ el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>'; return; }
+  const concert = concerts.find(c=>c.id===cid);
+  if(!concert){ el.innerHTML='<div class="empty"><p>演奏会が見つかりません</p></div>'; return; }
+
+  const perfList   = entries.filter(e=>e.concertId===cid&&e.status!=='absent')
+    .sort((a,b)=>(a.order||999)-(b.order||999));
+  const rDur       = concert.rehearsalDuration ?? 10;
+  const rGap       = concert.rehearsalGap ?? 2;
+  const pGap       = concert.performanceGap ?? 3;
+  const rTime      = concert.rehearsalTime || '';
+  const pTime      = concert.time || '';
+  const vStart     = concert.venueStart || '';
+  const vOpen      = concert.venueOpen  || '';
+  const vEnd       = concert.venueEnd   || '';
+
+  const rhOrder  = getRehearsalOrder(cid, perfList);
+  const rhList   = rhOrder.map(id=>perfList.find(e=>e.id===id)).filter(Boolean);
+  const breaks   = getBreaks(cid);
+  const customs  = getCustomEvents(cid);
+
+  // ── 全行をオブジェクト配列で構築 ──
+  // row: { time, duration, category, content, person, note, rowType, meta }
+  const rows = [];
+
+  // 会場利用開始
+  if(vStart) rows.push({time:vStart, duration:null, category:'会場準備', content:'会場利用開始', person:'', note:'', rowType:'event'});
+
+  // 自由追加イベント（リハ前 → timeが rTime より前 or rTime未設定）
+  const beforeReh = customs.filter((_,i)=>i<customs.length); // 後でソートして差し込む
+
+  // カスタムイベントをtime順にソートして difference で挿入
+  const sortedCustoms = [...customs].map((c,i)=>({...c, origIdx:i}))
+    .filter(c=>c.time)
+    .sort((a,b)=>a.time.localeCompare(b.time));
+
+  // リハ前のカスタムイベント
+  sortedCustoms.filter(c=> !rTime || c.time < rTime).forEach(c=>{
+    rows.push({time:c.time, duration:c.duration, category:c.category, content:c.content,
+               person:c.person, note:c.note, rowType:'custom', origIdx:c.origIdx, cid});
+  });
+
+  // リハーサル行
+  if(rhList.length){
+    rhList.forEach((e,i)=>{
+      const start = rTime ? addMinutes(rTime, i*(rDur+rGap)) : '';
+      const end   = rTime ? addMinutes(rTime, i*(rDur+rGap)+rDur) : '';
+      const name  = e.type==='group' ? e.groupName : e.name;
+      rows.push({time:start, duration:rDur, category:'リハーサル',
+                 content: name,
+                 person:'', note:'', rowType:'rehearsal', entry:e, idx:i, total:rhList.length, rGap, end, cid});
+      // 奏者間
+      if(i < rhList.length-1){
+        rows.push({time:end, duration:rGap, category:'_gap',
+                   content:'── 入替 '+rGap+'分 ──', rowType:'gap'});
+      }
+    });
+  }
+
+  // リハ〜本番間のカスタム
+  const rhEndTime = (rTime && rhList.length) ? addMinutes(rTime, rhList.length*(rDur+rGap)-rGap) : '';
+  sortedCustoms.filter(c=> rTime && c.time >= (rhEndTime||rTime) && (!pTime || c.time < pTime)).forEach(c=>{
+    rows.push({time:c.time, duration:c.duration, category:c.category, content:c.content,
+               person:c.person, note:c.note, rowType:'custom', origIdx:c.origIdx, cid});
+  });
+
+  // 開場
+  if(vOpen) rows.push({time:vOpen, duration:null, category:'その他', content:'【開場】お客様入場', person:'受付', note:'', rowType:'event'});
+
+  // 本番行
+  if(perfList.length){
+    let pOffset = 0;
+    perfList.forEach((e,i)=>{
+      // 奏者間（2人目以降・休憩がなければ）
+      if(i>0){
+        const bBefore = breaks.filter(b=>b.afterEntryIndex===i-1);
+        if(!bBefore.length){
+          const gStart = pTime ? addMinutes(pTime, pOffset) : '';
+          rows.push({time:gStart, duration:pGap, category:'_gap',
+                     content:'── 奏者間 '+pGap+'分 ──', rowType:'gap'});
+          pOffset += pGap;
+        }
+      }
+      const dur   = parseInt(e.duration)||0;
+      const start = pTime ? addMinutes(pTime, pOffset) : '';
+      pOffset += dur;
+      const end   = (pTime&&dur) ? addMinutes(pTime, pOffset) : '';
+      const name  = e.type==='group' ? e.groupName : e.name;
+      rows.push({time:start, duration:dur||null, category:'本番',
+                 content:(e.order?e.order+'. ':'')+name,
+                 person:'', note:'', rowType:'performance', entry:e, idx:i, end, cid});
+
+      // 休憩（このエントリーの後）
+      const myBreaks = breaks.map((b,bi)=>({...b,bi})).filter(b=>b.afterEntryIndex===i);
+      myBreaks.forEach(({duration,note,bi})=>{
+        const bStart = pTime ? addMinutes(pTime, pOffset) : '';
+        pOffset += duration||0;
+        rows.push({time:bStart, duration, category:'休憩',
+                   content:'〈休憩〉', person:'', note, rowType:'break', bi, cid});
+        // 休憩後の奏者間
+        if(i < perfList.length-1){
+          const gStart2 = pTime ? addMinutes(pTime, pOffset) : '';
+          rows.push({time:gStart2, duration:pGap, category:'_gap',
+                     content:'── 奏者間 '+pGap+'分 ──', rowType:'gap'});
+          pOffset += pGap;
+        }
+      });
+    });
+  }
+
+  // 本番後のカスタム
+  const perfEndMin = perfList.reduce((s,e,i)=>(parseInt(e.duration)||0)+(i>0?pGap:0)+s,0)
+    + breaks.reduce((s,b)=>s+(b.duration||0),0);
+  const perfEndTime = pTime ? addMinutes(pTime, perfEndMin) : '';
+  sortedCustoms.filter(c=> !pTime || c.time >= (perfEndTime||'99:99')).forEach(c=>{
+    rows.push({time:c.time, duration:c.duration, category:c.category, content:c.content,
+               person:c.person, note:c.note, rowType:'custom', origIdx:c.origIdx, cid});
+  });
+
+  // 会場終了
+  if(vEnd) rows.push({time:vEnd, duration:null, category:'会場準備', content:'会場利用終了', person:'', note:'退館', rowType:'event'});
+
+  // ── テーブル HTML生成 ──
+  const CAT_STYLES = {
+    '会場準備': 'background:rgba(111,207,151,0.12);',
+    'リハーサル': 'background:rgba(86,174,224,0.12);',
+    '休憩':  'background:rgba(196,158,212,0.15);',
+    '本番':  'background:rgba(212,180,106,0.12);',
+    '_gap':  'background:var(--surface2);opacity:0.75;',
+    'その他':'',
+    'event': 'background:rgba(255,255,255,0.04);',
+    'custom':'',
+  };
+
+  function catBadge(cat){
+    if(cat.startsWith('_')) return '';
+    const c = catColor(cat);
+    return `<span style="display:inline-block;padding:0.1rem 0.45rem;border-radius:10px;font-size:0.65rem;background:${c}22;color:${c};border:1px solid ${c}55;white-space:nowrap">${esc(cat)}</span>`;
+  }
+
+  let tableRows = rows.map(r=>{
+    const bgStyle = CAT_STYLES[r.rowType==='custom'||r.rowType==='event' ? r.category : r.rowType] || '';
+    const isGap = r.rowType==='gap';
+
+    // 操作列
+    let actionCol = '';
+    if(r.rowType==='rehearsal'){
+      actionCol = `<div style="display:flex;flex-direction:column;gap:1px;align-items:center">
+        ${r.idx>0?`<button class="btn btn-outline btn-sm" style="padding:0 0.3rem;font-size:0.65rem;line-height:1.4" onclick="moveRehearsal('${r.cid}','${r.entry.id}',-1)">↑</button>`:'<span style="height:20px"></span>'}
+        ${r.idx<r.total-1?`<button class="btn btn-outline btn-sm" style="padding:0 0.3rem;font-size:0.65rem;line-height:1.4" onclick="moveRehearsal('${r.cid}','${r.entry.id}',1)">↓</button>`:'<span style="height:20px"></span>'}
+      </div>`;
+    } else if(r.rowType==='performance'){
+      actionCol = `<button class="btn btn-outline btn-sm" style="font-size:0.65rem;padding:0.15rem 0.4rem;white-space:nowrap" onclick="addBreak('${r.cid}',${r.idx})">＋休憩</button>`;
+    } else if(r.rowType==='break'){
+      actionCol = `<button class="btn btn-outline btn-sm" style="font-size:0.65rem;padding:0.15rem 0.4rem;color:#eb5757" onclick="removeBreak('${r.cid}',${r.bi})">削除</button>`;
+    } else if(r.rowType==='custom'){
+      actionCol = `<button class="btn btn-outline btn-sm" style="font-size:0.65rem;padding:0.15rem 0.4rem;color:#eb5757" onclick="removeCustomEvent('${r.cid}',${r.origIdx})">削除</button>`;
+    }
+
+    // 内容列（休憩は分数編集可）
+    let contentCell = esc(r.content);
+    if(r.rowType==='break'){
+      contentCell = `〈休憩〉 <input type="number" value="${r.duration}" min="1" style="width:38px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.1rem 0.25rem;font-size:0.75rem" onchange="updateBreak('${r.cid}',${r.bi},'duration',this.value)" inputmode="numeric">分`;
+    } else if(r.rowType==='custom'){
+      contentCell = `<input type="text" value="${esc(r.content)}" placeholder="内容" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.15rem 0.4rem;font-size:0.8rem;width:100%" onchange="updateCustomEvent('${r.cid}',${r.origIdx},'content',this.value)">`;
+    }
+
+    // 担当列
+    let personCell = esc(r.person||'');
+    if(r.rowType==='custom'){
+      personCell = `<input type="text" value="${esc(r.person)}" placeholder="担当" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.15rem 0.4rem;font-size:0.75rem;width:100%" onchange="updateCustomEvent('${r.cid}',${r.origIdx},'person',this.value)">`;
+    } else if(r.rowType==='rehearsal'){
+      // 出演者名（ソロ：名前、グループ：メンバー）
+      const e = r.entry;
+      if(e.type==='group' && e.members && e.members.length){
+        personCell = e.members.map(m=>typeof m==='string'?esc(m):esc((m.name||'')+(m.instrument?' ('+m.instrument+')':''))).join('<br>');
+      } else if(e.type==='solo'){
+        personCell = esc(e.name||'');
+      }
+    } else if(r.rowType==='performance'){
+      const e = r.entry;
+      if(e.type==='group' && e.members && e.members.length){
+        personCell = e.members.map(m=>typeof m==='string'?esc(m):esc((m.name||'')+(m.instrument?' ('+m.instrument+')':''))).join('<br>');
+      } else if(e.type==='solo'){
+        personCell = esc(e.name||'');
+        if(e.accType==='self' && e.accName) personCell += '<br><span style="color:var(--text3);font-size:0.7rem">伴奏: '+esc(e.accName)+'</span>';
+      }
+    }
+
+    // 備考列
+    let noteCell = esc(r.note||'');
+    if(r.rowType==='break'){
+      noteCell = `<input type="text" value="${esc(r.note||'')}" placeholder="備考" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.1rem 0.3rem;font-size:0.75rem;width:100%" onchange="updateBreak('${r.cid}',${r.bi},'note',this.value)">`;
+    } else if(r.rowType==='custom'){
+      noteCell = `<input type="text" value="${esc(r.note||'')}" placeholder="備考" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.1rem 0.3rem;font-size:0.75rem;width:100%" onchange="updateCustomEvent('${r.cid}',${r.origIdx},'note',this.value)">`;
+    } else if(r.rowType==='rehearsal'){
+      const e = r.entry;
+      if(e.pieces && e.pieces.length){
+        noteCell = e.pieces.map(p=>esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join('<br>');
+      }
+    } else if(r.rowType==='performance'){
+      const e = r.entry;
+      if(e.pieces && e.pieces.length){
+        noteCell = e.pieces.map((p,pi)=>(e.pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join('<br>');
+      }
+    }
+
+    // カテゴリ列（カスタムは選択）
+    let catCell = catBadge(r.category);
+    if(r.rowType==='custom'){
+      const cats = ['会場準備','リハーサル','休憩','本番','その他'];
+      catCell = `<select style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.1rem 0.2rem;font-size:0.75rem" onchange="updateCustomEvent('${r.cid}',${r.origIdx},'category',this.value)">
+        ${cats.map(c=>`<option value="${c}" ${c===r.category?'selected':''}>${c}</option>`).join('')}
+      </select>`;
+    }
+
+    // 時刻・所要時間（カスタムは編集可）
+    let timeCell = `<span style="font-family:'EB Garamond',serif;font-size:0.9rem;color:${isGap?'var(--text3)':'var(--gold2)'}">${r.time||'—'}</span>`;
+    let durCell  = r.duration ? `<span style="font-size:0.78rem;color:var(--text3)">${r.duration}分</span>` : '';
+    if(r.rowType==='custom'){
+      timeCell = `<input type="time" value="${r.time||''}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.1rem 0.25rem;font-size:0.78rem;width:80px" onchange="updateCustomEvent('${r.cid}',${r.origIdx},'time',this.value)">`;
+      durCell  = `<input type="number" value="${r.duration||''}" min="0" placeholder="分" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.1rem 0.25rem;font-size:0.75rem;width:44px" onchange="updateCustomEvent('${r.cid}',${r.origIdx},'duration',this.value)" inputmode="numeric">`;
+    } else if(r.rowType==='rehearsal'){
+      durCell = `<span style="font-size:0.78rem;color:var(--text3)">${rDur}分</span>`;
+    }
+
+    const endTime = r.end ? `<div style="font-size:0.68rem;color:var(--text3);margin-top:1px">〜${r.end}</div>` : '';
+
+    return `<tr style="${bgStyle}">
+      <td style="padding:0.45rem 0.6rem;vertical-align:top;white-space:nowrap">${timeCell}${endTime}</td>
+      <td style="padding:0.45rem 0.5rem;vertical-align:top;text-align:right">${durCell}</td>
+      <td style="padding:0.45rem 0.5rem;vertical-align:top">${catCell}</td>
+      <td style="padding:0.45rem 0.6rem;vertical-align:top;font-size:${isGap?'0.75':'0.85'}rem;color:${isGap?'var(--text3)':'var(--text)'}">${contentCell}</td>
+      <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.78rem;color:var(--text2)">${personCell}</td>
+      <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.75rem;color:var(--text3)">${noteCell}</td>
+      <td style="padding:0.45rem 0.4rem;vertical-align:middle;text-align:center">${actionCol}</td>
+    </tr>`;
+  }).join('');
+
+  // ── タイムラインバー（コンパクト） ──
+  const tStart = timeToMin(vStart||rTime||pTime);
+  const tEnd   = timeToMin(vEnd);
+  let barHtml = '';
+  if(tStart!==null && tEnd!==null && tEnd>tStart){
+    const span = tEnd - tStart;
+    const markers = [
+      {t:vStart,  label:'利用開始', color:'#6fcf97'},
+      {t:vOpen,   label:'開場',     color:'#c49ed4'},
+      {t:pTime,   label:'開演',     color:'var(--gold2)'},
+      {t:perfEndTime, label:'終演', color:'var(--gold2)'},
+      {t:vEnd,    label:'利用終了', color:'#eb5757'},
+    ].filter(m=>m.t);
+    barHtml = `<div style="position:relative;height:52px;margin:0 0.5rem 1.2rem;flex-shrink:0">
+      <div style="position:absolute;left:0;right:0;top:24px;height:4px;background:var(--border);border-radius:2px"></div>
+      ${markers.map(m=>{
+        const pct = Math.max(0,Math.min(100,((timeToMin(m.t)-tStart)/span*100))).toFixed(1);
+        return `<div style="position:absolute;left:${pct}%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;top:0">
+          <div style="font-size:0.6rem;color:${m.color};white-space:nowrap">${m.label}</div>
+          <div style="width:1px;height:16px;background:${m.color}"></div>
+          <div style="width:5px;height:5px;border-radius:50%;background:${m.color};margin-top:3px"></div>
+          <div style="font-size:0.62rem;color:${m.color};margin-top:2px">${m.t}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  const html_out = `<div id="schedule-print-area">
+    ${barHtml}
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem">
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem">
+        <thead>
+          <tr style="background:var(--surface2)">
+            <th style="padding:0.4rem 0.6rem;text-align:left;font-size:0.68rem;color:var(--text3);white-space:nowrap">時刻</th>
+            <th style="padding:0.4rem 0.5rem;text-align:right;font-size:0.68rem;color:var(--text3);white-space:nowrap">時間</th>
+            <th style="padding:0.4rem 0.5rem;text-align:left;font-size:0.68rem;color:var(--text3)">カテゴリ</th>
+            <th style="padding:0.4rem 0.6rem;text-align:left;font-size:0.68rem;color:var(--text3)">内容</th>
+            <th style="padding:0.4rem 0.5rem;text-align:left;font-size:0.68rem;color:var(--text3)">担当 / 出演者</th>
+            <th style="padding:0.4rem 0.5rem;text-align:left;font-size:0.68rem;color:var(--text3)">備考</th>
+            <th style="padding:0.4rem 0.4rem;width:60px"></th>
+          </tr>
+        </thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>
+    <div style="text-align:right">
+      <button class="btn btn-outline btn-sm" onclick="addCustomEvent('${cid}')">＋ 行を追加</button>
+    </div>
+  </div>`;
+
+  el.innerHTML = html_out;
 }
 
 function printSchedule(){
