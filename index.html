@@ -719,6 +719,7 @@ select.status-sel{
   #page-my-concert-info,
   #page-my-concert,
   #page-my-program,
+  #page-my-schedule,
   #page-my-profile{
     font-size:1rem;
   }
@@ -1017,18 +1018,18 @@ select.status-sel{
     </div>
 
     <div class="page" id="page-my-program">
+      <div class="ph"><h2>プログラム</h2></div>
+      <div id="my-program-content"></div>
+    </div>
+
+    <div class="page" id="page-my-schedule">
       <div class="ph">
-        <h2>プログラム</h2>
+        <h2>スケジュール</h2>
         <div class="ph-actions">
           <button class="btn btn-outline btn-sm" onclick="printMySchedule()">🖨 印刷</button>
         </div>
       </div>
-      <div class="fin-tabs" style="margin-bottom:1rem">
-        <button class="fin-tab active" id="my-prog-tab-program" onclick="switchMyProgTab('program',this)">プログラム</button>
-        <button class="fin-tab" id="my-prog-tab-schedule" onclick="switchMyProgTab('schedule',this)">スケジュール</button>
-      </div>
-      <div id="my-program-content"></div>
-      <div id="my-schedule-content" style="display:none"></div>
+      <div id="my-schedule-content"></div>
     </div>
 
     <div class="page" id="page-my-profile">
@@ -1082,8 +1083,22 @@ select.status-sel{
     <textarea id="settings-instruments" rows="14"
       style="width:100%;font-size:0.85rem;line-height:1.9;font-family:'Shippori Mincho',serif"
       placeholder="ピアノ&#10;ヴァイオリン&#10;フルート&#10;..."></textarea>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.2rem 0">
+
+    <!-- 楽器略称 -->
+    <div style="font-size:0.72rem;letter-spacing:0.1em;color:var(--gold2);font-weight:600;margin-bottom:0.6rem">楽器略称</div>
+    <p style="font-size:0.78rem;color:var(--text3);margin-bottom:0.8rem;line-height:1.7">
+      プログラム・入力以外の場所（参加者一覧・スケジュール等）で使用される略称です。<br>
+      「正式名称=略称」の形式で1行1つ。
+    </p>
+    <textarea id="settings-abbr" rows="14"
+      style="width:100%;font-size:0.82rem;line-height:1.8;font-family:monospace"
+      placeholder="ピアノ=Pf&#10;ヴァイオリン=Vn&#10;..."></textarea>
+
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="resetInstruments()">デフォルトに戻す</button>
+      <button class="btn btn-outline" onclick="resetInstruments()">楽器リストをデフォルトに戻す</button>
+      <button class="btn btn-outline" onclick="resetAbbr()">略称をデフォルトに戻す</button>
       <button class="btn btn-gold" onclick="saveInstruments()">保存</button>
     </div>
   </div>
@@ -1440,6 +1455,31 @@ let instrumentList = [
   'ソプラノ','メゾソプラノ','アルト','テノール','バリトン','バス',
   '打楽器','その他'
 ];
+
+// 略称マップ（プログラム入力・プログラム表示以外で使用）
+const DEFAULT_ABBR = {
+  'ピアノ':'Pf','ヴァイオリン':'Vn','ヴィオラ':'Va','チェロ':'Vc',
+  'ハープ':'Hp','ギター':'Gt','フルート':'Fl','ピッコロ':'Picc',
+  'オーボエ':'Ob','クラリネット':'Cl','バスクラリネット':'BCl',
+  'ファゴット':'Fg','サクソフォン':'Sax','トランペット':'Tp',
+  'ホルン':'Hr','トロンボーン':'Tb','チューバ':'Tuba',
+  'ユーフォニアム':'Euph','ソプラノ':'Sop','メゾソプラノ':'MSop',
+  'アルト':'Alt','テノール':'Ten','バリトン':'Bar','バス':'Bas',
+  '打楽器':'Perc','その他':'他'
+};
+let instrumentAbbr = {...DEFAULT_ABBR};
+function instrAbbr(name){ return instrumentAbbr[name] || name; }
+function abbrToText(map){ return Object.entries(map).map(([k,v])=>`${k}=${v}`).join('\n'); }
+function textToAbbr(raw){
+  const m={};
+  raw.split('\n').forEach(l=>{
+    const eq=l.indexOf('=');
+    if(eq<1) return;
+    const k=l.slice(0,eq).trim(), v=l.slice(eq+1).trim();
+    if(k&&v) m[k]=v;
+  });
+  return m;
+}
 let currentUser = null; // {role:'organizer'|'performer', entryId?, name}
 let loginMode = 'performer';
 let editingConcertId = null;
@@ -1469,6 +1509,7 @@ async function persist(){
       transactions,
       applications,
       instrumentList,
+      instrumentAbbr,
       adminPassword,
       updatedAt: Date.now()
     };
@@ -1490,6 +1531,7 @@ async function hydrate(){
       if(data.transactions) transactions  = data.transactions;
       if(data.applications) applications  = data.applications;
       if(data.instrumentList) instrumentList = data.instrumentList;
+      if(data.instrumentAbbr)  instrumentAbbr = data.instrumentAbbr;
       if(data.adminPassword)  adminPassword  = data.adminPassword;
     }
   }catch(e){ console.warn('Firebase read error:', e); }
@@ -1511,6 +1553,7 @@ function startRealtimeSync(){
     if(data.transactions) transactions  = data.transactions;
     if(data.applications) applications  = data.applications;
     if(data.instrumentList) instrumentList = data.instrumentList;
+    if(data.instrumentAbbr)  instrumentAbbr = data.instrumentAbbr;
     if(data.adminPassword)  adminPassword  = data.adminPassword;
     // 表示中のページを再描画
     refreshCurrentPage();
@@ -1528,7 +1571,8 @@ function refreshCurrentPage(){
   else if(id==='page-schedule')  { renderSchedule(); if(schedTabMode==='staff') renderScheduleStaff(); if(schedTabMode==='members') renderStaffMembers(); }
   else if(id==='page-my-concert-info') renderMyConcertInfo();
   else if(id==='page-my-concert')      renderMyConvert();
-  else if(id==='page-my-program')      { renderMyProgram(); renderMySchedule(); }
+  else if(id==='page-my-program')      renderMyProgram();
+  else if(id==='page-my-schedule')     renderMySchedule();
   else if(id==='page-my-profile')      renderMyProfile();
 }
 
@@ -1775,6 +1819,7 @@ function importData(event){
       entries       = data.entries       || [];
       applications  = data.applications  || [];
       instrumentList= data.instrumentList|| DEFAULT_INSTRUMENTS;
+      instrumentAbbr= data.instrumentAbbr || {...DEFAULT_ABBR};
       persist();
       updateDatalist();
       renderConcerts();
@@ -1828,7 +1873,8 @@ function buildNav(){
     nav.innerHTML = `
       <button class="active" onclick="showPage('my-concert-info',this)">演奏会</button>
       <button onclick="showPage('my-concert',this)">出演者情報</button>
-      <button onclick="showPage('my-program',this)">プログラム</button>`;
+      <button onclick="showPage('my-program',this)">プログラム</button>
+      <button onclick="showPage('my-schedule',this)">スケジュール</button>`;
   }
   // show badge if new applications exist
   updateAppBadge();
@@ -1855,7 +1901,8 @@ function showPage(name, btn){
   if(name==='finance')        { populateSel('fin-concert-sel'); renderFinance(); }
   if(name==='my-concert-info') renderMyConcertInfo();
   if(name==='my-concert')     renderMyConvert();
-  if(name==='my-program')     { renderMyProgram(); renderMySchedule(); }
+  if(name==='my-program')     renderMyProgram();
+  if(name==='my-schedule')    renderMySchedule();
   if(name==='my-profile')     renderMyProfile();
 }
 
@@ -2410,8 +2457,8 @@ function renderParticipants(){
 
       // instrument cell
       const instrCell = e.type==='group'
-        ? `<span style="font-size:0.72rem;color:var(--text3)">${(e.members||[]).map(m=>typeof m==='string'?'':esc(m.instrument||'')).filter(Boolean).join('<br>')}</span>`
-        : `<span style="font-size:0.75rem;color:var(--text2)">${esc(e.instrument||'—')}</span>`;
+        ? `<span style="font-size:0.72rem;color:var(--text3)">${(e.members||[]).map(m=>typeof m==='string'?'':esc(instrAbbr(m.instrument||''))).filter(Boolean).join('<br>')}</span>`
+        : `<span style="font-size:0.75rem;color:var(--text2)">${esc(instrAbbr(e.instrument||'')) || '—'}</span>`;
 
       const accCell = e.type==='group'
         ? `<span style="font-size:0.72rem;color:var(--text3)">${(e.members||[]).length}名</span>`
@@ -2941,7 +2988,7 @@ function makeCustomRow(c, cid){
 
 function personStr(e){
   if(e.type==='solo') return e.name||'';
-  if(e.members&&e.members.length) return e.members.map(m=>typeof m==='string'?m:(m.name||'')+(m.instrument?' ('+m.instrument+')':'')).join(', ');
+  if(e.members&&e.members.length) return e.members.map(m=>typeof m==='string'?m:(m.name||'')+(m.instrument?' ('+instrAbbr(m.instrument)+')':'')).join(', ');
   return e.groupRep||e.groupName||'';
 }
 
@@ -3353,11 +3400,63 @@ function renderMyConvert(){
   }).join('');
 }
 
-function switchMyProgTab(tab, btn){
-  document.querySelectorAll('#page-my-program .fin-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('my-program-content').style.display  = tab==='program'  ? '' : 'none';
-  document.getElementById('my-schedule-content').style.display = tab==='schedule' ? '' : 'none';
+function renderMyProgram(){
+  const el=document.getElementById('my-program-content');
+  const myEntryIds=new Set(currentUser.entryIds||[currentUser.entryId].filter(Boolean));
+  const myEntries=[...myEntryIds].map(id=>entries.find(e=>e.id===id)).filter(Boolean);
+  const myCids=[...new Set(myEntries.map(e=>e.concertId))];
+
+  if(!myCids.length){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
+
+  el.innerHTML = myCids.map(cid=>{
+    const concert=concerts.find(c=>c.id===cid);
+    if(!concert) return '';
+    const myList=myEntries.filter(e=>e.concertId===cid).sort((a,b)=>(a.order||999)-(b.order||999));
+
+    const items = myList.map((e,i)=>{
+      const instrStr = e.type==='solo' && e.instrument
+        ? `<span style="font-size:0.75rem;color:var(--text3)">${esc(e.instrument)}</span>`
+        : '';
+      const groupMembers = e.type==='group' && e.members?.length
+        ? `<div style="font-size:0.75rem;color:var(--text3);margin-top:0.2rem">${e.members.map(m=>{
+            const n=typeof m==='string'?m:(m.name||'');
+            const inst=typeof m==='string'?'':(m.instrument?` (${esc(m.instrument)})`:'');
+            return esc(n)+inst;
+          }).join(' / ')}</div>`
+        : '';
+      const pa=Array.isArray(e.pieces)?e.pieces:(e.pieces?[{title:e.pieces,composer:''}]:[]);
+      const piecesHtml = pa.length
+        ? `<div style="margin-top:0.4rem">${pa.map((p,pi)=>`
+            <div style="font-size:0.78rem;color:var(--text2)">${pa.length>1?`<span style="color:var(--text3)">${pi+1}. </span>`:''}${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('')}</div>`
+        : '<div style="font-size:0.75rem;color:var(--text3);margin-top:0.3rem">演奏曲目未登録</div>';
+
+      return `<div class="prog-item" style="padding:0.7rem 0.8rem;border-bottom:1px solid var(--border)">
+        <div class="prog-num" style="color:var(--gold2)">${e.order||i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:baseline;gap:0.5rem;flex-wrap:wrap">
+            <span class="prog-name">${e.type==='group'?esc(e.groupName):esc(e.name)}</span>
+            ${instrStr}
+            <span class="badge ${e.type==='group'?'badge-group':'badge-solo'}" style="font-size:0.62rem">${e.type==='group'?'グループ':'ソロ'}</span>
+            ${e.duration?`<span style="font-size:0.72rem;color:var(--text3)">${e.duration}分</span>`:''}
+          </div>
+          ${groupMembers}
+          ${piecesHtml}
+        </div>
+      </div>`;
+    }).join('');
+
+    const myFee = myList.reduce((s,e)=>s+(e.feeAmount||0),0);
+    return `<div class="card" style="margin-bottom:1.2rem;padding:0">
+      <div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border)">
+        <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">${esc(concert.name)}</div>
+        ${concert.date?`<div style="font-size:0.72rem;color:var(--text3);margin-top:0.15rem">${concert.date}${concert.time?' &ensp;開演 '+concert.time:''}</div>`:''}
+      </div>
+      ${items}
+      ${myFee?`<div style="padding:0.6rem 1rem;border-top:1px solid var(--border);text-align:right;font-size:0.78rem;color:var(--text3)">
+        参加費合計 <span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);margin-left:0.4rem">${fmt(myFee)}</span>
+      </div>`:''}
+    </div>`;
+  }).join('');
 }
 
 function renderMySchedule(){
@@ -3479,35 +3578,6 @@ function renderMySchedule(){
 
 function printMySchedule(){
   window.print();
-}
-
-function renderMyProgram(){
-  const el=document.getElementById('my-program-content');
-  const cid=currentUser.concertId;
-  const concert=concerts.find(c=>c.id===cid);
-  if(!concert){el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>';return;}
-
-  const myIds=new Set((currentUser.entryIds||[currentUser.entryId].filter(Boolean)));
-  const list=entries.filter(e=>e.concertId===cid&&e.status!=='absent').sort((a,b)=>(a.order||999)-(b.order||999));
-
-  el.innerHTML=`
-    <div style="font-size:0.78rem;color:var(--text3);margin-bottom:1rem">${esc(concert.name)}${concert.date?' — '+concert.date:''}</div>
-    <div class="prog-wrap">
-      <div class="prog-body">
-        ${list.map((e,i)=>{
-          return `<div class="prog-item">
-            <div class="prog-num">${e.order||i+1}</div>
-            <div>
-              <div class="prog-name">${e.type==='group'?esc(e.groupName):esc(e.name)}</div>
-              ${(()=>{
-                const pa=Array.isArray(e.pieces)?e.pieces:(e.pieces?[{title:e.pieces,composer:''}]:[]);
-                return pa.map((p,pi)=>`<div style="font-size:0.78rem;color:var(--text2)">${pa.length>1?`${pi+1}. `:''}${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('');
-              })()}
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
 }
 
 function renderMyProfile(){
@@ -3784,22 +3854,31 @@ function changeAdminPassword(){
 
 function openSettingsModal(){
   document.getElementById('settings-instruments').value = instrumentList.join('\n');
+  document.getElementById('settings-abbr').value = abbrToText(instrumentAbbr);
   openModal('settings-modal');
 }
 
 function saveInstruments(){
   const raw = document.getElementById('settings-instruments').value;
   instrumentList = raw.split('\n').map(s=>s.trim()).filter(Boolean);
+  instrumentAbbr = textToAbbr(document.getElementById('settings-abbr').value);
   updateDatalist();
   persist();
   closeModal('settings-modal');
 }
 
 function resetInstruments(){
-  if(!confirm('デフォルトのリストに戻しますか？')) return;
+  if(!confirm('楽器リストをデフォルトに戻しますか？')) return;
   instrumentList = [...DEFAULT_INSTRUMENTS];
   document.getElementById('settings-instruments').value = instrumentList.join('\n');
   updateDatalist();
+  persist();
+}
+
+function resetAbbr(){
+  if(!confirm('略称をデフォルトに戻しますか？')) return;
+  instrumentAbbr = {...DEFAULT_ABBR};
+  document.getElementById('settings-abbr').value = abbrToText(instrumentAbbr);
   persist();
 }
 
