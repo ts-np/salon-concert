@@ -1285,6 +1285,22 @@ select.status-sel{
         <div id="member-list-fields"></div>
         <button class="btn btn-outline btn-sm" onclick="addMemberField()">＋ メンバーを追加</button>
       </div>
+      <div class="subsect" style="margin-top:0.9rem">
+        <div class="subsect-title">伴奏</div>
+        <div class="form-grid">
+          <div class="fg">
+            <label>伴奏の有無</label>
+            <select id="em-acc-type-group" onchange="toggleAccFields()">
+              <option value="none">伴奏なし</option>
+              <option value="self">自己手配（伴奏者あり）</option>
+              <option value="needed">伴奏者の手配が必要</option>
+            </select>
+          </div>
+          <div class="fg" id="acc-name-wrap-group">
+            <label>伴奏者名</label><input id="em-acc-name-group" type="text" placeholder="伴奏者の氏名">
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- COMMON: PIECES -->
@@ -1328,23 +1344,62 @@ select.status-sel{
 
     <!-- PARTICIPATION FEE -->
     <div class="subsect" style="margin-top:1rem">
-      <div class="subsect-title">参加費</div>
-      <div class="form-grid">
-        <div class="fg">
-          <label>参加費（円）</label>
-          <input id="em-fee-amount" type="number" min="0" placeholder="3000" inputmode="numeric">
+      <div class="subsect-title">費用</div>
+
+      <!-- 参加費 -->
+      <div style="background:var(--surface2);border-radius:8px;padding:0.8rem 1rem;margin-bottom:0.6rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem">
+          <span style="font-size:0.78rem;font-weight:600;color:var(--text2)">参加費</span>
         </div>
-        <div class="fg">
-          <label>回収状況</label>
-          <select id="em-fee-status">
-            <option value="unpaid">未回収</option>
-            <option value="paid">回収済み</option>
-          </select>
+        <div style="display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap">
+          <div style="flex:1;min-width:100px">
+            <label style="font-size:0.68rem;color:var(--text3)">金額（円）</label>
+            <input id="em-fee-amount" type="number" min="0" placeholder="3000" inputmode="numeric" oninput="updateFeeTotal()" style="width:100%">
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.25rem;padding-top:1rem">
+            <span style="font-size:0.65rem;color:var(--text3)" id="em-fee-status-label">未回収</span>
+            <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer">
+              <input type="checkbox" id="em-fee-status-chk" onchange="updateFeeStatusLabel('fee')" style="opacity:0;width:0;height:0;position:absolute">
+              <span id="em-fee-status-track" style="position:absolute;inset:0;border-radius:12px;background:var(--border);transition:0.2s"></span>
+              <span id="em-fee-status-thumb" style="position:absolute;left:2px;top:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.4)"></span>
+            </label>
+            <span style="font-size:0.65rem;color:var(--text3)">回収済</span>
+          </div>
         </div>
-        <div class="fg full">
-          <label>備考（振込確認番号など）</label>
-          <input id="em-fee-note" type="text" placeholder="例: 振込確認済み">
+        <div style="margin-top:0.5rem">
+          <label style="font-size:0.68rem;color:var(--text3)">備考</label>
+          <input id="em-fee-note" type="text" placeholder="例: 振込確認済み" style="width:100%">
         </div>
+      </div>
+
+      <!-- 伴奏代（伴奏者手配が必要な場合のみ表示） -->
+      <div id="em-acc-fee-wrap" style="display:none;background:var(--surface2);border-radius:8px;padding:0.8rem 1rem;margin-bottom:0.6rem">
+        <div style="font-size:0.78rem;font-weight:600;color:var(--text2);margin-bottom:0.6rem">伴奏代</div>
+        <div style="display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap">
+          <div style="flex:1;min-width:100px">
+            <label style="font-size:0.68rem;color:var(--text3)">金額（円）</label>
+            <input id="em-acc-fee-amount" type="number" min="0" placeholder="0" inputmode="numeric" oninput="updateFeeTotal()" style="width:100%">
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0.25rem;padding-top:1rem">
+            <span style="font-size:0.65rem;color:var(--text3)" id="em-acc-fee-status-label">未回収</span>
+            <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer">
+              <input type="checkbox" id="em-acc-fee-status-chk" onchange="updateFeeStatusLabel('accfee')" style="opacity:0;width:0;height:0;position:absolute">
+              <span id="em-acc-fee-status-track" style="position:absolute;inset:0;border-radius:12px;background:var(--border);transition:0.2s"></span>
+              <span id="em-acc-fee-status-thumb" style="position:absolute;left:2px;top:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.4)"></span>
+            </label>
+            <span style="font-size:0.65rem;color:var(--text3)">回収済</span>
+          </div>
+        </div>
+        <div style="margin-top:0.5rem">
+          <label style="font-size:0.68rem;color:var(--text3)">備考</label>
+          <input id="em-acc-fee-note" type="text" placeholder="例: 当日現金" style="width:100%">
+        </div>
+      </div>
+
+      <!-- 合計 -->
+      <div id="em-fee-total-wrap" style="display:none;text-align:right;padding:0.5rem 0.2rem;border-top:1px solid var(--border);margin-top:0.2rem">
+        <span style="font-size:0.75rem;color:var(--text3)">合計 &ensp;</span>
+        <span id="em-fee-total" style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--gold2)">¥0</span>
       </div>
     </div>
 
@@ -2214,17 +2269,86 @@ function setType(t){
       const ml=document.getElementById('member-list-fields');
       if(ml){ ml.innerHTML=''; addMemberField(); }
     }
+    const accG=document.getElementById('em-acc-type-group'); if(accG) accG.value='none';
+    document.getElementById('em-acc-name-group').value='';
+    toggleAccFields();
   }
 }
 function toggleAccFields(){
-  const v=document.getElementById('em-acc-type').value;
-  const nameInput=document.getElementById('em-acc-name');
-  if(nameInput){
-    const enabled = (v==='self'||v==='needed');
-    nameInput.disabled = !enabled;
-    nameInput.style.opacity = enabled ? '1' : '0.4';
-    nameInput.placeholder = v==='needed' ? '手配予定の伴奏者名（決まっていれば）' : '伴奏者の氏名';
+  const isGroup = document.getElementById('group-fields')?.style.display !== 'none';
+  const accSel = isGroup
+    ? document.getElementById('em-acc-type-group')
+    : document.getElementById('em-acc-type');
+  const v = accSel?.value || 'none';
+
+  // ソロ側
+  const nameWrap = document.getElementById('acc-name-wrap');
+  const nameInput = document.getElementById('em-acc-name');
+  if(nameWrap && nameInput){
+    const enabled=(v==='self'||v==='needed');
+    nameInput.disabled=!enabled;
+    nameInput.style.opacity=enabled?'1':'0.4';
+    nameInput.placeholder=v==='needed'?'手配予定の伴奏者名（決まっていれば）':'伴奏者の氏名';
   }
+  // グループ側
+  const nameWrapG = document.getElementById('acc-name-wrap-group');
+  const nameInputG = document.getElementById('em-acc-name-group');
+  if(nameWrapG && nameInputG){
+    const enabled=(v==='self'||v==='needed');
+    nameInputG.disabled=!enabled;
+    nameInputG.style.opacity=enabled?'1':'0.4';
+    nameInputG.placeholder=v==='needed'?'手配予定の伴奏者名（決まっていれば）':'伴奏者の氏名';
+  }
+  // 伴奏代フィールドの表示切替
+  const accFeeWrap = document.getElementById('em-acc-fee-wrap');
+  if(accFeeWrap) accFeeWrap.style.display = v==='needed' ? '' : 'none';
+  updateFeeTotal();
+}
+
+function updateFeeStatusLabel(type){
+  if(type==='fee'){
+    const chk=document.getElementById('em-fee-status-chk');
+    const label=document.getElementById('em-fee-status-label');
+    const track=document.getElementById('em-fee-status-track');
+    const thumb=document.getElementById('em-fee-status-thumb');
+    if(chk.checked){
+      label.textContent='回収済';label.style.color='var(--gold2)';
+      track.style.background='var(--gold2)';thumb.style.left='20px';
+    } else {
+      label.textContent='未回収';label.style.color='var(--text3)';
+      track.style.background='var(--border)';thumb.style.left='2px';
+    }
+  } else {
+    const chk=document.getElementById('em-acc-fee-status-chk');
+    const label=document.getElementById('em-acc-fee-status-label');
+    const track=document.getElementById('em-acc-fee-status-track');
+    const thumb=document.getElementById('em-acc-fee-status-thumb');
+    if(chk.checked){
+      label.textContent='回収済';label.style.color='var(--gold2)';
+      track.style.background='var(--gold2)';thumb.style.left='20px';
+    } else {
+      label.textContent='未回収';label.style.color='var(--text3)';
+      track.style.background='var(--border)';thumb.style.left='2px';
+    }
+  }
+}
+
+function setFeeSwitch(id, isPaid){
+  const chk=document.getElementById(id+'-chk');
+  if(!chk) return;
+  chk.checked=isPaid;
+  updateFeeStatusLabel(id==='em-fee-status'?'fee':'accfee');
+}
+
+function updateFeeTotal(){
+  const fee=parseFloat(document.getElementById('em-fee-amount')?.value)||0;
+  const accFeeVisible=document.getElementById('em-acc-fee-wrap')?.style.display!=='none';
+  const accFee=accFeeVisible?(parseFloat(document.getElementById('em-acc-fee-amount')?.value)||0):0;
+  const total=fee+accFee;
+  const wrap=document.getElementById('em-fee-total-wrap');
+  const el=document.getElementById('em-fee-total');
+  if(wrap) wrap.style.display=accFeeVisible&&total>0?'':'none';
+  if(el) el.textContent='¥'+total.toLocaleString();
 }
 
 // ── MEMBER ROWS (name + instrument) ──
@@ -2329,6 +2453,8 @@ function openEntryModal(id){
       } else {
         members.forEach(m=>addMemberField(m.name||m, m.kana||'', m.instrument||'', m.code||''));
       }
+      document.getElementById('em-acc-type-group').value=e.accType||'none';
+      document.getElementById('em-acc-name-group').value=e.accName||'';
     } else {
       document.getElementById('em-name').value=e.name||'';
       document.getElementById('em-kana').value=e.kana||'';
@@ -2337,7 +2463,6 @@ function openEntryModal(id){
       document.getElementById('em-instrument').value=e.instrument||'';
       document.getElementById('em-acc-type').value=e.accType||'none';
       document.getElementById('em-acc-name').value=e.accName||'';
-      toggleAccFields();
     }
     loadPieces(e.pieces);
     document.getElementById('em-order').value=e.order||'';
@@ -2347,8 +2472,12 @@ function openEntryModal(id){
     document.getElementById('em-status').value=e.status||'pending';
     document.getElementById('em-performer-code').value=e.performerCode||'';
     document.getElementById('em-fee-amount').value=e.feeAmount||'';
-    document.getElementById('em-fee-status').value=e.feeStatus||'unpaid';
+    setFeeSwitch('em-fee-status', e.feeStatus==='paid');
     document.getElementById('em-fee-note').value=e.feeNote||'';
+    document.getElementById('em-acc-fee-amount').value=e.accFeeAmount||'';
+    setFeeSwitch('em-acc-fee-status', e.accFeeStatus==='paid');
+    document.getElementById('em-acc-fee-note').value=e.accFeeNote||'';
+    toggleAccFields();
   } else {
     document.getElementById('entry-modal-title').textContent='参加者を追加';
     setType('solo');
@@ -2356,14 +2485,18 @@ function openEntryModal(id){
      'em-group-name','em-group-rep','em-group-rep-kana','em-group-email','em-group-tel','em-order','em-duration','em-profile','em-memo','em-performer-code']
       .forEach(i=>document.getElementById(i).value='');
     document.getElementById('em-acc-type').value='none';
+    document.getElementById('em-acc-type-group').value='none';
     document.getElementById('em-status').value='pending';
     document.getElementById('member-list-fields').innerHTML='';
     addMemberField();
-    toggleAccFields();
     loadPieces([]);
     document.getElementById('em-fee-amount').value='';
-    document.getElementById('em-fee-status').value='unpaid';
+    setFeeSwitch('em-fee-status', false);
     document.getElementById('em-fee-note').value='';
+    document.getElementById('em-acc-fee-amount').value='';
+    setFeeSwitch('em-acc-fee-status', false);
+    document.getElementById('em-acc-fee-note').value='';
+    toggleAccFields();
     const cid=document.getElementById('p-concert-sel')?.value;
     if(cid){
       document.getElementById('em-concert').value=cid;
@@ -2385,6 +2518,7 @@ function onEmConcertChange(){
 function saveEntry(){
   const cid=document.getElementById('em-concert').value;
   const type=currentType;
+  const accFeeVisible=document.getElementById('em-acc-fee-wrap')?.style.display!=='none';
   let data={concertId:cid,type,
     pieces:getPieces(),
     order:parseInt(document.getElementById('em-order').value)||0,
@@ -2394,8 +2528,11 @@ function saveEntry(){
     status:document.getElementById('em-status').value,
     performerCode:document.getElementById('em-performer-code').value.trim(),
     feeAmount:parseFloat(document.getElementById('em-fee-amount').value)||0,
-    feeStatus:document.getElementById('em-fee-status').value,
+    feeStatus:document.getElementById('em-fee-status-chk')?.checked?'paid':'unpaid',
     feeNote:document.getElementById('em-fee-note').value.trim(),
+    accFeeAmount:accFeeVisible?(parseFloat(document.getElementById('em-acc-fee-amount').value)||0):0,
+    accFeeStatus:document.getElementById('em-acc-fee-status-chk')?.checked?'paid':'unpaid',
+    accFeeNote:document.getElementById('em-acc-fee-note').value.trim(),
   };
   if(type==='solo'){
     const name=document.getElementById('em-name').value.trim();
@@ -2418,6 +2555,8 @@ function saveEntry(){
       groupEmail:document.getElementById('em-group-email').value.trim(),
       groupTel:document.getElementById('em-group-tel').value.trim(),
       members:getMembers(),
+      accType:document.getElementById('em-acc-type-group').value,
+      accName:document.getElementById('em-acc-name-group').value.trim(),
     });
   }
   if(editingEntryId){
@@ -3345,7 +3484,6 @@ function renderMyConcertInfo(){
 function renderMyConvert(){
   const el=document.getElementById('my-concert-content');
 
-  // 出演中の全エントリーを取得（ログイン時に選んだ演奏会のみ）
   const cid = currentUser.concertId;
   const myEntryIds = currentUser.entryIds||[currentUser.entryId].filter(Boolean);
   const myEntries  = myEntryIds.map(id=>entries.find(e=>e.id===id)).filter(e=>e && e.concertId===cid);
@@ -3355,139 +3493,141 @@ function renderMyConvert(){
     return;
   }
 
+  const concert = concerts.find(c=>c.id===cid);
+  if(!concert){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
+
   const statusLabel={pending:'未確認',confirmed:'参加確定',absent:'欠席'};
   const statusBadge={pending:'badge-pending',confirmed:'badge-confirmed',absent:'badge-absent'};
+  const dateStr = concert.date ? `📅 ${concert.date}${concert.time?' &ensp;'+concert.time:''}` : '';
+  const venueStr = concert.venue ? `📍 ${esc(concert.venue)}` : '';
 
-  // 演奏会ごとにグループ化
-  const concertMap = {};
-  myEntries.forEach(e=>{
-    if(!concertMap[e.concertId]) concertMap[e.concertId]=[];
-    concertMap[e.concertId].push(e);
-  });
+  const entriesHtml = myEntries.map(e=>{
+    // ソロは名前不要（自分しか出ない）、グループはグループ名を表示
+    const headline = e.type==='group'
+      ? `<span style="font-weight:700;font-size:0.95rem">${esc(e.groupName)}</span>
+         <span class="badge badge-group" style="font-size:0.65rem;margin-left:0.5rem">グループ</span>`
+      : `<span class="badge badge-solo" style="font-size:0.68rem">ソロ</span>`;
 
-  el.innerHTML = Object.entries(concertMap).map(([cid, ces])=>{
-    const concert = concerts.find(c=>c.id===cid);
-    if(!concert) return '';
+    const subInfo = `<div style="font-size:0.78rem;color:var(--text3);margin-top:0.3rem">
+      出演順：${e.order||'未定'}&ensp;演奏時間：${e.duration?e.duration+'分':'未定'}
+      ${e.type==='solo'&&e.instrument?`&ensp;楽器：${esc(e.instrument)}`:''}
+      ${e.type==='solo'&&e.accType==='self'&&e.accName?`&ensp;伴奏：${esc(e.accName)}`:''}
+      ${e.type==='solo'&&e.accType==='needed'?'<span style="color:#f6c90e;margin-left:0.5rem">⚠ 伴奏者手配が必要</span>':''}
+    </div>`;
 
-    // 演奏会ヘッダー
-    const dateStr = concert.date ? `📅 ${concert.date}${concert.time?' &ensp;'+concert.time:''}` : '';
-    const venueStr = concert.venue ? `📍 ${esc(concert.venue)}` : '';
+    // グループメンバー一覧
+    const membersHtml = e.type==='group' && e.members?.length
+      ? `<div style="font-size:0.78rem;color:var(--text2);margin-top:0.4rem">${e.members.map(m=>{
+          const nm=typeof m==='string'?m:(m.name||'');
+          const inst=typeof m==='string'?'':(m.instrument?` <span style="color:var(--text3)">（${esc(m.instrument)}）</span>`:'');
+          return `<span>${esc(nm)}${inst}</span>`;
+        }).join('　')}</div>` : '';
 
-    // エントリー一覧
-    const entriesHtml = ces.map(e=>`
-      <div style="border:1px solid var(--border);border-radius:8px;padding:0.8rem 1rem;margin-bottom:0.6rem;background:var(--surface2)">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem">
-          <div>
-            <div style="font-weight:700;font-size:0.95rem">${e.type==='group'?esc(e.groupName):esc(e.name)}</div>
-            <div style="font-size:0.78rem;color:var(--text3);margin-top:0.25rem">
-              出演順：${e.order||'未定'}&ensp;演奏時間：${e.duration?e.duration+'分':'未定'}
-              ${e.type==='solo'&&e.accType==='needed'?'<span style="color:#f6c90e;margin-left:0.6rem">⚠ 伴奏者手配が必要</span>':''}
-              ${e.type==='solo'&&e.accType==='self'?`<span style="color:var(--text2);margin-left:0.6rem">伴奏：${esc(e.accName)||'未入力'}</span>`:''}
-            </div>
-          </div>
-          <span class="badge ${statusBadge[e.status]||'badge-pending'}" style="flex-shrink:0">${statusLabel[e.status]||'未確認'}</span>
-        </div>
-        ${e.pieces&&e.pieces.length?`
-          <div style="margin-top:0.6rem;border-top:1px solid var(--border);padding-top:0.5rem">
-            ${(Array.isArray(e.pieces)?e.pieces:[]).map((p,i)=>`
-              <div style="font-size:0.78rem;color:var(--text2);line-height:1.7">
-                ${ces.length>1||e.pieces.length>1?`<span style="color:var(--text3)">${i+1}. </span>`:''}${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}
-              </div>`).join('')}
-          </div>`:'<div style="font-size:0.75rem;color:var(--text3);margin-top:0.4rem">演奏曲目未登録</div>'}
-        <div style="margin-top:0.7rem;text-align:right">
-          <button class="btn btn-gold btn-sm" onclick="openMyEntryEdit('${e.id}')">✏ 編集</button>
-        </div>
-      </div>`).join('');
+    const piecesHtml = e.pieces?.length
+      ? `<div style="margin-top:0.6rem;border-top:1px solid var(--border);padding-top:0.5rem">
+          ${(Array.isArray(e.pieces)?e.pieces:[]).map((p,i)=>`
+            <div style="font-size:0.78rem;color:var(--text2);line-height:1.7">
+              ${e.pieces.length>1?`<span style="color:var(--text3)">${i+1}. </span>`:''}${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}
+            </div>`).join('')}
+        </div>`
+      : '<div style="font-size:0.75rem;color:var(--text3);margin-top:0.4rem">演奏曲目未登録</div>';
 
-    // 費用（演奏会ごと）
-    const feeRows = ces.filter(e=>e.feeAmount>0);
-    const feeHtml = feeRows.length ? `
-      <div style="margin-top:0.8rem;border-top:1px solid var(--border);padding-top:0.7rem">
-        <div style="font-size:0.72rem;color:var(--text3);margin-bottom:0.4rem">参加費</div>
-        ${feeRows.map(e=>`
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;margin-bottom:0.3rem">
-            <span style="color:var(--text2)">${e.type==='group'?esc(e.groupName):esc(e.name)}</span>
-            <span style="display:flex;align-items:center;gap:0.6rem">
-              <span style="font-family:'EB Garamond',serif;color:var(--text)">${fmt(e.feeAmount)}</span>
-              <span class="badge ${e.feeStatus==='paid'?'badge-confirmed':'badge-pending'}" style="font-size:0.65rem">${e.feeStatus==='paid'?'✓ 支払済み':'● 未払い'}</span>
-            </span>
-          </div>`).join('')}
-      </div>` : '';
-
-    return `
-      <div class="card" style="margin-bottom:1.2rem">
-        <div style="margin-bottom:0.8rem">
-          <div class="card-title">${esc(concert.name)}</div>
-          <div style="font-size:0.78rem;color:var(--text3);margin-top:0.3rem;display:flex;flex-wrap:wrap;gap:0.3rem 1rem">
-            ${dateStr?`<span>${dateStr}</span>`:''}
-            ${venueStr?`<span>${venueStr}</span>`:''}
-          </div>
-        </div>
-        ${entriesHtml}
-        ${feeHtml}
-      </div>`;
+    return `<div style="border:1px solid var(--border);border-radius:8px;padding:0.8rem 1rem;margin-bottom:0.6rem;background:var(--surface2)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem">
+        <div>${headline}${subInfo}${membersHtml}</div>
+        <span class="badge ${statusBadge[e.status]||'badge-pending'}" style="flex-shrink:0">${statusLabel[e.status]||'未確認'}</span>
+      </div>
+      ${piecesHtml}
+      <div style="margin-top:0.7rem;text-align:right">
+        <button class="btn btn-gold btn-sm" onclick="openMyEntryEdit('${e.id}')">✏ 編集</button>
+      </div>
+    </div>`;
   }).join('');
+
+  // 参加費
+  const feeRows = myEntries.filter(e=>e.feeAmount>0);
+  const feeHtml = feeRows.length ? `
+    <div style="margin-top:0.8rem;border-top:1px solid var(--border);padding-top:0.7rem">
+      <div style="font-size:0.72rem;color:var(--text3);margin-bottom:0.4rem">参加費</div>
+      ${feeRows.map(e=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;margin-bottom:0.3rem">
+          <span style="color:var(--text2)">${e.type==='group'?esc(e.groupName):'ソロ'}</span>
+          <span style="display:flex;align-items:center;gap:0.6rem">
+            <span style="font-family:'EB Garamond',serif;color:var(--text)">${fmt(e.feeAmount)}</span>
+            <span class="badge ${e.feeStatus==='paid'?'badge-confirmed':'badge-pending'}" style="font-size:0.65rem">${e.feeStatus==='paid'?'✓ 支払済み':'● 未払い'}</span>
+          </span>
+        </div>`).join('')}
+    </div>` : '';
+
+  el.innerHTML = `<div class="card">
+    <div style="margin-bottom:0.8rem">
+      <div class="card-title">${esc(concert.name)}</div>
+      <div style="font-size:0.78rem;color:var(--text3);margin-top:0.3rem;display:flex;flex-wrap:wrap;gap:0.3rem 1rem">
+        ${dateStr?`<span>${dateStr}</span>`:''}
+        ${venueStr?`<span>${venueStr}</span>`:''}
+      </div>
+    </div>
+    ${entriesHtml}
+    ${feeHtml}
+  </div>`;
 }
 
 function renderMyProgram(){
   const el=document.getElementById('my-program-content');
-  const myEntryIds=new Set(currentUser.entryIds||[currentUser.entryId].filter(Boolean));
   const cid=currentUser.concertId;
-  const myEntries=[...myEntryIds].map(id=>entries.find(e=>e.id===id)).filter(e=>e && e.concertId===cid);
-  if(!myEntries.length){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
-
   const concert=concerts.find(c=>c.id===cid);
   if(!concert){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
 
-  const myList=myEntries.sort((a,b)=>(a.order||999)-(b.order||999));
+  const myEntryIds=new Set(currentUser.entryIds||[currentUser.entryId].filter(Boolean));
+  const list=entries.filter(e=>e.concertId===cid&&e.status!=='absent').sort((a,b)=>(a.order||999)-(b.order||999));
+  let mins=0;
+  if(concert.time){const[h,m]=concert.time.split(':').map(Number);mins=h*60+m;}
 
-    const items = myList.map((e,i)=>{
-      const instrStr = e.type==='solo' && e.instrument
-        ? `<span style="font-size:0.75rem;color:var(--text3)">${esc(e.instrument)}</span>`
-        : '';
-      const groupMembers = e.type==='group' && e.members?.length
-        ? `<div style="font-size:0.75rem;color:var(--text3);margin-top:0.2rem">${e.members.map(m=>{
-            const n=typeof m==='string'?m:(m.name||'');
-            const inst=typeof m==='string'?'':(m.instrument?` (${esc(m.instrument)})`:'');
-            return esc(n)+inst;
-          }).join(' / ')}</div>`
-        : '';
-      const pa=Array.isArray(e.pieces)?e.pieces:(e.pieces?[{title:e.pieces,composer:''}]:[]);
-      const piecesHtml = pa.length
-        ? `<div style="margin-top:0.4rem">${pa.map((p,pi)=>`
-            <div style="font-size:0.78rem;color:var(--text2)">${pa.length>1?`<span style="color:var(--text3)">${pi+1}. </span>`:''}${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('')}</div>`
-        : '<div style="font-size:0.75rem;color:var(--text3);margin-top:0.3rem">演奏曲目未登録</div>';
+  function renderPieces(pieces){
+    if(!pieces||!pieces.length) return '';
+    const arr=Array.isArray(pieces)?pieces:pieces.split('\n').filter(Boolean).map(l=>({title:l,composer:''}));
+    return arr.map((p,i)=>`<div style="display:flex;gap:0.5rem;align-items:baseline;line-height:1.7">
+      ${arr.length>1?`<span style="font-size:0.65rem;color:var(--text3);min-width:1rem">${i+1}.</span>`:''}
+      <span>${esc(p.title||'')}${p.composer?`<span style="color:var(--text3);font-size:0.78rem"> — ${esc(p.composer)}</span>`:''}</span>
+    </div>`).join('');
+  }
 
-      // ソロの場合は楽器だけ、グループの場合はグループ名を見出しに
-      const headline = e.type==='group'
-        ? `<span class="prog-name">${esc(e.groupName)}</span>`
-        : `<span class="badge badge-solo" style="font-size:0.62rem">ソロ</span>`;
+  const items=list.map((e,i)=>{
+    const isMe=myEntryIds.has(e.id);
+    const start=concert.time?fmtTime(mins):'';
+    mins+=(e.duration||0);
+    const end=(concert.time&&e.duration)?`〜${fmtTime(mins)}`:'';
+    const nameDisplay=e.type==='group'
+      ?`<div class="prog-name">${esc(e.groupName)}</div>
+        <div class="prog-group-name">${(e.members||[]).map(m=>{
+          const nm=typeof m==='string'?m:(m.name||'');
+          const instr=typeof m==='string'?'':(m.instrument||'');
+          return `${esc(nm)}${instr?` <span style="color:var(--text3);font-size:0.72rem">（${esc(instr)}）</span>`:''}`;
+        }).join('　')}</div>`
+      :`<div class="prog-name">${esc(e.name)}${e.kana?` <span style="font-size:0.78rem;font-weight:300">（${esc(e.kana)}）</span>`:''}</div>
+        ${e.instrument?`<div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.15rem">${esc(e.instrument)}</div>`:''}`;
+    const accLine=e.type==='solo'&&e.accType==='self'&&e.accName
+      ?`<div class="prog-acc">伴奏：${esc(e.accName)}</div>`:'';
+    return `<div class="prog-item" style="${isMe?'background:rgba(201,168,92,0.08);border-left:3px solid var(--gold2)':''}">
+      <div class="prog-num">${e.order||i+1}</div>
+      <div>
+        ${nameDisplay}
+        <div class="prog-pieces">${renderPieces(e.pieces)}</div>
+        ${accLine}
+      </div>
+    </div>`;
+  });
 
-      return `<div class="prog-item" style="padding:0.7rem 0.8rem;border-bottom:1px solid var(--border)">
-        <div class="prog-num" style="color:var(--gold2)">${e.order||i+1}</div>
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:baseline;gap:0.5rem;flex-wrap:wrap">
-            ${headline}
-            ${instrStr}
-            ${e.type==='group'?`<span class="badge badge-group" style="font-size:0.62rem">グループ</span>`:''}
-            ${e.duration?`<span style="font-size:0.72rem;color:var(--text3)">${e.duration}分</span>`:''}
-          </div>
-          ${groupMembers}
-          ${piecesHtml}
-        </div>
-      </div>`;
-    }).join('');
-
-  const myFee = myList.reduce((s,e)=>s+(e.feeAmount||0),0);
-  el.innerHTML = `<div class="card" style="margin-bottom:1.2rem;padding:0">
-    <div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border)">
-      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">${esc(concert.name)}</div>
-      ${concert.date?`<div style="font-size:0.72rem;color:var(--text3);margin-top:0.15rem">${concert.date}${concert.time?' &ensp;開演 '+concert.time:''}</div>`:''}
+  el.innerHTML=`<div class="prog-wrap">
+    <div class="prog-header">
+      <div class="prog-title">${esc(concert.name)}</div>
+      <div class="prog-info">
+        ${concert.date||''}${concert.time?' &ensp;'+concert.time:''}${concert.venue?' &ensp;｜&ensp; '+esc(concert.venue):''}
+      </div>
     </div>
-    ${items}
-    ${myFee?`<div style="padding:0.6rem 1rem;border-top:1px solid var(--border);text-align:right;font-size:0.78rem;color:var(--text3)">
-      参加費合計 <span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);margin-left:0.4rem">${fmt(myFee)}</span>
-    </div>`:''}
+    <div class="prog-body">
+      ${items.length?items.join(''):'<p style="text-align:center;color:var(--text3);font-size:0.82rem;padding:2rem">参加確定の演奏者がいません</p>'}
+    </div>
   </div>`;
 }
 
@@ -3495,111 +3635,124 @@ function renderMySchedule(){
   const el = document.getElementById('my-schedule-content');
   if(!el) return;
 
-  // ログイン時に選んだ演奏会のみ表示
   const cid = currentUser.concertId;
   const myEntryIds = new Set(currentUser.entryIds||[currentUser.entryId].filter(Boolean));
   const myIdsForCid = new Set([...myEntryIds].filter(id=>{ const e=entries.find(x=>x.id===id); return e&&e.concertId===cid; }));
 
-  if(!myIdsForCid.size){ el.innerHTML='<div class="empty"><p>エントリーが見つかりません</p></div>'; return; }
-
   const concert = concerts.find(c=>c.id===cid);
   if(!concert){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
 
-  const perfList = entries.filter(e=>e.concertId===cid&&e.status!=='absent')
-    .sort((a,b)=>(a.order||999)-(b.order||999));
-  const rDur  = concert.rehearsalDuration??10;
-  const rGap  = concert.rehearsalGap??2;
-  const pGap  = concert.performanceGap??3;
-  const rTime = concert.rehearsalTime||'';
-  const pTime = concert.time||'';
-  const breaks= getBreaks(cid);
+  const perfList=entries.filter(e=>e.concertId===cid&&e.status!=='absent').sort((a,b)=>(a.order||999)-(b.order||999));
+  const rDur=concert.rehearsalDuration??10;
+  const rGap=concert.rehearsalGap??2;
+  const pGap=concert.performanceGap??3;
+  const rTime=concert.rehearsalTime||'';
+  const pTime=concert.time||'';
+  const vStart=concert.venueStart||'';
+  const vOpen=concert.venueOpen||'';
+  const vEnd=concert.venueEnd||'';
   const rhOrder=getRehearsalOrder(cid,perfList);
-  const rhList =rhOrder.map(id=>perfList.find(e=>e.id===id)).filter(Boolean);
+  const rhList=rhOrder.map(id=>perfList.find(e=>e.id===id)).filter(Boolean);
+  const breaks=getBreaks(cid);
+  const customs=getCustomEvents(cid);
 
-    const rows=[];
+  const rows=[];
 
-    // リハーサル
-    rhList.forEach((e,i)=>{
-      const start=rTime?addMinutes(rTime,i*(rDur+rGap)):'';
-      const end  =rTime?addMinutes(rTime,i*(rDur+rGap)+rDur):'';
-      const isMe =myIdsForCid.has(e.id);
-      const name =e.type==='group'?esc(e.groupName):esc(e.name);
-      rows.push({time:start,end,duration:rDur,cat:'リハーサル',content:name,isMe,rowType:'reh'});
-      if(i<rhList.length-1)
-        rows.push({time:end,duration:rGap,cat:'_gap',content:'── 入替 '+rGap+'分 ──',rowType:'gap'});
-    });
+  if(vStart) rows.push({time:vStart,duration:null,category:'会場準備',content:'会場利用開始',person:'',note:'',rowType:'event'});
 
-    // 本番
-    let pOffset=0;
-    perfList.forEach((e,i)=>{
-      const hasBreakBefore=i>0&&breaks.some(b=>b.afterEntryIndex===i-1);
-      if(i>0&&!hasBreakBefore){
-        const gs=pTime?addMinutes(pTime,pOffset):'';
-        rows.push({time:gs,duration:pGap,cat:'_gap',content:'── 奏者間 '+pGap+'分 ──',rowType:'gap'});
+  const sortedC=customs.map((c,i)=>({...c,origIdx:i})).filter(c=>c.time).sort((a,b)=>a.time.localeCompare(b.time));
+  const rhEndTime=(rTime&&rhList.length)?addMinutes(rTime,rhList.length*(rDur+rGap)-rGap):'';
+
+  sortedC.filter(c=>!rTime||c.time<rTime).forEach(c=>rows.push({time:c.time,duration:c.duration,category:c.category,content:c.content,person:c.person,note:c.note,rowType:'ro_custom'}));
+
+  rhList.forEach((e,i)=>{
+    const start=rTime?addMinutes(rTime,i*(rDur+rGap)):'';
+    const end=rTime?addMinutes(rTime,i*(rDur+rGap)+rDur):'';
+    const name=e.type==='group'?e.groupName:e.name;
+    const isMe=myIdsForCid.has(e.id);
+    rows.push({time:start,end,duration:rDur,category:'リハーサル',content:name,person:personStr(e),note:'',rowType:'rehearsal',isMe});
+    if(i<rhList.length-1) rows.push({time:end,duration:rGap,category:'_gap',content:'── 入替 '+rGap+'分 ──',rowType:'gap'});
+  });
+
+  sortedC.filter(c=>c.zone==='mid'||(rTime&&c.time>=(rhEndTime||rTime)&&(!pTime||c.time<pTime)&&c.zone!=='pre'&&c.zone!=='post')).forEach(c=>rows.push({time:c.time,duration:c.duration,category:c.category,content:c.content,person:c.person,note:c.note,rowType:'ro_custom'}));
+
+  if(vOpen) rows.push({time:vOpen,duration:null,category:'その他',content:'【開場】お客様入場',person:'受付',note:'',rowType:'event'});
+
+  let pOffset=0;
+  perfList.forEach((e,i)=>{
+    const hasBreakBefore=i>0&&breaks.some(b=>b.afterEntryIndex===i-1);
+    if(i>0&&!hasBreakBefore){
+      const gStart=pTime?addMinutes(pTime,pOffset):'';
+      rows.push({time:gStart,duration:pGap,category:'_gap',content:'── 奏者間 '+pGap+'分 ──',rowType:'gap'});
+      pOffset+=pGap;
+    }
+    const dur=parseInt(e.duration)||0;
+    const start=pTime?addMinutes(pTime,pOffset):'';
+    pOffset+=dur;
+    const end=(pTime&&dur)?addMinutes(pTime,pOffset):'';
+    const name=e.type==='group'?e.groupName:e.name;
+    const isMe=myIdsForCid.has(e.id);
+    rows.push({time:start,end,duration:dur||null,category:'本番',content:(e.order?e.order+'. ':'')+name,person:personStr(e),note:'',rowType:'performance',isMe});
+    breaks.filter(b=>b.afterEntryIndex===i).forEach(b=>{
+      const bs=pTime?addMinutes(pTime,pOffset):'';
+      pOffset+=b.duration||0;
+      rows.push({time:bs,end:pTime?addMinutes(pTime,pOffset):'',duration:b.duration,category:'休憩',content:'〈休憩〉',note:b.note||'',rowType:'break'});
+      if(i<perfList.length-1){
+        const gs2=pTime?addMinutes(pTime,pOffset):'';
+        rows.push({time:gs2,duration:pGap,category:'_gap',content:'── 奏者間 '+pGap+'分 ──',rowType:'gap'});
         pOffset+=pGap;
       }
-      const dur=parseInt(e.duration)||0;
-      const start=pTime?addMinutes(pTime,pOffset):'';
-      pOffset+=dur;
-      const end=(pTime&&dur)?addMinutes(pTime,pOffset):'';
-      const isMe=myIdsForCid.has(e.id);
-      const name=e.type==='group'?esc(e.groupName):esc(e.name);
-      rows.push({time:start,end,duration:dur||null,cat:'本番',content:(e.order?e.order+'. ':'')+name,isMe,rowType:'perf'});
-      breaks.filter(b=>b.afterEntryIndex===i).forEach(b=>{
-        const bs=pTime?addMinutes(pTime,pOffset):'';
-        pOffset+=b.duration||0;
-        rows.push({time:bs,duration:b.duration,cat:'休憩',content:'〈休憩〉',isMe:false,rowType:'break'});
-        if(i<perfList.length-1){
-          const gs2=pTime?addMinutes(pTime,pOffset):'';
-          rows.push({time:gs2,duration:pGap,cat:'_gap',content:'── 奏者間 '+pGap+'分 ──',rowType:'gap'});
-          pOffset+=pGap;
-        }
-      });
     });
+  });
 
-    // テーブル行生成
-    const CAT_COLOR={'リハーサル':'#56aee0','本番':'#d4b46a','休憩':'#c49ed4','_gap':''};
-    const trHtml=rows.map(r=>{
-      const isGap=r.rowType==='gap';
-      const hlStyle=r.isMe?'background:rgba(201,168,92,0.13);border-left:3px solid var(--gold2);':'';
-      const cat=r.cat||'';
-      const catColor=CAT_COLOR[cat]||'#9a8a6a';
-      const catBadgeHtml=(!cat||cat.startsWith('_'))?'':
-        `<span style="display:inline-block;padding:0.1rem 0.4rem;border-radius:10px;font-size:0.62rem;background:${catColor}22;color:${catColor};border:1px solid ${catColor}55">${cat}</span>`;
-      const endStr=r.end?`<div style="font-size:0.65rem;color:var(--text3)">〜${r.end}</div>`:'';
-      const meTag=r.isMe?`<span style="font-size:0.68rem;color:var(--gold2);font-weight:700;margin-left:0.4rem">← あなた</span>`:'';
-      return `<tr style="${hlStyle}border-top:1px solid var(--border)">
-        <td style="padding:0.45rem 0.6rem;white-space:nowrap;vertical-align:top">
-          <span style="font-family:'EB Garamond',serif;font-size:0.88rem;color:${r.isMe?'var(--gold2)':(isGap?'var(--text3)':'var(--text2)')}">${r.time||'—'}</span>${endStr}
-        </td>
-        <td style="padding:0.45rem 0.5rem;text-align:right;vertical-align:top">
-          ${r.duration?`<span style="font-size:0.75rem;color:var(--text3)">${r.duration}分</span>`:''}
-        </td>
-        <td style="padding:0.45rem 0.5rem;vertical-align:top">${catBadgeHtml}</td>
-        <td style="padding:0.45rem 0.6rem;vertical-align:top;font-size:${isGap?'0.72':'0.85'}rem;color:${isGap?'var(--text3)':(r.isMe?'var(--text)':'var(--text2)')}">
-          ${r.content}${meTag}
-        </td>
-      </tr>`;
-    }).join('');
+  const perfEndMin=perfList.reduce((s,e,i)=>(parseInt(e.duration)||0)+(i>0?pGap:0)+s,0)+breaks.reduce((s,b)=>s+(b.duration||0),0);
+  const perfEndTime=pTime?addMinutes(pTime,perfEndMin):'';
+  sortedC.filter(c=>c.zone==='post'||(!pTime||c.time>=(perfEndTime||'99:99'))&&c.zone!=='pre'&&c.zone!=='mid').forEach(c=>rows.push({time:c.time,duration:c.duration,category:c.category,content:c.content,person:c.person,note:c.note,rowType:'ro_custom'}));
 
-    const concertHeader=`<div style="margin-bottom:0.7rem">
+  if(vEnd) rows.push({time:vEnd,duration:null,category:'会場準備',content:'会場利用終了',person:'',note:'退館',rowType:'event'});
+
+  // 読み取り専用テーブル生成（編集コントロールなし、自分の行をハイライト）
+  const CAT_BG={'会場準備':'rgba(111,207,151,0.10)','リハーサル':'rgba(86,174,224,0.10)','休憩':'rgba(196,158,212,0.13)','本番':'rgba(212,180,106,0.10)','その他':'','_gap':'','event':'rgba(255,255,255,0.03)'};
+  const trHtml=rows.map(r=>{
+    const isGap=r.rowType==='gap';
+    const bg=CAT_BG[isGap?'_gap':(r.rowType==='event'?'event':(r.category||'その他'))]||'';
+    const hlBorder=r.isMe?'border-left:3px solid var(--gold2);':'';
+    const hlBg=r.isMe?'background:rgba(201,168,92,0.10);':'';
+    const endTime=r.end?`<div style="font-size:0.68rem;color:var(--text3);margin-top:1px">〜${r.end}</div>`:'';
+    const meTag=r.isMe?`<span style="font-size:0.68rem;color:var(--gold2);font-weight:700;margin-left:0.4rem">← あなた</span>`:'';
+    return `<tr style="${hlBg||bg?'background:'+(hlBg?'rgba(201,168,92,0.10)':bg)+';':''}${hlBorder}border-top:1px solid var(--border)">
+      <td style="padding:0.45rem 0.6rem;vertical-align:top;white-space:nowrap">
+        <span style="font-family:'EB Garamond',serif;font-size:0.9rem;color:${r.isMe?'var(--gold2)':(isGap?'var(--text3)':'var(--gold2)')}">${r.time||'—'}</span>${endTime}
+      </td>
+      <td style="padding:0.45rem 0.5rem;vertical-align:top;text-align:right">${r.duration?`<span style="font-size:0.78rem;color:var(--text3)">${r.duration}分</span>`:''}</td>
+      <td style="padding:0.45rem 0.5rem;vertical-align:top">${(!r.category||r.category.startsWith('_'))?'':catBadge(r.category)}</td>
+      <td style="padding:0.45rem 0.6rem;vertical-align:top;font-size:${isGap?'0.75':'0.85'}rem;color:${isGap?'var(--text3)':(r.isMe?'var(--text)':'var(--text2)')}">
+        ${isGap?`<span style="color:var(--text3)">${esc(r.content||'')}</span>`:esc(r.content||'')}${meTag}
+      </td>
+      <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.78rem;color:var(--text2)">${esc(r.person||'')}</td>
+      <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.75rem;color:var(--text3)">${esc(r.note||'')}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML=`<div id="my-sched-print-area">
+    <div style="margin-bottom:0.8rem">
       <div style="font-family:'EB Garamond',serif;font-size:1.05rem;color:var(--gold2)">${esc(concert.name)}</div>
       ${concert.date?`<div style="font-size:0.75rem;color:var(--text3);margin-top:0.2rem">${concert.date}${pTime?' &ensp;開演 '+pTime:''}</div>`:''}
-    </div>`;
-
-    const table=`<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1.5rem">
+    </div>
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
       <table style="width:100%;border-collapse:collapse;font-size:0.82rem">
         <thead><tr style="background:var(--surface2)">
-          <th style="padding:0.35rem 0.6rem;text-align:left;font-size:0.65rem;color:var(--text3);white-space:nowrap">時刻</th>
-          <th style="padding:0.35rem 0.5rem;text-align:right;font-size:0.65rem;color:var(--text3)">時間</th>
-          <th style="padding:0.35rem 0.5rem;font-size:0.65rem;color:var(--text3)">区分</th>
-          <th style="padding:0.35rem 0.6rem;font-size:0.65rem;color:var(--text3)">出演者</th>
+          <th style="padding:0.4rem 0.6rem;text-align:left;font-size:0.68rem;color:var(--text3);white-space:nowrap">時刻</th>
+          <th style="padding:0.4rem 0.5rem;text-align:right;font-size:0.68rem;color:var(--text3)">時間</th>
+          <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">カテゴリ</th>
+          <th style="padding:0.4rem 0.6rem;font-size:0.68rem;color:var(--text3)">内容</th>
+          <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">担当 / 出演者</th>
+          <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">備考</th>
         </tr></thead>
         <tbody>${trHtml}</tbody>
       </table>
-    </div>`;
-
-  el.innerHTML = `<div class="sched-print-card">${concertHeader}${table}</div>`;
+    </div>
+  </div>`;
 }
 
 function printMySchedule(){
