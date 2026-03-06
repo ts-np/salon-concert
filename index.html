@@ -1275,10 +1275,11 @@ select.status-sel{
       </div>
       <div class="subsect" style="margin-top:0.9rem">
         <div class="subsect-title">メンバー</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.4rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 0.8fr auto;gap:0.3rem 0.5rem;margin-bottom:0.4rem">
           <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">氏名</span>
           <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">ふりがな</span>
           <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">楽器</span>
+          <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">ログインコード</span>
           <span></span>
         </div>
         <div id="member-list-fields"></div>
@@ -1319,6 +1320,9 @@ select.status-sel{
       <div class="fg">
         <label>ログインコード（演奏者がログインに使用）</label>
         <input id="em-performer-code" type="text" placeholder="例: yamada2025">
+        <div style="font-size:0.72rem;color:var(--text3);margin-top:0.35rem;line-height:1.6">
+          💡 ソロエントリーに設定するコードです。グループメンバーの個人コードは、メンバー一覧の「ログインコード」欄に設定してください。
+        </div>
       </div>
     </div>
 
@@ -1622,16 +1626,32 @@ function doLogin(){
     if(concert && concert.code && concert.code.toLowerCase()===code.toLowerCase()){
       currentUser = {role:'performer', concertId: cid, name: concert.name+'（参加者）', entryIds:[]};
     } else {
-      // Try entry-level code — collect ALL entries sharing the same code
-      const matched = entries.filter(e=>e.performerCode && e.performerCode.toLowerCase()===code.toLowerCase());
+      // Try entry-level code — also match via group member codes
+      const inputCode = code.toLowerCase();
+      const matched = entries.filter(e=>{
+        if(!e.concertId) return false;
+        // 直接コード一致（ソロ or グループ全体コード）
+        if(e.performerCode && e.performerCode.split(',').map(c=>c.trim().toLowerCase()).includes(inputCode)) return true;
+        // グループメンバーの個人コード一致
+        if(e.type==='group' && e.members){
+          return e.members.some(m=>m.code && m.code.trim().toLowerCase()===inputCode);
+        }
+        return false;
+      });
       if(!matched.length){ alert('コードが見つかりません。主催者にお問い合わせください。'); return; }
       const primary = matched.find(e=>e.concertId===cid) || matched[0];
+      // 表示名：メンバーコードでマッチした場合はそのメンバー名を優先
+      let displayName = primary.type==='group' ? primary.groupName : primary.name;
+      if(primary.type==='group' && primary.members){
+        const matchedMember = primary.members.find(m=>m.code && m.code.trim().toLowerCase()===inputCode);
+        if(matchedMember) displayName = matchedMember.name;
+      }
       currentUser = {
         role:'performer',
-        entryId: primary.id,   // keep for legacy compat
+        entryId: primary.id,
         entryIds: matched.map(e=>e.id),
         concertId: primary.concertId,
-        name: primary.type==='group'? primary.groupName : primary.name
+        name: displayName
       };
     }
   }
@@ -2208,15 +2228,16 @@ function toggleAccFields(){
 }
 
 // ── MEMBER ROWS (name + instrument) ──
-function addMemberField(name='', kana='', instrument=''){
+function addMemberField(name='', kana='', instrument='', code=''){
   const wrap=document.getElementById('member-list-fields');
   const row=document.createElement('div');
   row.className='member-row';
-  row.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.3rem';
+  row.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr 0.8fr auto;gap:0.3rem 0.5rem;margin-bottom:0.3rem';
   row.innerHTML=`
     <input type="text" placeholder="氏名" class="member-name-input" value="${esc(name)}">
     <input type="text" placeholder="ふりがな" class="member-kana-input" value="${esc(kana)}">
     <input type="text" placeholder="楽器" class="member-instrument-input" list="instrument-list" value="${esc(instrument)}">
+    <input type="text" placeholder="ログインコード" class="member-code-input" value="${esc(code)}" style="font-size:0.78rem">
     <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
   wrap.appendChild(row);
 }
@@ -2225,7 +2246,8 @@ function getMembers(){
   return [...rows].map(r=>({
     name: r.querySelector('.member-name-input').value.trim(),
     kana: r.querySelector('.member-kana-input')?.value.trim()||'',
-    instrument: r.querySelector('.member-instrument-input').value.trim()
+    instrument: r.querySelector('.member-instrument-input').value.trim(),
+    code: r.querySelector('.member-code-input')?.value.trim()||''
   })).filter(m=>m.name);
 }
 
@@ -2303,9 +2325,9 @@ function openEntryModal(id){
       document.getElementById('member-list-fields').innerHTML='';
       const members=e.members||[];
       if(members.length && typeof members[0]==='string'){
-        members.forEach(m=>addMemberField(m,'',''));
+        members.forEach(m=>addMemberField(m,'','',''));
       } else {
-        members.forEach(m=>addMemberField(m.name||m, m.kana||'', m.instrument||''));
+        members.forEach(m=>addMemberField(m.name||m, m.kana||'', m.instrument||'', m.code||''));
       }
     } else {
       document.getElementById('em-name').value=e.name||'';
@@ -2466,8 +2488,14 @@ function renderParticipants(){
           :e.accType==='needed'?`<span style="font-size:0.72rem;color:#f6c90e">手配必要</span>`
           :`<span style="font-size:0.72rem;color:var(--text3)">なし</span>`);
 
-      const codeCell = concert?.code
-        ? `<span style="font-family:'EB Garamond',serif;font-size:0.85rem;color:var(--gold2);letter-spacing:0.05em">${esc(concert.code)}</span>`
+      // 同じコードを持つ他のエントリー数を確認（複数コード対応）
+      const myCodes = e.performerCode ? e.performerCode.split(',').map(c=>c.trim().toLowerCase()).filter(Boolean) : [];
+      const sharedCount = myCodes.length
+        ? list.filter(x=>x.id!==e.id && x.performerCode &&
+            x.performerCode.split(',').map(c=>c.trim().toLowerCase()).some(c=>myCodes.includes(c))).length
+        : 0;
+      const codeCell = e.performerCode
+        ? `<span style="font-family:'EB Garamond',serif;font-size:0.85rem;color:var(--gold2);letter-spacing:0.05em">${esc(e.performerCode)}</span>${sharedCount>0?`<br><span style="font-size:0.65rem;color:#56aee0">🔗 ${sharedCount}件と共有</span>`:''}`
         : `<span style="font-size:0.72rem;color:var(--text3)">未設定</span>`;
 
       return `<tr draggable="true" data-id="${e.id}" style="cursor:grab">
@@ -3317,9 +3345,10 @@ function renderMyConcertInfo(){
 function renderMyConvert(){
   const el=document.getElementById('my-concert-content');
 
-  // 出演中の全エントリーを取得
+  // 出演中の全エントリーを取得（ログイン時に選んだ演奏会のみ）
+  const cid = currentUser.concertId;
   const myEntryIds = currentUser.entryIds||[currentUser.entryId].filter(Boolean);
-  const myEntries  = myEntryIds.map(id=>entries.find(e=>e.id===id)).filter(Boolean);
+  const myEntries  = myEntryIds.map(id=>entries.find(e=>e.id===id)).filter(e=>e && e.concertId===cid);
 
   if(!myEntries.length){
     el.innerHTML='<div class="empty"><p>出演エントリーが見つかりません</p></div>';
@@ -3403,15 +3432,14 @@ function renderMyConvert(){
 function renderMyProgram(){
   const el=document.getElementById('my-program-content');
   const myEntryIds=new Set(currentUser.entryIds||[currentUser.entryId].filter(Boolean));
-  const myEntries=[...myEntryIds].map(id=>entries.find(e=>e.id===id)).filter(Boolean);
-  const myCids=[...new Set(myEntries.map(e=>e.concertId))];
+  const cid=currentUser.concertId;
+  const myEntries=[...myEntryIds].map(id=>entries.find(e=>e.id===id)).filter(e=>e && e.concertId===cid);
+  if(!myEntries.length){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
 
-  if(!myCids.length){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
+  const concert=concerts.find(c=>c.id===cid);
+  if(!concert){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
 
-  el.innerHTML = myCids.map(cid=>{
-    const concert=concerts.find(c=>c.id===cid);
-    if(!concert) return '';
-    const myList=myEntries.filter(e=>e.concertId===cid).sort((a,b)=>(a.order||999)-(b.order||999));
+  const myList=myEntries.sort((a,b)=>(a.order||999)-(b.order||999));
 
     const items = myList.map((e,i)=>{
       const instrStr = e.type==='solo' && e.instrument
@@ -3430,13 +3458,18 @@ function renderMyProgram(){
             <div style="font-size:0.78rem;color:var(--text2)">${pa.length>1?`<span style="color:var(--text3)">${pi+1}. </span>`:''}${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('')}</div>`
         : '<div style="font-size:0.75rem;color:var(--text3);margin-top:0.3rem">演奏曲目未登録</div>';
 
+      // ソロの場合は楽器だけ、グループの場合はグループ名を見出しに
+      const headline = e.type==='group'
+        ? `<span class="prog-name">${esc(e.groupName)}</span>`
+        : `<span class="badge badge-solo" style="font-size:0.62rem">ソロ</span>`;
+
       return `<div class="prog-item" style="padding:0.7rem 0.8rem;border-bottom:1px solid var(--border)">
         <div class="prog-num" style="color:var(--gold2)">${e.order||i+1}</div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:baseline;gap:0.5rem;flex-wrap:wrap">
-            <span class="prog-name">${e.type==='group'?esc(e.groupName):esc(e.name)}</span>
+            ${headline}
             ${instrStr}
-            <span class="badge ${e.type==='group'?'badge-group':'badge-solo'}" style="font-size:0.62rem">${e.type==='group'?'グループ':'ソロ'}</span>
+            ${e.type==='group'?`<span class="badge badge-group" style="font-size:0.62rem">グループ</span>`:''}
             ${e.duration?`<span style="font-size:0.72rem;color:var(--text3)">${e.duration}分</span>`:''}
           </div>
           ${groupMembers}
@@ -3445,49 +3478,43 @@ function renderMyProgram(){
       </div>`;
     }).join('');
 
-    const myFee = myList.reduce((s,e)=>s+(e.feeAmount||0),0);
-    return `<div class="card" style="margin-bottom:1.2rem;padding:0">
-      <div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border)">
-        <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">${esc(concert.name)}</div>
-        ${concert.date?`<div style="font-size:0.72rem;color:var(--text3);margin-top:0.15rem">${concert.date}${concert.time?' &ensp;開演 '+concert.time:''}</div>`:''}
-      </div>
-      ${items}
-      ${myFee?`<div style="padding:0.6rem 1rem;border-top:1px solid var(--border);text-align:right;font-size:0.78rem;color:var(--text3)">
-        参加費合計 <span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);margin-left:0.4rem">${fmt(myFee)}</span>
-      </div>`:''}
-    </div>`;
-  }).join('');
+  const myFee = myList.reduce((s,e)=>s+(e.feeAmount||0),0);
+  el.innerHTML = `<div class="card" style="margin-bottom:1.2rem;padding:0">
+    <div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border)">
+      <div style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">${esc(concert.name)}</div>
+      ${concert.date?`<div style="font-size:0.72rem;color:var(--text3);margin-top:0.15rem">${concert.date}${concert.time?' &ensp;開演 '+concert.time:''}</div>`:''}
+    </div>
+    ${items}
+    ${myFee?`<div style="padding:0.6rem 1rem;border-top:1px solid var(--border);text-align:right;font-size:0.78rem;color:var(--text3)">
+      参加費合計 <span style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--text);margin-left:0.4rem">${fmt(myFee)}</span>
+    </div>`:''}
+  </div>`;
 }
 
 function renderMySchedule(){
   const el = document.getElementById('my-schedule-content');
   if(!el) return;
 
+  // ログイン時に選んだ演奏会のみ表示
+  const cid = currentUser.concertId;
   const myEntryIds = new Set(currentUser.entryIds||[currentUser.entryId].filter(Boolean));
-  const myEntries  = [...myEntryIds].map(id=>entries.find(e=>e.id===id)).filter(Boolean);
+  const myIdsForCid = new Set([...myEntryIds].filter(id=>{ const e=entries.find(x=>x.id===id); return e&&e.concertId===cid; }));
 
-  if(!myEntries.length){
-    el.innerHTML='<div class="empty"><p>エントリーが見つかりません</p></div>'; return;
-  }
+  if(!myIdsForCid.size){ el.innerHTML='<div class="empty"><p>エントリーが見つかりません</p></div>'; return; }
 
-  // 出演する演奏会をすべて取得
-  const myCids = [...new Set(myEntries.map(e=>e.concertId))];
+  const concert = concerts.find(c=>c.id===cid);
+  if(!concert){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
 
-  el.innerHTML = myCids.map(cid=>{
-    const concert = concerts.find(c=>c.id===cid);
-    if(!concert) return '';
-
-    const perfList = entries.filter(e=>e.concertId===cid&&e.status!=='absent')
-      .sort((a,b)=>(a.order||999)-(b.order||999));
-    const rDur  = concert.rehearsalDuration??10;
-    const rGap  = concert.rehearsalGap??2;
-    const pGap  = concert.performanceGap??3;
-    const rTime = concert.rehearsalTime||'';
-    const pTime = concert.time||'';
-    const breaks= getBreaks(cid);
-    const rhOrder=getRehearsalOrder(cid,perfList);
-    const rhList =rhOrder.map(id=>perfList.find(e=>e.id===id)).filter(Boolean);
-    const myIdsForCid=new Set(myEntries.filter(e=>e.concertId===cid).map(e=>e.id));
+  const perfList = entries.filter(e=>e.concertId===cid&&e.status!=='absent')
+    .sort((a,b)=>(a.order||999)-(b.order||999));
+  const rDur  = concert.rehearsalDuration??10;
+  const rGap  = concert.rehearsalGap??2;
+  const pGap  = concert.performanceGap??3;
+  const rTime = concert.rehearsalTime||'';
+  const pTime = concert.time||'';
+  const breaks= getBreaks(cid);
+  const rhOrder=getRehearsalOrder(cid,perfList);
+  const rhList =rhOrder.map(id=>perfList.find(e=>e.id===id)).filter(Boolean);
 
     const rows=[];
 
@@ -3572,8 +3599,7 @@ function renderMySchedule(){
       </table>
     </div>`;
 
-    return `<div class="sched-print-card">${concertHeader}${table}</div>`;
-  }).join('');
+  el.innerHTML = `<div class="sched-print-card">${concertHeader}${table}</div>`;
 }
 
 function printMySchedule(){
@@ -3664,10 +3690,11 @@ function openMyEntryEdit(entryId){
     </div>
     <div class="subsect" style="margin-top:0.9rem">
       <div class="subsect-title">メンバー</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.4rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 0.8fr auto;gap:0.3rem 0.5rem;margin-bottom:0.4rem">
         <span style="font-size:0.68rem;color:var(--text3)">氏名</span>
         <span style="font-size:0.68rem;color:var(--text3)">ふりがな</span>
-        <span style="font-size:0.68rem;color:var(--text3)">楽器</span><span></span>
+        <span style="font-size:0.68rem;color:var(--text3)">楽器</span>
+        <span style="font-size:0.68rem;color:var(--text3)">ログインコード</span><span></span>
       </div>
       <div id="mpe-member-list"></div>
       <button class="btn btn-outline btn-sm" onclick="addMpeMember()">＋ メンバーを追加</button>
@@ -3734,19 +3761,20 @@ function openMyEntryEdit(entryId){
   // グループメンバー
   if(e.type==='group'){
     const ml=document.getElementById('mpe-member-list');
-    window.addMpeMember=(name='',kana='',instrument='')=>{
+    window.addMpeMember=(name='',kana='',instrument='',code='')=>{
       const row=document.createElement('div');
       row.className='member-row';
-      row.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.3rem';
+      row.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr 0.8fr auto;gap:0.3rem 0.5rem;margin-bottom:0.3rem';
       row.innerHTML=`
         <input type="text" placeholder="氏名" class="member-name-input" value="${esc(name)}">
         <input type="text" placeholder="ふりがな" class="member-kana-input" value="${esc(kana)}">
         <input type="text" placeholder="楽器" class="member-instrument-input" list="instrument-list" value="${esc(instrument)}">
+        <input type="text" placeholder="ログインコード" class="member-code-input" value="${esc(code)}" style="font-size:0.78rem">
         <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
       ml.appendChild(row);
     };
     const members=e.members||[];
-    if(members.length) members.forEach(m=>addMpeMember(typeof m==='string'?m:m.name||'', typeof m==='string'?'':m.kana||'', typeof m==='string'?'':m.instrument||''));
+    if(members.length) members.forEach(m=>addMpeMember(typeof m==='string'?m:m.name||'', typeof m==='string'?'':m.kana||'', typeof m==='string'?'':m.instrument||'', typeof m==='string'?'':m.code||''));
     else addMpeMember();
   }
 
@@ -3818,7 +3846,8 @@ function saveMyEntryEdit(entryId){
     e.members=[...document.querySelectorAll('#mpe-member-list .member-row')].map(r=>({
       name:r.querySelector('.member-name-input').value.trim(),
       kana:r.querySelector('.member-kana-input')?.value.trim()||'',
-      instrument:r.querySelector('.member-instrument-input').value.trim()
+      instrument:r.querySelector('.member-instrument-input').value.trim(),
+      code:r.querySelector('.member-code-input')?.value.trim()||''
     })).filter(m=>m.name);
   }
   persist();
