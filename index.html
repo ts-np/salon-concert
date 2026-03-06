@@ -1283,7 +1283,10 @@ select.status-sel{
         <div class="fg"><label>代表者電話</label><input id="em-group-tel" type="tel" inputmode="numeric"></div>
       </div>
       <div class="subsect" style="margin-top:0.9rem">
-        <div class="subsect-title">メンバー</div>
+        <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>メンバー</span>
+          <span id="em-member-count" style="font-size:0.75rem;color:var(--gold2);font-weight:600;font-family:'EB Garamond',serif;letter-spacing:0;text-transform:none"></span>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 0.8fr auto;gap:0.3rem 0.5rem;margin-bottom:0.4rem">
           <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">氏名</span>
           <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">ふりがな</span>
@@ -1364,9 +1367,10 @@ select.status-sel{
       <div style="background:var(--surface2);border-radius:8px;overflow:hidden">
 
         <!-- 参加費行 -->
-        <div style="display:grid;grid-template-columns:4rem 7rem 1fr auto;align-items:center;gap:0.4rem 0.6rem;padding:0.55rem 0.8rem;border-bottom:1px solid var(--border)">
-          <span style="font-size:0.75rem;color:var(--text2);font-weight:600">参加費</span>
+        <div style="display:grid;grid-template-columns:auto 7rem 1fr auto;align-items:center;gap:0.4rem 0.6rem;padding:0.55rem 0.8rem;border-bottom:1px solid var(--border)">
+          <span style="font-size:0.75rem;color:var(--text2);font-weight:600;white-space:nowrap">参加費 <span id="em-fee-member-count" style="font-size:0.7rem;color:var(--text3);font-weight:400"></span></span>
           <input id="em-fee-amount" type="number" min="0" placeholder="0" inputmode="numeric" oninput="updateFeeTotal()" style="text-align:right;font-family:'EB Garamond',serif;font-size:0.95rem">
+          <span id="em-fee-per-label" style="display:none;font-size:0.7rem;color:var(--text3)">円 / 人</span>
           <input id="em-fee-note" type="text" placeholder="備考" style="font-size:0.75rem">
           <span style="font-size:0.68rem;color:var(--text3);white-space:nowrap">円</span>
         </div>
@@ -1381,7 +1385,10 @@ select.status-sel{
 
         <!-- 合計 + 回収スイッチ -->
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:0.8rem;padding:0.5rem 0.8rem">
-          <span id="em-fee-total-wrap" style="display:none;font-size:0.72rem;color:var(--text3)">合計 <span id="em-fee-total" style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">¥0</span></span>
+          <span id="em-fee-total-wrap" style="display:none;font-size:0.72rem;color:var(--text3)">
+            <span id="em-fee-calc-detail"></span>
+            合計 <span id="em-fee-total" style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2)">¥0</span>
+          </span>
           <div style="display:flex;align-items:center;gap:0.5rem">
             <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer;flex-shrink:0">
               <input type="checkbox" id="em-fee-status-chk" onchange="updateFeeStatusLabel('fee')" style="opacity:0;width:0;height:0;position:absolute">
@@ -2322,15 +2329,46 @@ function setFeeSwitch(id, isPaid){
 }
 
 function updateFeeTotal(){
-  const fee=parseFloat(document.getElementById('em-fee-amount')?.value)||0;
-  const accFeeWrap=document.getElementById('em-acc-fee-wrap');
-  const accFeeVisible=accFeeWrap&&accFeeWrap.style.display!=='none';
-  const accFee=accFeeVisible?(parseFloat(document.getElementById('em-acc-fee-amount')?.value)||0):0;
-  const total=fee+accFee;
-  const wrap=document.getElementById('em-fee-total-wrap');
-  const el=document.getElementById('em-fee-total');
-  if(wrap) wrap.style.display=accFeeVisible&&total>0?'inline':'none';
-  if(el) el.textContent='¥'+total.toLocaleString();
+  const isGroup = document.getElementById('group-fields')?.style.display !== 'none';
+  const perFee = parseFloat(document.getElementById('em-fee-amount')?.value)||0;
+  const accFeeWrap = document.getElementById('em-acc-fee-wrap');
+  const accFeeVisible = accFeeWrap && accFeeWrap.style.display !== 'none';
+  const accFee = accFeeVisible ? (parseFloat(document.getElementById('em-acc-fee-amount')?.value)||0) : 0;
+
+  // 「円/人」ラベル表示切替
+  const perLabel = document.getElementById('em-fee-per-label');
+  if(perLabel) perLabel.style.display = isGroup ? 'inline' : 'none';
+
+  let total = 0;
+  let calcDetail = '';
+
+  if(isGroup){
+    const memberCount = document.querySelectorAll('#member-list-fields .member-name-input').length || 1;
+    const countEl = document.getElementById('em-member-count');
+    if(countEl) countEl.textContent = memberCount + '人';
+    const feeCountEl = document.getElementById('em-fee-member-count');
+    if(feeCountEl) feeCountEl.textContent = '×' + memberCount + '人';
+    const feeSub = perFee * memberCount;
+    total = feeSub + accFee;
+    if(perFee > 0){
+      calcDetail = `${perFee.toLocaleString()}円 × ${memberCount}人${accFee>0?' + '+accFee.toLocaleString()+'円':''} = &ensp;`;
+    } else if(accFee > 0){
+      calcDetail = '';
+    }
+  } else {
+    total = perFee + accFee;
+    calcDetail = (perFee > 0 && accFee > 0) ? `${perFee.toLocaleString()} + ${accFee.toLocaleString()} = &ensp;` : '';
+    const feeCountEl = document.getElementById('em-fee-member-count');
+    if(feeCountEl) feeCountEl.textContent = '';
+  }
+
+  const wrap = document.getElementById('em-fee-total-wrap');
+  const el = document.getElementById('em-fee-total');
+  const detail = document.getElementById('em-fee-calc-detail');
+  const show = total > 0 && (isGroup || accFeeVisible);
+  if(wrap) wrap.style.display = show ? 'inline' : 'none';
+  if(el) el.textContent = '¥' + total.toLocaleString();
+  if(detail) detail.innerHTML = calcDetail;
 }
 
 function updateStatusSwitch(){
@@ -2372,8 +2410,9 @@ function addMemberField(name='', kana='', instrument='', code=''){
     <input type="text" placeholder="ふりがな" class="member-kana-input" value="${esc(kana)}">
     <input type="text" placeholder="楽器" class="member-instrument-input" list="instrument-list" value="${esc(instrument)}">
     <input type="text" placeholder="ログインコード" class="member-code-input" value="${esc(code)}" style="font-size:0.78rem">
-    <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
+    <button class="remove-btn" onclick="this.parentNode.remove();updateFeeTotal()">✕</button>`;
   wrap.appendChild(row);
+  updateFeeTotal();
 }
 function getMembers(){
   const rows=document.querySelectorAll('#member-list-fields .member-row');
@@ -2483,7 +2522,8 @@ function openEntryModal(id){
     document.getElementById('em-memo').value=e.memo||'';
     setStatusSwitch(e.status||'pending');
     document.getElementById('em-performer-code').value=e.performerCode||'';
-    document.getElementById('em-fee-amount').value=e.feeAmount||'';
+    // グループは1人当たり金額（feePerPerson）を表示、ソロはfeeAmountをそのまま
+    document.getElementById('em-fee-amount').value=e.type==='group'?(e.feePerPerson||''):(e.feeAmount||'');
     setFeeSwitch('em-fee-status', e.feeStatus==='paid');
     document.getElementById('em-fee-note').value=e.feeNote||'';
     document.getElementById('em-acc-fee-amount').value=e.accFeeAmount||'';
@@ -2540,11 +2580,19 @@ function saveEntry(){
     memo:document.getElementById('em-memo').value.trim(),
     status: document.getElementById('em-status-chk')?.checked ? 'confirmed' : 'pending',
     performerCode:document.getElementById('em-performer-code').value.trim(),
-    feeAmount:parseFloat(document.getElementById('em-fee-amount').value)||0,
+    feePerPerson:parseFloat(document.getElementById('em-fee-amount').value)||0,
+    feeAmount: (()=>{
+      const per = parseFloat(document.getElementById('em-fee-amount').value)||0;
+      if(type==='group'){
+        const cnt = document.querySelectorAll('#member-list-fields .member-name-input').length || 1;
+        return per * cnt;
+      }
+      return per;
+    })(),
     feeStatus:document.getElementById('em-fee-status-chk')?.checked?'paid':'unpaid',
     feeNote:document.getElementById('em-fee-note').value.trim(),
     accFeeAmount:accFeeVisible?(parseFloat(document.getElementById('em-acc-fee-amount').value)||0):0,
-    accFeeStatus:document.getElementById('em-acc-fee-status-chk')?.checked?'paid':'unpaid',
+    accFeeStatus:document.getElementById('em-fee-status-chk')?.checked?'paid':'unpaid',
     accFeeNote:document.getElementById('em-acc-fee-note').value.trim(),
   };
   if(type==='solo'){
@@ -3557,19 +3605,17 @@ function renderMyConvert(){
     </div>`;
   }).join('');
 
-  // 参加費
-  const feeRows = myEntries.filter(e=>e.feeAmount>0);
-  const feeHtml = feeRows.length ? `
-    <div style="margin-top:0.8rem;border-top:1px solid var(--border);padding-top:0.7rem">
-      <div style="font-size:0.72rem;color:var(--text3);margin-bottom:0.4rem">参加費</div>
-      ${feeRows.map(e=>`
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;margin-bottom:0.3rem">
-          <span style="color:var(--text2)">${e.type==='group'?esc(e.groupName):'ソロ'}</span>
-          <span style="display:flex;align-items:center;gap:0.6rem">
-            <span style="font-family:'EB Garamond',serif;color:var(--text)">${fmt(e.feeAmount)}</span>
-            <span class="badge ${e.feeStatus==='paid'?'badge-confirmed':'badge-pending'}" style="font-size:0.65rem">${e.feeStatus==='paid'?'✓ 支払済み':'● 未払い'}</span>
-          </span>
-        </div>`).join('')}
+  // 参加費（合計のみ表示）
+  const feeRows = myEntries.filter(e=>(e.feeAmount||0)+(e.accFeeAmount||0)>0);
+  const totalFee = myEntries.reduce((s,e)=>(e.feeAmount||0)+(e.accFeeAmount||0)+s, 0);
+  const allPaid = feeRows.length>0 && feeRows.every(e=>e.feeStatus==='paid');
+  const feeHtml = totalFee>0 ? `
+    <div style="margin-top:0.8rem;border-top:1px solid var(--border);padding-top:0.7rem;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:0.75rem;color:var(--text3)">お支払い合計</span>
+      <span style="display:flex;align-items:center;gap:0.7rem">
+        <span style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--gold2)">${fmt(totalFee)}</span>
+        <span class="badge ${allPaid?'badge-confirmed':'badge-pending'}" style="font-size:0.68rem">${allPaid?'✓ 支払済み':'● 未払い'}</span>
+      </span>
     </div>` : '';
 
   el.innerHTML = `<div class="card">
@@ -4365,7 +4411,7 @@ function buildFeePersonView(concertList){
     } else {
       const members = e.members||[];
       const memberCount = members.length || 1;
-      const perFee = Math.round((e.feeAmount||0) / memberCount);
+      const perFee = e.feePerPerson!=null ? e.feePerPerson : Math.round((e.feeAmount||0) / memberCount);
       if(members.length){
         members.forEach(m=>{
           const mName = typeof m==='string'?m:(m.name||'');
