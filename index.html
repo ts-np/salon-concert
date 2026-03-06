@@ -2100,31 +2100,31 @@ function setType(t){
   document.getElementById('type-solo-btn').classList.toggle('active',t==='solo');
   document.getElementById('type-group-btn').classList.toggle('active',t==='group');
 
-  if(!editingEntryId){
-    if(t==='solo'){
-      // グループ→ソロ：代表者情報を引き継ぐ
-      const rep  = document.getElementById('em-group-rep')?.value  || '';
-      const repK = document.getElementById('em-group-rep-kana')?.value || '';
-      const repM = document.getElementById('em-group-email')?.value || '';
-      const repT = document.getElementById('em-group-tel')?.value  || '';
-      document.getElementById('em-name').value  = rep;
-      document.getElementById('em-kana').value  = repK;
-      document.getElementById('em-email').value = repM;
-      document.getElementById('em-tel').value   = repT;
-      const acc=document.getElementById('em-acc-type'); if(acc) acc.value='none';
-      document.getElementById('em-instrument').value='';
-      document.getElementById('em-acc-name').value='';
-      toggleAccFields();
-    } else {
-      // ソロ→グループ：氏名情報を代表者に引き継ぐ
-      const name = document.getElementById('em-name')?.value  || '';
-      const kana = document.getElementById('em-kana')?.value  || '';
-      const mail = document.getElementById('em-email')?.value || '';
-      const tel  = document.getElementById('em-tel')?.value   || '';
-      document.getElementById('em-group-rep').value      = name;
-      document.getElementById('em-group-rep-kana').value = kana;
-      document.getElementById('em-group-email').value    = mail;
-      document.getElementById('em-group-tel').value      = tel;
+  if(t==='solo'){
+    // グループ→ソロ：代表者情報を引き継ぐ
+    const rep  = document.getElementById('em-group-rep')?.value  || '';
+    const repK = document.getElementById('em-group-rep-kana')?.value || '';
+    const repM = document.getElementById('em-group-email')?.value || '';
+    const repT = document.getElementById('em-group-tel')?.value  || '';
+    if(rep)  document.getElementById('em-name').value  = rep;
+    if(repK) document.getElementById('em-kana').value  = repK;
+    if(repM) document.getElementById('em-email').value = repM;
+    if(repT) document.getElementById('em-tel').value   = repT;
+    const acc=document.getElementById('em-acc-type'); if(acc) acc.value='none';
+    document.getElementById('em-instrument').value='';
+    document.getElementById('em-acc-name').value='';
+    toggleAccFields();
+  } else {
+    // ソロ→グループ：氏名情報を代表者に引き継ぐ
+    const name = document.getElementById('em-name')?.value  || '';
+    const kana = document.getElementById('em-kana')?.value  || '';
+    const mail = document.getElementById('em-email')?.value || '';
+    const tel  = document.getElementById('em-tel')?.value   || '';
+    if(name) document.getElementById('em-group-rep').value      = name;
+    if(kana) document.getElementById('em-group-rep-kana').value = kana;
+    if(mail) document.getElementById('em-group-email').value    = mail;
+    if(tel)  document.getElementById('em-group-tel').value      = tel;
+    if(!editingEntryId){
       document.getElementById('em-group-name').value = '';
       const ml=document.getElementById('member-list-fields');
       if(ml){ ml.innerHTML=''; addMemberField(); }
@@ -2613,16 +2613,16 @@ function getCustomEvents(cid){ return schedCustomEvents[cid] || []; }
 function addCustomEvent(cid){
   if(!schedCustomEvents[cid]) schedCustomEvents[cid]=[];
   schedCustomEvents[cid].push({id:'ce-'+Date.now(), time:'', duration:30, category:'その他', content:'', person:'', note:''});
-  renderSchedule();
+  renderSchedule(cid);
 }
 function removeCustomEvent(cid, idx){
   schedCustomEvents[cid].splice(idx,1);
-  renderSchedule();
+  renderSchedule(cid);
 }
 function updateCustomEvent(cid, idx, field, val){
   if(!schedCustomEvents[cid]) return;
   schedCustomEvents[cid][idx][field] = field==='duration' ? (parseInt(val)||0) : val;
-  renderSchedule();
+  renderSchedule(cid);
 }
 
 // ── 本番休憩管理 ──
@@ -2630,16 +2630,16 @@ function getBreaks(cid){ return schedBreaks[cid] || []; }
 function addBreak(cid, afterIndex){
   if(!schedBreaks[cid]) schedBreaks[cid]=[];
   schedBreaks[cid].push({afterEntryIndex:afterIndex, duration:20, note:''});
-  renderSchedule();
+  renderSchedule(cid);
 }
 function removeBreak(cid, bi){
   schedBreaks[cid].splice(bi,1);
-  renderSchedule();
+  renderSchedule(cid);
 }
 function updateBreak(cid, bi, field, val){
   if(!schedBreaks[cid]) return;
   schedBreaks[cid][bi][field] = field==='duration'?(parseInt(val)||0):val;
-  renderSchedule();
+  renderSchedule(cid);
 }
 
 // ── リハ順並べ替え ──
@@ -2653,13 +2653,14 @@ function moveRehearsal(cid, entryId, dir){
   if(newIdx<0||newIdx>=order.length) return;
   [order[idx],order[newIdx]] = [order[newIdx],order[idx]];
   schedRehearsalOrders[cid] = order;
-  renderSchedule();
+  renderSchedule(cid);
 }
 
 // ── メインレンダー ──
-function renderSchedule(){
-  const cid = document.getElementById('sched-concert-sel')?.value;
+function renderSchedule(forceCid){
+  const cid = forceCid || document.getElementById('sched-concert-sel')?.value;
   const el  = document.getElementById('schedule-content');
+  if(!el) return;
   if(!cid){ el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>'; return; }
   const concert = concerts.find(c=>c.id===cid);
   if(!concert){ el.innerHTML='<div class="empty"><p>演奏会が見つかりません</p></div>'; return; }
@@ -3776,29 +3777,31 @@ function buildFeePersonView(concertList){
   // 個人単位に展開（ソロ→本人、グループ→メンバー全員）
   // キー：ふりがなあり → 氏名＋ふりがな、なし → 氏名のみ
   const personMap = {};
-  const addPerson = (name, kana, label, entry) => {
+  const addPerson = (name, kana, label, entry, perFee) => {
     if(!name) return;
     const key = kana ? (name+'|'+kana) : name;
     if(!personMap[key]) personMap[key] = { name, kana, appearances:[] };
-    personMap[key].appearances.push({ label, entry });
+    personMap[key].appearances.push({ label, entry, perFee: perFee??entry.feeAmount??0 });
   };
 
   targetEntries.forEach(e=>{
     const concert = concerts.find(c=>c.id===e.concertId);
     const cName = concert ? concert.name : '—';
     if(e.type==='solo'){
-      addPerson(e.name, e.kana||'', cName+'（ソロ）', e);
+      addPerson(e.name, e.kana||'', cName+'（ソロ）', e, e.feeAmount||0);
     } else {
       const members = e.members||[];
+      const memberCount = members.length || 1;
+      const perFee = Math.round((e.feeAmount||0) / memberCount);
       if(members.length){
         members.forEach(m=>{
           const mName = typeof m==='string'?m:(m.name||'');
           const mKana = typeof m==='string'?'':(m.kana||'');
           const mInst = typeof m==='string'?'':(m.instrument||'');
-          addPerson(mName, mKana, cName+'（'+esc(e.groupName)+(mInst?'・'+mInst:'')+'）', e);
+          addPerson(mName, mKana, cName+'（'+esc(e.groupName)+(mInst?'・'+mInst:'')+'）', e, perFee);
         });
       } else {
-        addPerson(e.groupRep||e.groupName, e.groupRepKana||'', cName+'（'+esc(e.groupName)+'）', e);
+        addPerson(e.groupRep||e.groupName, e.groupRepKana||'', cName+'（'+esc(e.groupName)+'）', e, perFee);
       }
     }
   });
@@ -3809,11 +3812,13 @@ function buildFeePersonView(concertList){
   // 全体サマリー（エントリー重複なし）
   const counted = new Set();
   let totalAll=0, collectedAll=0;
-  persons.forEach(p=>p.appearances.forEach(({entry})=>{
-    if(counted.has(entry.id)) return;
-    counted.add(entry.id);
-    totalAll += entry.feeAmount||0;
-    if(entry.feeStatus==='paid') collectedAll += entry.feeAmount||0;
+  persons.forEach(p=>p.appearances.forEach(({entry, perFee})=>{
+    // グループは1エントリーにつき1メンバー分だけカウント
+    const key = entry.id + '|' + p.name;
+    if(counted.has(key)) return;
+    counted.add(key);
+    totalAll += perFee;
+    if(entry.feeStatus==='paid') collectedAll += perFee;
   }));
   const pendingAll = totalAll - collectedAll;
 
@@ -3830,7 +3835,7 @@ function buildFeePersonView(concertList){
     kpiBox('未回収', fmt(pendingAll), pendingAll>0?'#f6c90e':'var(--text3)') +
     '</div>' +
     '<p style="font-size:0.72rem;color:var(--text3);margin-bottom:0.8rem">' +
-    '※ グループの参加費はメンバー各行に表示。回収状況の変更はグループ全体に反映されます。</p>' +
+    '※ グループの参加費はメンバー数で割った金額を表示。回収状況の変更はグループ全体に反映されます。</p>' +
     '<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">';
 
   persons.forEach((p,pi)=>{
@@ -3838,11 +3843,12 @@ function buildFeePersonView(concertList){
     // その人の合計（重複エントリーなし）
     const pCounted = new Set();
     let pTotal=0, pCollected=0;
-    p.appearances.forEach(({entry})=>{
-      if(pCounted.has(entry.id)) return;
-      pCounted.add(entry.id);
-      pTotal += entry.feeAmount||0;
-      if(entry.feeStatus==='paid') pCollected += entry.feeAmount||0;
+    p.appearances.forEach(({entry, perFee})=>{
+      const key = entry.id + '|' + p.name;
+      if(pCounted.has(key)) return;
+      pCounted.add(key);
+      pTotal += perFee;
+      if(entry.feeStatus==='paid') pCollected += perFee;
     });
     const pPending = pTotal - pCollected;
 
@@ -3857,13 +3863,13 @@ function buildFeePersonView(concertList){
        (pTotal?'<span style="font-size:0.72rem;color:#6fcf97">完納</span>':''))+
       '</span>'+
       '</div>'+
-      p.appearances.map(({label,entry})=>{
-        const hasFee = entry.feeAmount>0;
+      p.appearances.map(({label,entry,perFee})=>{
+        const hasFee = perFee>0;
         const pill = hasFee
           ? '<button class="fee-pill '+(entry.feeStatus==='paid'?'paid':'unpaid')+'" onclick="toggleFeeStatusFin(\''+ entry.id +'\')">'+
             (entry.feeStatus==='paid'?'✓ 回収済み':'● 未回収')+'</button>'
           : '<span style="font-size:0.7rem;color:var(--text3)">未設定</span>';
-        const amt = hasFee ? fmt(entry.feeAmount) : '<span style="color:var(--text3)">—</span>';
+        const amt = hasFee ? fmt(perFee) : '<span style="color:var(--text3)">—</span>';
         return '<div style="display:grid;grid-template-columns:1fr 80px 110px 80px;gap:0.5rem 0.8rem;align-items:center;padding:0.5rem 1rem 0.5rem 1.5rem;border-top:1px solid var(--border)">'+
           '<div style="font-size:0.8rem;color:var(--text2)">'+label+'</div>'+
           '<div style="text-align:right;font-size:0.82rem;color:var(--text2)">'+amt+'</div>'+
