@@ -1228,7 +1228,7 @@ select.status-sel{
       <div class="fg full"><label>演奏会 *</label><select id="em-concert" onchange="onEmConcertChange()"></select></div>
     </div>
 
-    <!-- TYPE + 出演順・演奏時間 -->
+    <!-- TYPE + 出演順（表示のみ） -->
     <div style="margin:1rem 0 0.5rem">
       <div style="display:flex;align-items:flex-end;gap:0.8rem;flex-wrap:wrap">
         <div style="flex:1;min-width:200px">
@@ -1238,15 +1238,10 @@ select.status-sel{
             <button class="type-btn" id="type-group-btn" onclick="setType('group')">グループ / アンサンブル</button>
           </div>
         </div>
-        <div style="display:flex;gap:0.5rem;align-items:flex-end;flex-shrink:0">
-          <div>
-            <label style="font-size:0.68rem;color:var(--text3);display:block;margin-bottom:0.2rem">出演順</label>
-            <input id="em-order" type="number" min="1" inputmode="numeric" style="width:60px;text-align:center">
-          </div>
-          <div>
-            <label style="font-size:0.68rem;color:var(--text3);display:block;margin-bottom:0.2rem">演奏時間（分）</label>
-            <input id="em-duration" type="number" min="1" inputmode="numeric" style="width:72px;text-align:center">
-          </div>
+        <div style="display:flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;background:var(--surface2);border-radius:8px;flex-shrink:0;align-self:flex-end">
+          <span style="font-size:0.68rem;color:var(--text3)">出演順</span>
+          <span id="em-order-display" style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2);min-width:1.5rem;text-align:center">—</span>
+          <input id="em-order" type="hidden">
         </div>
       </div>
     </div>
@@ -1321,7 +1316,12 @@ select.status-sel{
     <div class="subsect" style="margin-top:1rem">
       <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
         <span>演奏曲目</span>
-        <span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">☰ ドラッグで順番変更</span>
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <label style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">演奏時間</label>
+          <input id="em-duration" type="number" min="1" inputmode="numeric" placeholder="分" style="width:52px;text-align:center;font-size:0.82rem;padding:0.15rem 0.3rem">
+          <span style="font-size:0.65rem;color:var(--text3)">分</span>
+          <span style="font-size:0.65rem;color:var(--text3);margin-left:0.3rem">☰ ドラッグで順番変更</span>
+        </div>
       </div>
       <div style="display:grid;grid-template-columns:1.4rem 1fr 1fr auto;gap:0.3rem 0.4rem;margin-bottom:0.4rem;padding:0 0.5rem">
         <span></span>
@@ -1340,7 +1340,7 @@ select.status-sel{
     </div>
 
     <!-- 参加状況・ログインコード -->
-    <div style="display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-top:0.8rem">
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:0.8rem">
       <!-- 参加状況スイッチ -->
       <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.8rem;background:var(--surface2);border-radius:8px;flex-shrink:0">
         <span style="font-size:0.75rem;color:var(--text3)">参加</span>
@@ -1350,15 +1350,11 @@ select.status-sel{
           <span id="em-status-thumb" style="position:absolute;left:2px;top:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3)"></span>
         </label>
         <span style="font-size:0.75rem;font-weight:600" id="em-status-label">未確認</span>
-        <!-- 欠席チェックボックス（サブ） -->
-        <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.72rem;color:var(--text3);margin-left:0.5rem;cursor:pointer">
-          <input type="checkbox" id="em-absent-chk" onchange="updateStatusSwitch()" style="accent-color:#eb5757">欠席
-        </label>
       </div>
       <!-- ログインコード（ソロのみ） -->
-      <div id="em-performer-code-wrap" style="flex:1;min-width:160px">
-        <label style="font-size:0.68rem;color:var(--text3)">ログインコード</label>
-        <input id="em-performer-code" type="text" placeholder="例: yamada2025" style="width:100%">
+      <div id="em-performer-code-wrap" style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.8rem;background:var(--surface2);border-radius:8px">
+        <label style="font-size:0.75rem;color:var(--text3);white-space:nowrap;cursor:default">ログインコード</label>
+        <input id="em-performer-code" type="text" placeholder="例: yamada2025" style="width:130px;font-size:0.82rem">
       </div>
     </div>
 
@@ -2339,19 +2335,13 @@ function updateFeeTotal(){
 
 function updateStatusSwitch(){
   const chk=document.getElementById('em-status-chk');
-  const absent=document.getElementById('em-absent-chk');
   const label=document.getElementById('em-status-label');
   const track=document.getElementById('em-status-track');
   const thumb=document.getElementById('em-status-thumb');
   if(!chk) return;
-  if(absent?.checked){
-    label.textContent='欠席';label.style.color='#eb5757';
-    track.style.background='#eb575744';thumb.style.left='20px';
-    chk.checked=false;
-  } else if(chk.checked){
+  if(chk.checked){
     label.textContent='参加確定';label.style.color='var(--gold2)';
     track.style.background='var(--gold2)';thumb.style.left='20px';
-    absent.checked=false;
   } else {
     label.textContent='未確認';label.style.color='var(--text3)';
     track.style.background='var(--border)';thumb.style.left='2px';
@@ -2360,10 +2350,8 @@ function updateStatusSwitch(){
 
 function setStatusSwitch(status){
   const chk=document.getElementById('em-status-chk');
-  const absent=document.getElementById('em-absent-chk');
   if(!chk) return;
   chk.checked = status==='confirmed';
-  if(absent) absent.checked = status==='absent';
   updateStatusSwitch();
 }
 
@@ -2488,6 +2476,8 @@ function openEntryModal(id){
     }
     loadPieces(e.pieces);
     document.getElementById('em-order').value=e.order||'';
+    const od=document.getElementById('em-order-display');
+    if(od) od.textContent=e.order||'—';
     document.getElementById('em-duration').value=e.duration||'';
     document.getElementById('em-profile').value=e.profile||'';
     document.getElementById('em-memo').value=e.memo||'';
@@ -2506,6 +2496,7 @@ function openEntryModal(id){
     ['em-name','em-kana','em-email','em-tel','em-instrument','em-acc-name',
      'em-group-name','em-group-rep','em-group-rep-kana','em-group-email','em-group-tel','em-order','em-duration','em-profile','em-memo','em-performer-code']
       .forEach(i=>{ const el=document.getElementById(i); if(el) el.value=''; });
+    const od=document.getElementById('em-order-display'); if(od) od.textContent='—';
     document.getElementById('em-acc-type').value='none';
     document.getElementById('em-acc-type-group').value='none';
     setStatusSwitch('pending');
@@ -2547,8 +2538,7 @@ function saveEntry(){
     duration:parseInt(document.getElementById('em-duration').value)||0,
     profile:document.getElementById('em-profile').value.trim(),
     memo:document.getElementById('em-memo').value.trim(),
-    status: document.getElementById('em-absent-chk')?.checked ? 'absent'
-           : document.getElementById('em-status-chk')?.checked ? 'confirmed' : 'pending',
+    status: document.getElementById('em-status-chk')?.checked ? 'confirmed' : 'pending',
     performerCode:document.getElementById('em-performer-code').value.trim(),
     feeAmount:parseFloat(document.getElementById('em-fee-amount').value)||0,
     feeStatus:document.getElementById('em-fee-status-chk')?.checked?'paid':'unpaid',
