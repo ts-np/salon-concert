@@ -2957,7 +2957,8 @@ function catColor(c){ return SCHED_CATS[c]||'#9a8a6a'; }
 function catBadge(cat){
   if(!cat||cat.startsWith('_'))return '';
   const c=catColor(cat);
-  return `<span style="display:inline-block;padding:0.1rem 0.45rem;border-radius:10px;font-size:0.65rem;background:${c}22;color:${c};border:1px solid ${c}55;white-space:nowrap">${esc(cat)}</span>`;
+  const label={'会場準備':'準備','リハーサル':'リハ'}[cat]||cat;
+  return `<span style="display:inline-block;padding:0.1rem 0.45rem;border-radius:10px;font-size:0.65rem;background:${c}22;color:${c};border:1px solid ${c}55;white-space:nowrap">${esc(label)}</span>`;
 }
 
 // ── shared table renderer ──
@@ -2983,7 +2984,7 @@ function buildSchedTable(rows, footerHtml){
       timeCell=`<input type="time" value="${r.time||''}" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.1rem 0.25rem;font-size:0.78rem;width:80px" onchange="${r.onchangeTime}">`;
       durCell =`<input type="number" value="${r.duration||''}" min="0" placeholder="分" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:0.1rem 0.25rem;font-size:0.75rem;width:44px" onchange="${r.onchangeDur}" inputmode="numeric">`;
     }
-    const endTime=r.end?`<div style="font-size:0.68rem;color:var(--text3);margin-top:1px">〜${r.end}</div>`:'';
+    const endTime=(!isGap&&r.end)?`<div style="font-size:0.68rem;color:var(--text3);margin-top:1px">〜${r.end}</div>`:'';
 
     // cat cell
     let catCell=catBadge(r.category||'');
@@ -3025,6 +3026,7 @@ function buildSchedTable(rows, footerHtml){
       <td style="padding:0.45rem 0.6rem;vertical-align:top;font-size:0.85rem">${contentCell}</td>
       <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.78rem;color:var(--text2)">${personCell}</td>
       <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.75rem;color:var(--text3)">${noteCell}</td>
+      <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.75rem;color:var(--text3)">${esc(r.memo||'')}</td>
       <td style="padding:0.45rem 0.4rem;vertical-align:middle;text-align:center">${r.actionCol||''}</td>
     </tr>`;
   }).join('');
@@ -3035,8 +3037,9 @@ function buildSchedTable(rows, footerHtml){
         <th style="padding:0.4rem 0.6rem;text-align:left;font-size:0.68rem;color:var(--text3);white-space:nowrap">時刻</th>
         <th style="padding:0.4rem 0.5rem;text-align:right;font-size:0.68rem;color:var(--text3);white-space:nowrap">時間</th>
         <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">カテゴリ</th>
-        <th style="padding:0.4rem 0.6rem;font-size:0.68rem;color:var(--text3)">内容</th>
-        <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">担当 / 出演者</th>
+        <th style="padding:0.4rem 0.6rem;font-size:0.68rem;color:var(--text3)">出演者</th>
+        <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">伴奏者</th>
+        <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">曲名</th>
         <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">備考</th>
         <th style="width:60px"></th>
       </tr></thead>
@@ -3090,9 +3093,10 @@ function renderSchedule(forceCid){
     const name=e.type==='group'?e.groupName:e.name;
     const pieces=Array.isArray(e.pieces)?e.pieces:[];
     const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
+    const accStr=(e.accType==='self'&&e.accName)?e.accName:'';
     rows.push({
       time:start,duration:rDur,category:'リハーサル',content:name,
-      person:personStr(e),note:noteStr,rowType:'rehearsal',entry:e,idx:i,total:rhList.length,end,rGap,cid,
+      person:accStr,note:noteStr,memo:e.memo||'',rowType:'rehearsal',entry:e,idx:i,total:rhList.length,end,rGap,cid,
       actionCol:`<div style="display:flex;flex-direction:column;gap:1px;align-items:center">
         ${i>0?`<button class="btn btn-outline btn-sm" style="padding:0 0.3rem;font-size:0.65rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',-1)">↑</button>`:'<span style="height:20px"></span>'}
         ${i<rhList.length-1?`<button class="btn btn-outline btn-sm" style="padding:0 0.3rem;font-size:0.65rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',1)">↓</button>`:'<span style="height:20px"></span>'}
@@ -3128,10 +3132,11 @@ function renderSchedule(forceCid){
     const name=e.type==='group'?e.groupName:e.name;
     const pieces=Array.isArray(e.pieces)?e.pieces:[];
     const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
+    const accStr=(e.accType==='self'&&e.accName)?e.accName:'';
     rows.push({
       time:start,duration:dur||null,category:'本番',
       content:(e.order?e.order+'. ':'')+name,
-      person:personStr(e),note:noteStr,rowType:'performance',entry:e,idx:i,end,cid,
+      person:accStr,note:noteStr,memo:e.memo||'',rowType:'performance',entry:e,idx:i,end,cid,
       actionCol:`<button class="btn btn-outline btn-sm" style="font-size:0.65rem;padding:0.15rem 0.4rem;white-space:nowrap" onclick="addBreak('${cid}',${i})">＋休憩</button>`
     });
     // 休憩（この奏者の後）
@@ -3729,8 +3734,11 @@ function renderMySchedule(){
     const end=rTime?addMinutes(rTime,i*(rDur+rGap)+rDur):'';
     const name=e.type==='group'?e.groupName:e.name;
     const instrTag=e.type==='solo'&&e.instrument?` <span style="font-size:0.72rem;color:var(--text3)">(${instrAbbr(e.instrument)})</span>`:'';
+    const accStr=(e.accType==='self'&&e.accName)?e.accName:'';
+    const pieces=Array.isArray(e.pieces)?e.pieces:[];
+    const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
     const isMe=myIdsForCid.has(e.id);
-    rows.push({time:start,end,duration:rDur,category:'リハーサル',content:name,instrTag,person:personStr(e),note:'',rowType:'rehearsal',isMe});
+    rows.push({time:start,end,duration:rDur,category:'リハーサル',content:name,instrTag,person:accStr,note:noteStr,memo:e.memo||'',rowType:'rehearsal',isMe});
     if(i<rhList.length-1) rows.push({time:end,duration:rGap,category:'_gap',content:'── 入替 '+rGap+'分 ──',rowType:'gap'});
   });
 
@@ -3752,8 +3760,11 @@ function renderMySchedule(){
     const end=(pTime&&dur)?addMinutes(pTime,pOffset):'';
     const name=e.type==='group'?e.groupName:e.name;
     const instrTag=e.type==='solo'&&e.instrument?` <span style="font-size:0.72rem;color:var(--text3)">(${instrAbbr(e.instrument)})</span>`:'';
+    const accStr=(e.accType==='self'&&e.accName)?e.accName:'';
+    const pieces=Array.isArray(e.pieces)?e.pieces:[];
+    const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
     const isMe=myIdsForCid.has(e.id);
-    rows.push({time:start,end,duration:dur||null,category:'本番',content:(e.order?e.order+'. ':'')+name,instrTag,person:personStr(e),note:'',rowType:'performance',isMe});
+    rows.push({time:start,end,duration:dur||null,category:'本番',content:(e.order?e.order+'. ':'')+name,instrTag,person:accStr,note:noteStr,memo:e.memo||'',rowType:'performance',isMe});
     breaks.filter(b=>b.afterEntryIndex===i).forEach(b=>{
       const bs=pTime?addMinutes(pTime,pOffset):'';
       pOffset+=b.duration||0;
@@ -3779,7 +3790,7 @@ function renderMySchedule(){
     const bg=CAT_BG[isGap?'_gap':(r.rowType==='event'?'event':(r.category||'その他'))]||'';
     const hlBorder=r.isMe?'border-left:3px solid var(--gold2);':'';
     const hlBg=r.isMe?'background:rgba(201,168,92,0.10);':'';
-    const endTime=r.end?`<div style="font-size:0.68rem;color:var(--text3);margin-top:1px">〜${r.end}</div>`:'';
+    const endTime=(!isGap&&r.end)?`<div style="font-size:0.68rem;color:var(--text3);margin-top:1px">〜${r.end}</div>`:'';
     const meTag=r.isMe?`<span style="font-size:0.68rem;color:var(--gold2);font-weight:700;margin-left:0.4rem">← あなた</span>`:'';
     return `<tr style="${hlBg||bg?'background:'+(hlBg?'rgba(201,168,92,0.10)':bg)+';':''}${hlBorder}border-top:1px solid var(--border)">
       <td style="padding:0.45rem 0.6rem;vertical-align:top;white-space:nowrap">
@@ -3792,6 +3803,7 @@ function renderMySchedule(){
       </td>
       <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.78rem;color:var(--text2)">${esc(r.person||'')}</td>
       <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.75rem;color:var(--text3)">${esc(r.note||'')}</td>
+      <td style="padding:0.45rem 0.5rem;vertical-align:top;font-size:0.75rem;color:var(--text3)">${esc(r.memo||'')}</td>
     </tr>`;
   }).join('');
 
@@ -3806,8 +3818,9 @@ function renderMySchedule(){
           <th style="padding:0.4rem 0.6rem;text-align:left;font-size:0.68rem;color:var(--text3);white-space:nowrap">時刻</th>
           <th style="padding:0.4rem 0.5rem;text-align:right;font-size:0.68rem;color:var(--text3)">時間</th>
           <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">カテゴリ</th>
-          <th style="padding:0.4rem 0.6rem;font-size:0.68rem;color:var(--text3)">内容</th>
-          <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">担当 / 出演者</th>
+          <th style="padding:0.4rem 0.6rem;font-size:0.68rem;color:var(--text3)">出演者</th>
+          <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">伴奏者</th>
+          <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">曲名</th>
           <th style="padding:0.4rem 0.5rem;font-size:0.68rem;color:var(--text3)">備考</th>
         </tr></thead>
         <tbody>${trHtml}</tbody>
