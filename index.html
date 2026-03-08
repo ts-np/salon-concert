@@ -3346,12 +3346,7 @@ function renderSchedule(forceCid){
         onchangeNoteBreak:`updateBreak('${cid}',${bIdx},'note',this.value)`,
         actionCol:`<button class="btn btn-outline btn-sm" style="font-size:0.65rem;padding:0.15rem 0.4rem;color:#eb5757" onclick="removeBreak('${cid}',${bIdx})">削除</button>`
       });
-      // 休憩後の奏者間（次の奏者が存在する場合）
-      if(i<perfList.length-1){
-        const gStart=pTime?addMinutes(pTime,pOffset):'';
-        rows.push({time:gStart,duration:pGap,category:'_gap',content:'── 奏者間 '+pGap+'分 ──',rowType:'gap'});
-        pOffset+=pGap;
-      }
+      // 休憩後の奏者間は不要（休憩がインターバルを兼ねるため）
     });
   });
 
