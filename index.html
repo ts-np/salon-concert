@@ -985,6 +985,7 @@ select.status-sel{
         <h2>参加者管理</h2>
         <div class="ph-actions">
           <label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0">📂 CSVインポート<input type="file" accept=".csv,text/csv" onchange="importCSV(event)" style="display:none"></label>
+          <button class="btn btn-outline btn-sm" onclick="openMailModal()">✉ メール連絡</button>
           <button class="btn btn-gold" onclick="openEntryModal()">＋ 参加者を追加</button>
         </div>
       </div>
@@ -1467,6 +1468,103 @@ select.status-sel{
   </div>
 </div>
 
+<!-- ══ MODAL: MAIL ══ -->
+<div class="overlay" id="mail-modal-overlay">
+  <div class="modal" style="max-width:720px;width:96vw">
+    <div class="modal-header">
+      <h3 id="mail-modal-title">メール連絡</h3>
+      <button class="close-btn" onclick="closeModal('mail-modal')">×</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem">
+
+      <!-- タブ: 作成 / テンプレート管理 -->
+      <div style="display:flex;gap:0.4rem;border-bottom:1px solid var(--border);padding-bottom:0.6rem">
+        <button id="mail-tab-compose" class="btn btn-sm btn-gold" onclick="switchMailTab('compose')">✉ メール作成</button>
+        <button id="mail-tab-templates" class="btn btn-sm btn-outline" onclick="switchMailTab('templates')">📋 テンプレート管理</button>
+      </div>
+
+      <!-- ── 作成タブ ── -->
+      <div id="mail-compose-pane">
+        <!-- 宛先 -->
+        <div class="subsect" style="margin-bottom:0.8rem">
+          <div class="subsect-title">宛先</div>
+          <div id="mail-recipient-list" style="display:flex;flex-direction:column;gap:0.3rem;max-height:160px;overflow-y:auto;padding:0.4rem 0"></div>
+        </div>
+
+        <!-- テンプレート選択 -->
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.8rem;flex-wrap:wrap">
+          <label style="font-size:0.78rem;color:var(--text3);white-space:nowrap">テンプレート</label>
+          <select id="mail-template-sel" onchange="applyMailTemplate()" style="flex:1;min-width:160px;font-size:0.82rem">
+            <option value="">── 選択してください ──</option>
+          </select>
+        </div>
+
+        <!-- 宛先ページャー -->
+        <div id="mail-pager-wrap" style="display:none;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+          <span id="mail-pager-info" style="font-size:0.78rem;color:var(--text3)"></span>
+          <div style="display:flex;gap:0.4rem">
+            <button class="btn btn-outline btn-sm" onclick="mailPagerMove(-1)">◀</button>
+            <button class="btn btn-outline btn-sm" onclick="mailPagerMove(1)">▶</button>
+          </div>
+        </div>
+
+        <!-- 件名 -->
+        <div class="fg" style="margin-bottom:0.6rem">
+          <label>件名</label>
+          <input id="mail-subject" type="text" placeholder="件名を入力">
+        </div>
+
+        <!-- 本文 -->
+        <div class="fg" style="margin-bottom:0.8rem">
+          <label>本文 <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（プレビュー・編集可）</span></label>
+          <textarea id="mail-body" rows="12" style="font-family:'Shippori Mincho',serif;font-size:0.85rem;line-height:1.8;resize:vertical"></textarea>
+        </div>
+
+        <!-- 送信ボタン -->
+        <div style="display:flex;gap:0.6rem;justify-content:flex-end;flex-wrap:wrap">
+          <button class="btn btn-outline" onclick="mailCopyBody()">📋 本文をコピー</button>
+          <button class="btn btn-gold" onclick="mailOpenMailer()">📧 メーラーで開く</button>
+        </div>
+      </div>
+
+      <!-- ── テンプレート管理タブ ── -->
+      <div id="mail-templates-pane" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.7rem">
+          <span style="font-size:0.82rem;color:var(--text2)">テンプレートの追加・編集・削除</span>
+          <button class="btn btn-gold btn-sm" onclick="openMailTemplateEdit()">＋ 新規テンプレート</button>
+        </div>
+        <div id="mail-template-list" style="display:flex;flex-direction:column;gap:0.5rem"></div>
+
+        <!-- テンプレート編集フォーム -->
+        <div id="mail-template-edit-form" style="display:none;margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem">
+          <input type="hidden" id="mtpl-edit-id">
+          <div class="fg" style="margin-bottom:0.5rem">
+            <label>テンプレート名</label>
+            <input id="mtpl-edit-name" type="text" placeholder="例：ログインコード通知">
+          </div>
+          <div class="fg" style="margin-bottom:0.5rem">
+            <label>件名</label>
+            <input id="mtpl-edit-subject" type="text" placeholder="例：【{{演奏会名}}】ログインコードのご案内">
+          </div>
+          <div class="fg" style="margin-bottom:0.3rem">
+            <label>本文</label>
+            <textarea id="mtpl-edit-body" rows="10" style="font-size:0.82rem;line-height:1.8;resize:vertical"></textarea>
+          </div>
+          <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.7rem;line-height:1.8">
+            使える変数：<code>{{氏名}}</code> <code>{{演奏会名}}</code> <code>{{日付}}</code> <code>{{会場}}</code>
+            <code>{{開演時刻}}</code> <code>{{リハ時刻}}</code> <code>{{ログインコード}}</code> <code>{{URL}}</code>
+          </div>
+          <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+            <button class="btn btn-outline btn-sm" onclick="cancelMailTemplateEdit()">キャンセル</button>
+            <button class="btn btn-gold btn-sm" onclick="saveMailTemplate()">保存</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODAL: TRANSACTION ══ -->
 <div class="overlay" id="txn-modal-overlay">
   <div class="modal" style="max-width:480px">
@@ -1627,6 +1725,7 @@ async function persist(){
       instrumentList,
       instrumentAbbr,
       adminPassword,
+      emailTemplates,
       updatedAt: Date.now()
     };
     try{
@@ -1649,6 +1748,7 @@ async function hydrate(){
       if(data.instrumentList) instrumentList = data.instrumentList;
       if(data.instrumentAbbr)  instrumentAbbr = data.instrumentAbbr;
       if(data.adminPassword)  adminPassword  = data.adminPassword;
+      if(data.emailTemplates) emailTemplates = data.emailTemplates;
     }
   }catch(e){ console.warn('Firebase read error:', e); }
 }
@@ -2780,6 +2880,7 @@ function renderParticipants(){
           </select>
         </td>
         <td style="white-space:nowrap">
+          <button class="btn btn-outline btn-sm" onclick="openMailModal('${e.id}')">✉</button>
           <button class="btn btn-outline btn-sm" onclick="openEntryModal('${e.id}')">編集</button>
           <button class="btn btn-danger btn-sm" onclick="deleteEntry('${e.id}')">削除</button>
         </td>
@@ -2921,6 +3022,7 @@ function timeToMin(t){ if(!t) return null; const [h,m]=t.split(':').map(Number);
 let schedRehearsalOrders = {};
 let schedCustomEvents  = {}; // {cid: [{id,time,duration,category,content,person,note,zone}]}
 let schedBreaks        = {}; // {cid: [{afterEntryIndex,duration,note}]}
+let emailTemplates     = []; // [{id,name,subject,body}]
 let schedStaffEvents   = {}; // {cid: [{id,time,duration,category,content,person,note}]}
 let schedTabMode       = 'perf'; // 'perf' | 'staff'
 
@@ -4302,6 +4404,285 @@ function calcTotals(txns){
   return {income, expense, balance: income-expense};
 }
 
+// ══════════════════════════════════════
+//  メール連絡機能
+// ══════════════════════════════════════
+
+let _mailTargets = [];   // [{entryId, name, email, code}]
+let _mailPageIdx = 0;    // 現在表示中の宛先インデックス
+
+// デフォルトテンプレート
+const DEFAULT_MAIL_TEMPLATES = [
+  {
+    id:'tpl-login', name:'ログインコード通知',
+    subject:'【{{演奏会名}}】出演者専用ページのログインコードのご案内',
+    body:`{{氏名}} 様
+
+この度は、{{演奏会名}}にご参加いただきありがとうございます。
+
+出演者専用ページのログインコードをお知らせします。
+
+ログインコード：{{ログインコード}}
+アクセスURL：{{URL}}
+
+プログラムやスケジュールをご確認いただけます。
+
+ご不明な点がございましたらお気軽にご連絡ください。
+どうぞよろしくお願いいたします。`
+  },
+  {
+    id:'tpl-info', name:'演奏会のご案内',
+    subject:'【{{演奏会名}}】のご案内',
+    body:`{{氏名}} 様
+
+{{演奏会名}}のご案内をお送りします。
+
+日時：{{日付}}　開演 {{開演時刻}}
+会場：{{会場}}
+リハーサル：{{リハ時刻}}〜
+
+ご確認いただけますようよろしくお願いいたします。`
+  },
+  {
+    id:'tpl-schedule', name:'スケジュール・プログラム連絡',
+    subject:'【{{演奏会名}}】スケジュールのご確認のお願い',
+    body:`{{氏名}} 様
+
+{{演奏会名}}のスケジュールが確定しましたのでご連絡します。
+
+出演者専用ページよりスケジュールとプログラムをご確認ください。
+
+ログインコード：{{ログインコード}}
+アクセスURL：{{URL}}
+
+ご不明な点がございましたらお気軽にご連絡ください。`
+  }
+];
+
+function openMailModal(entryId){
+  const cid = document.getElementById('p-concert-sel')?.value;
+  if(!cid){ alert('演奏会を選択してください'); return; }
+
+  const concert = concerts.find(c=>c.id===cid);
+  const list = entries.filter(e=>e.concertId===cid);
+
+  // 宛先リスト構築
+  if(entryId){
+    // 個別指定
+    const e = list.find(x=>x.id===entryId);
+    _mailTargets = e ? [buildMailTarget(e)] : [];
+  } else {
+    // 全員
+    _mailTargets = list.map(e=>buildMailTarget(e)).filter(t=>t.email);
+  }
+  _mailPageIdx = 0;
+
+  // 宛先チェックボックス表示
+  const recEl = document.getElementById('mail-recipient-list');
+  const allTargets = list.map(e=>buildMailTarget(e));
+  recEl.innerHTML = allTargets.map(t=>`
+    <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;cursor:pointer;padding:0.15rem 0">
+      <input type="checkbox" ${_mailTargets.some(x=>x.entryId===t.entryId)?'checked':''} ${!t.email?'disabled':''} 
+        onchange="toggleMailTarget('${t.entryId}',this.checked)"
+        style="accent-color:var(--gold2)">
+      <span style="${!t.email?'color:var(--text3)':''}">${esc(t.name)}</span>
+      ${t.email?`<span style="font-size:0.72rem;color:var(--text3)">&lt;${esc(t.email)}&gt;</span>`
+               :`<span style="font-size:0.65rem;color:#eb5757">メール未登録</span>`}
+    </label>`).join('');
+
+  // テンプレートセレクト更新
+  populateMailTemplateSelect();
+  document.getElementById('mail-template-sel').value='';
+  document.getElementById('mail-subject').value='';
+  document.getElementById('mail-body').value='';
+  updateMailPager();
+  switchMailTab('compose');
+  openModal('mail-modal');
+}
+
+function buildMailTarget(e){
+  const name = e.type==='group' ? (e.groupRep||e.groupName) : e.name;
+  const email = e.type==='group' ? (e.groupEmail||e.email||'') : (e.email||'');
+  const code = e.performerCode||'';
+  return { entryId:e.id, name, email, code, entry:e };
+}
+
+function toggleMailTarget(entryId, checked){
+  const cid = document.getElementById('p-concert-sel')?.value;
+  const e = entries.find(x=>x.id===entryId);
+  if(!e) return;
+  if(checked){
+    if(!_mailTargets.some(t=>t.entryId===entryId))
+      _mailTargets.push(buildMailTarget(e));
+  } else {
+    _mailTargets = _mailTargets.filter(t=>t.entryId!==entryId);
+  }
+  _mailPageIdx = 0;
+  updateMailPager();
+  reapplyMailTemplate();
+}
+
+function populateMailTemplateSelect(){
+  const sel = document.getElementById('mail-template-sel');
+  const allTpls = getAllTemplates();
+  sel.innerHTML = '<option value="">── 選択してください ──</option>'
+    + allTpls.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');
+}
+
+function getAllTemplates(){
+  // デフォルト＋ユーザー保存テンプレートをマージ（同IDはユーザー側優先）
+  const userIds = emailTemplates.map(t=>t.id);
+  const defaults = DEFAULT_MAIL_TEMPLATES.filter(t=>!userIds.includes(t.id));
+  return [...defaults, ...emailTemplates];
+}
+
+function applyMailTemplate(){
+  const tplId = document.getElementById('mail-template-sel').value;
+  if(!tplId) return;
+  reapplyMailTemplate();
+}
+
+function reapplyMailTemplate(){
+  const tplId = document.getElementById('mail-template-sel').value;
+  if(!tplId) return;
+  const tpl = getAllTemplates().find(t=>t.id===tplId);
+  if(!tpl) return;
+  const target = _mailTargets[_mailPageIdx];
+  if(!target) return;
+  document.getElementById('mail-subject').value = expandVars(tpl.subject, target);
+  document.getElementById('mail-body').value    = expandVars(tpl.body, target);
+}
+
+function expandVars(text, target){
+  const cid = document.getElementById('p-concert-sel')?.value;
+  const concert = concerts.find(c=>c.id===cid)||{};
+  const url = location.href.split('?')[0];
+  return text
+    .replace(/{{氏名}}/g, target.name||'')
+    .replace(/{{演奏会名}}/g, concert.name||'')
+    .replace(/{{日付}}/g, concert.date||'')
+    .replace(/{{会場}}/g, concert.venue||'')
+    .replace(/{{開演時刻}}/g, concert.time||'')
+    .replace(/{{リハ時刻}}/g, concert.rehearsalTime||'')
+    .replace(/{{ログインコード}}/g, target.code||'（未設定）')
+    .replace(/{{URL}}/g, url);
+}
+
+function updateMailPager(){
+  const wrap = document.getElementById('mail-pager-wrap');
+  const info = document.getElementById('mail-pager-info');
+  const total = _mailTargets.length;
+  if(total > 1){
+    wrap.style.display='flex';
+    info.textContent = `${_mailPageIdx+1} / ${total} 名 — ${esc(_mailTargets[_mailPageIdx]?.name||'')}`;
+  } else {
+    wrap.style.display = total===1 ? 'flex':'none';
+    if(total===1) info.textContent = _mailTargets[0].name;
+  }
+}
+
+function mailPagerMove(dir){
+  const total = _mailTargets.length;
+  _mailPageIdx = Math.max(0, Math.min(total-1, _mailPageIdx+dir));
+  updateMailPager();
+  reapplyMailTemplate();
+}
+
+function mailCopyBody(){
+  const body = document.getElementById('mail-body').value;
+  if(!body){ alert('本文が空です'); return; }
+  navigator.clipboard.writeText(body).then(()=>{
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent='✓ コピーしました';
+    setTimeout(()=>btn.textContent=orig, 2000);
+  });
+}
+
+function mailOpenMailer(){
+  const target = _mailTargets[_mailPageIdx];
+  if(!target?.email){ alert('このエントリーにメールアドレスが登録されていません'); return; }
+  const subject = encodeURIComponent(document.getElementById('mail-subject').value);
+  const body    = encodeURIComponent(document.getElementById('mail-body').value);
+  window.open(`mailto:${target.email}?subject=${subject}&body=${body}`);
+}
+
+function switchMailTab(tab){
+  document.getElementById('mail-compose-pane').style.display   = tab==='compose'   ? 'block':'none';
+  document.getElementById('mail-templates-pane').style.display = tab==='templates' ? 'block':'none';
+  document.getElementById('mail-tab-compose').className   = 'btn btn-sm '+(tab==='compose'  ?'btn-gold':'btn-outline');
+  document.getElementById('mail-tab-templates').className = 'btn btn-sm '+(tab==='templates'?'btn-gold':'btn-outline');
+  if(tab==='templates') renderMailTemplateList();
+}
+
+function renderMailTemplateList(){
+  const el = document.getElementById('mail-template-list');
+  const allTpls = getAllTemplates();
+  if(!allTpls.length){ el.innerHTML='<div class="empty"><p>テンプレートがありません</p></div>'; return; }
+  el.innerHTML = allTpls.map(t=>{
+    const isDefault = DEFAULT_MAIL_TEMPLATES.some(d=>d.id===t.id) && !emailTemplates.some(u=>u.id===t.id);
+    return `<div style="border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem;background:var(--surface2)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem">
+        <div>
+          <span style="font-size:0.85rem;font-weight:600">${esc(t.name)}</span>
+          ${isDefault?'<span style="font-size:0.65rem;color:var(--text3);margin-left:0.4rem">デフォルト</span>':''}
+        </div>
+        <div style="display:flex;gap:0.4rem">
+          <button class="btn btn-outline btn-sm" onclick="openMailTemplateEdit('${t.id}')">編集</button>
+          ${!isDefault?`<button class="btn btn-danger btn-sm" onclick="deleteMailTemplate('${t.id}')">削除</button>`:''}
+        </div>
+      </div>
+      <div style="font-size:0.72rem;color:var(--text3)">件名：${esc(t.subject)}</div>
+    </div>`;
+  }).join('');
+}
+
+function openMailTemplateEdit(tplId){
+  document.getElementById('mail-template-edit-form').style.display='block';
+  if(tplId){
+    const tpl = getAllTemplates().find(t=>t.id===tplId);
+    if(!tpl) return;
+    document.getElementById('mtpl-edit-id').value      = tpl.id;
+    document.getElementById('mtpl-edit-name').value    = tpl.name;
+    document.getElementById('mtpl-edit-subject').value = tpl.subject;
+    document.getElementById('mtpl-edit-body').value    = tpl.body;
+  } else {
+    document.getElementById('mtpl-edit-id').value      = 'tpl-'+Date.now();
+    document.getElementById('mtpl-edit-name').value    = '';
+    document.getElementById('mtpl-edit-subject').value = '';
+    document.getElementById('mtpl-edit-body').value    = '';
+  }
+  document.getElementById('mail-template-edit-form').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function cancelMailTemplateEdit(){
+  document.getElementById('mail-template-edit-form').style.display='none';
+}
+
+function saveMailTemplate(){
+  const id      = document.getElementById('mtpl-edit-id').value;
+  const name    = document.getElementById('mtpl-edit-name').value.trim();
+  const subject = document.getElementById('mtpl-edit-subject').value.trim();
+  const body    = document.getElementById('mtpl-edit-body').value.trim();
+  if(!name){ alert('テンプレート名を入力してください'); return; }
+  const idx = emailTemplates.findIndex(t=>t.id===id);
+  if(idx>=0) emailTemplates[idx]={id,name,subject,body};
+  else emailTemplates.push({id,name,subject,body});
+  persist();
+  cancelMailTemplateEdit();
+  renderMailTemplateList();
+  populateMailTemplateSelect();
+}
+
+function deleteMailTemplate(tplId){
+  if(!confirm('このテンプレートを削除しますか？')) return;
+  emailTemplates = emailTemplates.filter(t=>t.id!==tplId);
+  persist();
+  renderMailTemplateList();
+  populateMailTemplateSelect();
+}
+
+// ══════════════════════════════════════
 function renderFinance(){
   const selEl = document.getElementById('fin-concert-sel');
   if(!concerts.length){
