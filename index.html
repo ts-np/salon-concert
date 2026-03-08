@@ -3826,9 +3826,9 @@ function renderMyConvert(){
   el.innerHTML = `<div class="card">
     <div style="margin-bottom:0.8rem">
       <div class="card-title">${esc(concert.name)}</div>
-      <div style="font-size:0.78rem;color:var(--text3);margin-top:0.3rem;display:flex;flex-wrap:wrap;gap:0.3rem 1rem">
+      ${concert.venue?`<div style="font-size:0.88rem;color:var(--text2);margin-top:0.2rem">${concert.venueUrl?`<a href="${esc(concert.venueUrl)}" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline;text-underline-offset:2px">${esc(concert.venue)}</a>`:esc(concert.venue)}</div>`:''}
+      <div style="font-size:0.78rem;color:var(--text3);margin-top:0.25rem">
         ${dateStr?`<span>${dateStr}</span>`:''}
-        ${venueStr?`<span>${venueStr}</span>`:''}
       </div>
     </div>
     ${entriesHtml}
