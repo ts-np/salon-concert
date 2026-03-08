@@ -1825,14 +1825,14 @@ function renderLoginForm(){
           <div style="font-size:0.92rem;color:var(--gold2);font-weight:600">${esc(presetConcert.name)}</div>
           ${presetConcert.date?`<div style="font-size:0.72rem;color:var(--text3);margin-top:0.1rem">${presetConcert.date}</div>`:''}
         </div>
-        <input type="text" id="perf-code" placeholder="ログインコード" onkeydown="if(event.key==='Enter')doLogin()">
+        <input type="text" id="perf-code" placeholder="ログインコード" onkeydown="if(event.key==='Enter')doLogin()" oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')" autocomplete="off" autocapitalize="off" spellcheck="false">
         <button class="btn btn-gold" onclick="doLogin()">ログイン</button>`;
     } else {
       const upcomingConcerts = concerts.filter(c=>!c.date || c.date >= today()).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
       const opts = upcomingConcerts.map(c=>`<option value="${c.id}">${esc(c.name)}${c.date?' ('+c.date+')':''}</option>`).join('');
       f.innerHTML = `
         <select id="perf-concert">${opts||'<option disabled>開催予定の演奏会がありません</option>'}</select>
-        <input type="text" id="perf-code" placeholder="ログインコード" onkeydown="if(event.key==='Enter')doLogin()">
+        <input type="text" id="perf-code" placeholder="ログインコード" onkeydown="if(event.key==='Enter')doLogin()" oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')" autocomplete="off" autocapitalize="off" spellcheck="false">
         <button class="btn btn-gold" onclick="doLogin()">ログイン</button>`;
     }
     n.textContent = '主催者から受け取ったコードでログインしてください';
@@ -3726,16 +3726,23 @@ function renderMyConcertInfo(){
   const cid=currentUser.concertId;
   const concert=concerts.find(c=>c.id===cid);
   if(!concert){el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>';return;}
+  const vOpen=concert.venueOpen||'';
+  const pTime=concert.time||'';
+  const dateStr=concert.date
+    ?`📅 ${concert.date}${vOpen?`　開場 ${vOpen}`:''}${pTime?`　開演 ${pTime}`:''}`:'';
+  const venueHtml=concert.venue
+    ?(concert.venueUrl
+      ?`<div style="font-size:0.88rem;color:var(--text2);margin-top:0.2rem"><a href="${esc(concert.venueUrl)}" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline;text-underline-offset:2px">${esc(concert.venue)}</a></div>`
+      :`<div style="font-size:0.88rem;color:var(--text2);margin-top:0.2rem">${esc(concert.venue)}</div>`)
+    :'';
   el.innerHTML=`
     <div class="card">
-      <div class="card-title" style="margin-bottom:0.6rem">${esc(concert.name)}</div>
-      <div style="font-size:0.82rem;color:var(--text2);line-height:2">
-        ${concert.date?`<div>📅 ${concert.date}${concert.time?' &ensp;'+concert.time:''}</div>`:''}
-        ${concert.venue?`<div>📍 ${esc(concert.venue)}</div>`:''}
-        ${concert.description?`<div style="margin-top:0.5rem;color:var(--text2)">${esc(concert.description)}</div>`:''}
-        ${concert.note?`<div style="margin-top:0.3rem;color:var(--text3)">📝 ${esc(concert.note)}</div>`:''}
-        ${concert.lineUrl?`<div style="margin-top:0.3rem"><a href="${esc(concert.lineUrl)}" target="_blank" style="color:#06c755;text-decoration:none">● LINE オープンチャット</a></div>`:''}
-      </div>
+      <div class="card-title" style="margin-bottom:0.3rem">${esc(concert.name)}</div>
+      ${venueHtml}
+      ${dateStr?`<div style="font-size:0.82rem;color:var(--text3);margin-top:0.25rem">${dateStr}</div>`:''}
+      ${concert.description?`<div style="margin-top:0.7rem;font-size:0.82rem;color:var(--text2)">${esc(concert.description)}</div>`:''}
+      ${concert.note?`<div style="margin-top:0.3rem;font-size:0.82rem;color:var(--text3)">📝 ${esc(concert.note)}</div>`:''}
+      ${concert.lineUrl?`<div style="margin-top:0.5rem"><a href="${esc(concert.lineUrl)}" target="_blank" style="font-size:0.82rem;color:#06c755;text-decoration:none">● LINE オープンチャット</a></div>`:''}
       ${concert.flyerData?`<div style="margin-top:1rem"><img src="${concert.flyerData}" style="max-width:100%;max-height:320px;border-radius:6px;object-fit:contain"></div>`:''}
     </div>`;
 }
@@ -3772,7 +3779,8 @@ function renderMyConvert(){
     const headline = e.type==='group'
       ? `<span style="font-weight:700;font-size:0.95rem">${esc(e.groupName)}</span>
          <span class="badge badge-group" style="font-size:0.65rem;margin-left:0.5rem">グループ</span>`
-      : `<span class="badge badge-solo" style="font-size:0.68rem">ソロ</span>`;
+      : `<span style="font-weight:700;font-size:0.95rem">${esc(e.name)}</span>
+         <span class="badge badge-solo" style="font-size:0.65rem;margin-left:0.5rem">ソロ</span>`;
 
     const subInfo = `<div style="font-size:0.78rem;color:var(--text3);margin-top:0.3rem">
       出演順：${e.order||'未定'}&ensp;演奏時間：${e.duration?e.duration+'分':'未定'}
@@ -3824,13 +3832,6 @@ function renderMyConvert(){
     </div>` : '';
 
   el.innerHTML = `<div class="card">
-    <div style="margin-bottom:0.8rem">
-      <div class="card-title">${esc(concert.name)}</div>
-      ${concert.venue?`<div style="font-size:0.88rem;color:var(--text2);margin-top:0.2rem">${concert.venueUrl?`<a href="${esc(concert.venueUrl)}" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline;text-underline-offset:2px">${esc(concert.venue)}</a>`:esc(concert.venue)}</div>`:''}
-      <div style="font-size:0.78rem;color:var(--text3);margin-top:0.25rem">
-        ${dateStr?`<span>${dateStr}</span>`:''}
-      </div>
-    </div>
     ${entriesHtml}
     ${feeHtml}
   </div>`;
