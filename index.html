@@ -1401,6 +1401,8 @@ select.status-sel{
     <div class="form-grid" style="margin-top:1rem">
       <div class="fg full"><label>プロフィール・自己紹介</label><textarea id="em-profile" rows="3"></textarea></div>
       <div class="fg full"><label>メモ（必要機材、連絡事項）</label><textarea id="em-memo" rows="2" placeholder="例：譜面台が必要、当日14時までに入場"></textarea></div>
+      <div class="fg"><label>メモ（リハ）</label><textarea id="em-memo-reh" rows="2" placeholder="リハーサル時の備考"></textarea></div>
+      <div class="fg"><label>メモ（本番）</label><textarea id="em-memo-perf" rows="2" placeholder="本番時の備考"></textarea></div>
     </div>
 
     <!-- 参加状況・ログインコード -->
@@ -2700,6 +2702,8 @@ function openEntryModal(id){
     document.getElementById('em-duration').value=e.duration||'';
     document.getElementById('em-profile').value=e.profile||'';
     document.getElementById('em-memo').value=e.memo||'';
+    document.getElementById('em-memo-reh').value=e.memoReh||'';
+    document.getElementById('em-memo-perf').value=e.memoPerf||'';
     setStatusSwitch(e.status||'pending');
     document.getElementById('em-performer-code').value=e.performerCode||'';
     // グループは1人当たり金額（feePerPerson）を表示、ソロはfeeAmountをそのまま
@@ -2714,7 +2718,7 @@ function openEntryModal(id){
     document.getElementById('entry-modal-title').textContent='参加者を追加';
     setType('solo');
     ['em-name','em-kana','em-email','em-tel','em-instrument','em-acc-name',
-     'em-group-name','em-group-rep','em-group-rep-kana','em-group-email','em-group-tel','em-order','em-duration','em-profile','em-memo','em-performer-code']
+     'em-group-name','em-group-rep','em-group-rep-kana','em-group-email','em-group-tel','em-order','em-duration','em-profile','em-memo','em-memo-reh','em-memo-perf','em-performer-code']
       .forEach(i=>{ const el=document.getElementById(i); if(el) el.value=''; });
     const od=document.getElementById('em-order-display'); if(od) od.textContent='—';
     document.getElementById('em-acc-type').value='none';
@@ -2758,6 +2762,8 @@ function saveEntry(){
     duration:parseInt(document.getElementById('em-duration').value)||0,
     profile:document.getElementById('em-profile').value.trim(),
     memo:document.getElementById('em-memo').value.trim(),
+    memoReh:document.getElementById('em-memo-reh').value.trim(),
+    memoPerf:document.getElementById('em-memo-perf').value.trim(),
     status: document.getElementById('em-status-chk')?.checked ? 'confirmed' : 'pending',
     performerCode:document.getElementById('em-performer-code').value.trim(),
     feePerPerson:parseFloat(document.getElementById('em-fee-amount').value)||0,
@@ -3283,7 +3289,7 @@ function renderSchedule(forceCid){
     const accStr=(e.accType==='self'&&e.accName)?e.accName:'';
     rows.push({
       time:start,duration:rDur,category:'リハーサル',content:name,
-      person:accStr,note:noteStr,memo:e.memo||'',rowType:'rehearsal',entry:e,idx:i,total:rhList.length,end,rGap,cid,
+      person:accStr,note:noteStr,memo:e.memoReh||'',rowType:'rehearsal',entry:e,idx:i,total:rhList.length,end,rGap,cid,
       actionCol:`<div style="display:flex;flex-direction:column;gap:1px;align-items:center">
         ${i>0?`<button class="btn btn-outline btn-sm" style="padding:0 0.3rem;font-size:0.65rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',-1)">↑</button>`:'<span style="height:20px"></span>'}
         ${i<rhList.length-1?`<button class="btn btn-outline btn-sm" style="padding:0 0.3rem;font-size:0.65rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',1)">↓</button>`:'<span style="height:20px"></span>'}
@@ -3323,7 +3329,7 @@ function renderSchedule(forceCid){
     rows.push({
       time:start,duration:dur||null,category:'本番',
       content:(e.order?e.order+'. ':'')+name,
-      person:accStr,note:noteStr,memo:e.memo||'',rowType:'performance',entry:e,idx:i,end,cid,
+      person:accStr,note:noteStr,memo:e.memoPerf||'',rowType:'performance',entry:e,idx:i,end,cid,
       actionCol:`<button class="btn btn-outline btn-sm" style="font-size:0.65rem;padding:0.15rem 0.4rem;white-space:nowrap" onclick="addBreak('${cid}',${i})">＋休憩</button>`
     });
     // 休憩（この奏者の後）
@@ -3931,7 +3937,7 @@ function renderMySchedule(){
     const pieces=Array.isArray(e.pieces)?e.pieces:[];
     const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
     const isMe=myIdsForCid.has(e.id);
-    rows.push({time:start,end,duration:rDur,category:'リハーサル',content:name,instrTag,person:accStr,note:noteStr,memo:e.memo||'',rowType:'rehearsal',isMe});
+    rows.push({time:start,end,duration:rDur,category:'リハーサル',content:name,instrTag,person:accStr,note:noteStr,memo:e.memoReh||'',rowType:'rehearsal',isMe});
     if(i<rhList.length-1) rows.push({time:end,duration:rGap,category:'_gap',content:'── 入替 '+rGap+'分 ──',rowType:'gap'});
   });
 
@@ -3957,7 +3963,7 @@ function renderMySchedule(){
     const pieces=Array.isArray(e.pieces)?e.pieces:[];
     const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
     const isMe=myIdsForCid.has(e.id);
-    rows.push({time:start,end,duration:dur||null,category:'本番',content:(e.order?e.order+'. ':'')+name,instrTag,person:accStr,note:noteStr,memo:e.memo||'',rowType:'performance',isMe});
+    rows.push({time:start,end,duration:dur||null,category:'本番',content:(e.order?e.order+'. ':'')+name,instrTag,person:accStr,note:noteStr,memo:e.memoPerf||'',rowType:'performance',isMe});
     breaks.filter(b=>b.afterEntryIndex===i).forEach(b=>{
       const bs=pTime?addMinutes(pTime,pOffset):'';
       pOffset+=b.duration||0;
