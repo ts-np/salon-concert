@@ -794,59 +794,113 @@ select.status-sel{
 
     <div class="apply-card" id="apply-form-wrap">
       <h2>参加申し込み</h2>
-      <div class="form-grid">
-        <div class="fg"><label>氏名 *</label><input id="af-name" type="text" placeholder="山田 花子"></div>
-        <div class="fg"><label>ふりがな</label><input id="af-kana" type="text" placeholder="やまだ はなこ"></div>
-        <div class="fg full"><label>メールアドレス *</label><input id="af-email" type="email" placeholder="example@mail.com"></div>
-        <div class="fg"><label>電話番号</label><input id="af-tel" type="tel" placeholder="090-0000-0000"></div>
-        <div class="fg"><label>楽器</label><input id="af-instrument" type="text" list="instrument-list" placeholder="ピアノ、ヴァイオリン 等"></div>
-      </div>
 
-      <!-- 参加形式 -->
-      <div style="margin:1rem 0 0.5rem">
-        <div class="fg"><label>参加形式</label></div>
-        <div class="type-toggle" style="margin-top:0.4rem">
+      <!-- 1. 出演形式 -->
+      <div style="margin:0 0 1rem">
+        <div class="fg" style="margin-bottom:0.4rem"><label>出演形式</label></div>
+        <div class="type-toggle">
           <button class="type-btn active" id="af-type-solo" onclick="setApplyType('solo')">ソロ</button>
           <button class="type-btn" id="af-type-group" onclick="setApplyType('group')">グループ / アンサンブル</button>
         </div>
       </div>
 
-      <!-- グループ追加フィールド -->
-      <div id="af-group-fields" style="display:none">
+      <!-- 2a. ソロ個人情報 -->
+      <div id="af-solo-info">
         <div class="form-grid">
-          <div class="fg full"><label>グループ名</label><input id="af-group-name" type="text" placeholder="例：トリオ・ラ・フルール"></div>
-          <div class="fg full"><label>メンバー（氏名・楽器）</label>
-            <div id="af-member-list"></div>
-            <button class="btn btn-outline btn-sm" style="margin-top:0.4rem" onclick="addAfMember()">＋ メンバーを追加</button>
+          <div class="fg"><label>氏名 *</label><input id="af-name" type="text" placeholder="山田 花子"></div>
+          <div class="fg"><label>ふりがな</label><input id="af-kana" type="text" placeholder="やまだ はなこ"></div>
+          <div class="fg"><label>メール *</label><input id="af-email" type="email" placeholder="example@mail.com"></div>
+          <div class="fg"><label>電話</label><input id="af-tel" type="tel" placeholder="090-0000-0000"></div>
+          <div class="fg full"><label>楽器</label><input id="af-instrument" type="text" list="instrument-list" placeholder="ピアノ、ヴァイオリン 等"></div>
+        </div>
+        <div style="margin-top:0.8rem">
+          <label style="font-size:0.78rem;color:var(--text2);display:block;margin-bottom:0.4rem">連絡方法</label>
+          <div style="display:flex;gap:1.2rem;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact" value="line_open" checked style="accent-color:var(--gold2)"> LINEオープンチャット</label>
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact" value="line" style="accent-color:var(--gold2)"> 個別LINE</label>
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact" value="email" style="accent-color:var(--gold2)"> メール</label>
           </div>
         </div>
       </div>
 
-      <!-- 伴奏 -->
-      <div style="margin:1rem 0 0.5rem" id="af-acc-wrap">
-        <div class="subsect">
+      <!-- 2b. グループ情報 -->
+      <div id="af-group-fields" style="display:none">
+        <div class="form-grid">
+          <div class="fg full"><label>グループ名</label><input id="af-group-name" type="text" placeholder="例：トリオ・ラ・フルール"></div>
+          <div class="fg"><label>代表者名 *</label><input id="af-group-rep" type="text" placeholder="代表者の氏名"></div>
+          <div class="fg"><label>代表者ふりがな</label><input id="af-group-rep-kana" type="text" placeholder="ふりがな"></div>
+          <div class="fg"><label>代表者メール *</label><input id="af-group-email" type="email" placeholder="example@mail.com"></div>
+          <div class="fg"><label>代表者電話</label><input id="af-group-tel" type="tel" placeholder="090-0000-0000"></div>
+        </div>
+        <div style="margin-top:0.8rem">
+          <label style="font-size:0.78rem;color:var(--text2);display:block;margin-bottom:0.4rem">連絡方法</label>
+          <div style="display:flex;gap:1.2rem;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact-g" value="line_open" checked style="accent-color:var(--gold2)"> LINEオープンチャット</label>
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact-g" value="line" style="accent-color:var(--gold2)"> 個別LINE</label>
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact-g" value="email" style="accent-color:var(--gold2)"> メール</label>
+          </div>
+        </div>
+
+        <!-- 3. メンバー -->
+        <div class="subsect" style="margin-top:1rem">
+          <div class="subsect-title">メンバー</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.4rem">
+            <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">氏名</span>
+            <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">ふりがな</span>
+            <span style="font-size:0.68rem;color:var(--text3);padding-left:0.2rem">楽器</span>
+            <span></span>
+          </div>
+          <div id="af-member-list"></div>
+          <button class="btn btn-outline btn-sm" style="margin-top:0.4rem" onclick="addAfMember()">＋ メンバーを追加</button>
+        </div>
+
+        <!-- 4. 伴奏（グループ） -->
+        <div class="subsect" style="margin-top:1rem">
           <div class="subsect-title">伴奏</div>
           <div class="form-grid">
-            <div class="fg full">
+            <div class="fg">
               <label>伴奏の有無</label>
-              <select id="af-acc-type" onchange="toggleAfAcc()">
+              <select id="af-acc-type-group" onchange="toggleAfAccGroup()">
                 <option value="none">伴奏なし</option>
                 <option value="self">自己手配（伴奏者あり）</option>
                 <option value="needed">伴奏者の手配が必要</option>
               </select>
             </div>
-            <div class="fg full" id="af-acc-name-wrap" style="display:none">
-              <label>伴奏者名</label><input id="af-acc-name" type="text" placeholder="伴奏者の氏名">
+            <div class="fg" id="af-acc-name-wrap-group" style="display:none">
+              <label>伴奏者名</label><input id="af-acc-name-group" type="text" placeholder="伴奏者の氏名">
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 演奏曲目 -->
-      <div class="subsect" style="margin-bottom:1rem">
+      <!-- 3. 伴奏（ソロ） -->
+      <div id="af-acc-wrap" class="subsect" style="margin-top:1rem">
+        <div class="subsect-title">伴奏</div>
+        <div class="form-grid">
+          <div class="fg">
+            <label>伴奏の有無</label>
+            <select id="af-acc-type" onchange="toggleAfAcc()">
+              <option value="none">伴奏なし</option>
+              <option value="self">自己手配（伴奏者あり）</option>
+              <option value="needed">伴奏者の手配が必要</option>
+            </select>
+          </div>
+          <div class="fg" id="af-acc-name-wrap" style="display:none">
+            <label>伴奏者名</label><input id="af-acc-name" type="text" placeholder="伴奏者の氏名">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4/5. 演奏曲目 + 演奏時間 -->
+      <div class="subsect" style="margin-top:1rem;margin-bottom:1rem">
         <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
           <span>演奏曲目</span>
-          <span style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">☰ ドラッグで順番変更</span>
+          <div style="display:flex;align-items:center;gap:0.5rem">
+            <label style="font-size:0.65rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">演奏時間</label>
+            <input id="af-duration" type="number" min="1" inputmode="numeric" placeholder="分" style="width:52px;text-align:center;font-size:0.82rem;padding:0.15rem 0.3rem">
+            <span style="font-size:0.65rem;color:var(--text3)">分</span>
+            <span style="font-size:0.65rem;color:var(--text3);margin-left:0.3rem">☰ ドラッグで順番変更</span>
+          </div>
         </div>
         <div style="display:grid;grid-template-columns:1.4rem 1fr 1fr auto;gap:0.3rem 0.4rem;margin-bottom:0.4rem;padding:0 0.5rem">
           <span></span>
@@ -858,11 +912,16 @@ select.status-sel{
         <button class="btn btn-outline btn-sm" onclick="addAfPiece()">＋ 曲を追加</button>
       </div>
 
-      <!-- メッセージ -->
+      <!-- 5/6. メモ -->
       <div class="form-grid">
-        <div class="fg full"><label>主催者へのメッセージ・備考</label>
-          <textarea id="af-message" rows="3" placeholder="ご質問やご要望があればご記入ください"></textarea>
+        <div class="fg full"><label>メモ（必要機材、連絡事項）</label>
+          <textarea id="af-message" rows="2" placeholder="例：譜面台が必要、当日14時までに入場"></textarea>
         </div>
+      </div>
+
+      <!-- 6/7. 紹介者 -->
+      <div class="form-grid" style="margin-top:0.6rem">
+        <div class="fg"><label>紹介者</label><input id="af-referrer" type="text" placeholder="紹介者のお名前"></div>
       </div>
 
       <div style="margin-top:1.2rem">
@@ -3032,7 +3091,12 @@ function buildSchedTable(rows, footerHtml){
   }).join('');
 
   return `<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem">
-    <table style="width:100%;border-collapse:collapse;font-size:0.82rem">
+    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;table-layout:fixed">
+      <colgroup>
+        <col style="width:10%"><col style="width:6%"><col style="width:7%">
+        <col style="width:20%"><col style="width:17%"><col style="width:30%">
+        <col style="width:10%"><col style="width:60px">
+      </colgroup>
       <thead><tr style="background:var(--surface2)">
         <th style="padding:0.4rem 0.6rem;text-align:left;font-size:0.68rem;color:var(--text3);white-space:nowrap">時刻</th>
         <th style="padding:0.4rem 0.5rem;text-align:right;font-size:0.68rem;color:var(--text3);white-space:nowrap">時間</th>
@@ -3813,7 +3877,12 @@ function renderMySchedule(){
       ${concert.date?`<div style="font-size:0.75rem;color:var(--text3);margin-top:0.2rem">${concert.date}${pTime?' &ensp;開演 '+pTime:''}</div>`:''}
     </div>
     <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
-      <table style="width:100%;border-collapse:collapse;font-size:0.82rem">
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;table-layout:fixed">
+        <colgroup>
+          <col style="width:10%"><col style="width:6%"><col style="width:7%">
+          <col style="width:20%"><col style="width:17%"><col style="width:30%">
+          <col style="width:10%">
+        </colgroup>
         <thead><tr style="background:var(--surface2)">
           <th style="padding:0.4rem 0.6rem;text-align:left;font-size:0.68rem;color:var(--text3);white-space:nowrap">時刻</th>
           <th style="padding:0.4rem 0.5rem;text-align:right;font-size:0.68rem;color:var(--text3)">時間</th>
@@ -4791,6 +4860,7 @@ function setApplyType(t){
   applyType = t;
   document.getElementById('af-type-solo').classList.toggle('active', t==='solo');
   document.getElementById('af-type-group').classList.toggle('active', t==='group');
+  document.getElementById('af-solo-info').style.display = t==='solo'?'block':'none';
   document.getElementById('af-group-fields').style.display = t==='group'?'block':'none';
   document.getElementById('af-acc-wrap').style.display = t==='solo'?'block':'none';
 }
@@ -4798,12 +4868,18 @@ function toggleAfAcc(){
   const v = document.getElementById('af-acc-type').value;
   document.getElementById('af-acc-name-wrap').style.display = v==='self'?'block':'none';
 }
-function addAfMember(name='', instrument=''){
+function toggleAfAccGroup(){
+  const v = document.getElementById('af-acc-type-group').value;
+  document.getElementById('af-acc-name-wrap-group').style.display = v==='self'?'block':'none';
+}
+function addAfMember(name='', kana='', instrument=''){
   const wrap = document.getElementById('af-member-list');
   const row = document.createElement('div');
   row.className = 'member-row';
+  row.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:0.3rem 0.5rem;margin-bottom:0.3rem';
   row.innerHTML = `
     <input type="text" placeholder="氏名" class="member-name-input" value="${esc(name)}">
+    <input type="text" placeholder="ふりがな" class="member-kana-input" value="${esc(kana)}">
     <input type="text" placeholder="楽器" class="member-instrument-input" list="instrument-list" value="${esc(instrument)}">
     <button class="remove-btn" onclick="this.parentNode.remove()">✕</button>`;
   wrap.appendChild(row);
@@ -4828,45 +4904,69 @@ function addAfPiece(title='', composer=''){
 }
 
 async function submitApplication(){
-  const name  = document.getElementById('af-name').value.trim();
-  const email = document.getElementById('af-email').value.trim();
-  if(!name){ alert('氏名を入力してください'); return; }
-  if(!email){ alert('メールアドレスを入力してください'); return; }
+  const isSolo = applyType === 'solo';
+
+  // バリデーション
+  if(isSolo){
+    const name = document.getElementById('af-name').value.trim();
+    const email = document.getElementById('af-email').value.trim();
+    if(!name){ alert('氏名を入力してください'); return; }
+    if(!email){ alert('メールアドレスを入力してください'); return; }
+  } else {
+    const rep = document.getElementById('af-group-rep').value.trim();
+    const email = document.getElementById('af-group-email').value.trim();
+    if(!rep){ alert('代表者名を入力してください'); return; }
+    if(!email){ alert('代表者のメールアドレスを入力してください'); return; }
+  }
 
   const pieces = [...document.querySelectorAll('#af-piece-list .piece-row')].map(r=>({
     title: r.querySelector('.piece-title').value.trim(),
     composer: r.querySelector('.piece-composer').value.trim()
   })).filter(p=>p.title||p.composer);
 
+  const contactRadioName = isSolo ? 'af-contact' : 'af-contact-g';
+  const contactMethod = document.querySelector(`input[name="${contactRadioName}"]:checked`)?.value || '';
+
   const app = {
     id: uid(),
     concertId: applyConcertId,
     submittedAt: new Date().toISOString(),
-    status: 'new', // new | accepted | rejected
+    status: 'new',
     type: applyType,
-    name, email,
-    kana:       document.getElementById('af-kana').value.trim(),
-    tel:        document.getElementById('af-tel').value.trim(),
-    instrument: document.getElementById('af-instrument').value.trim(),
     pieces,
-    message:    document.getElementById('af-message').value.trim(),
+    duration: parseInt(document.getElementById('af-duration').value)||0,
+    contactMethod,
+    message: document.getElementById('af-message').value.trim(),
+    referrer: document.getElementById('af-referrer').value.trim(),
   };
 
-  if(applyType === 'group'){
-    app.groupName = document.getElementById('af-group-name').value.trim();
-    app.members = [...document.querySelectorAll('#af-member-list .member-row')].map(r=>({
+  if(isSolo){
+    app.name       = document.getElementById('af-name').value.trim();
+    app.kana       = document.getElementById('af-kana').value.trim();
+    app.email      = document.getElementById('af-email').value.trim();
+    app.tel        = document.getElementById('af-tel').value.trim();
+    app.instrument = document.getElementById('af-instrument').value.trim();
+    app.accType    = document.getElementById('af-acc-type').value;
+    app.accName    = document.getElementById('af-acc-name').value.trim();
+  } else {
+    app.groupName    = document.getElementById('af-group-name').value.trim();
+    app.name         = document.getElementById('af-group-rep').value.trim();
+    app.kana         = document.getElementById('af-group-rep-kana').value.trim();
+    app.email        = document.getElementById('af-group-email').value.trim();
+    app.tel          = document.getElementById('af-group-tel').value.trim();
+    app.accType      = document.getElementById('af-acc-type-group').value;
+    app.accName      = document.getElementById('af-acc-name-group').value.trim();
+    app.members      = [...document.querySelectorAll('#af-member-list .member-row')].map(r=>({
       name: r.querySelector('.member-name-input').value.trim(),
+      kana: r.querySelector('.member-kana-input')?.value.trim()||'',
       instrument: r.querySelector('.member-instrument-input').value.trim()
     })).filter(m=>m.name);
-  } else {
-    app.accType = document.getElementById('af-acc-type').value;
-    app.accName = document.getElementById('af-acc-name').value.trim();
   }
 
   applications.push(app);
   await persist();
 
-  // Build copy text
+  // 確認テキスト生成
   const concert = concerts.find(c=>c.id===applyConcertId);
   const concertName = concert ? concert.name : '演奏会';
   const piecesText = app.pieces.length
@@ -4874,24 +4974,28 @@ async function submitApplication(){
     : '（未記入）';
   const accText = app.accType==='self' ? `伴奏あり（${app.accName||'未記入'}）`
     : app.accType==='needed' ? '伴奏者の手配が必要'
-    : app.accType==='none' ? '伴奏なし' : '';
+    : '伴奏なし';
   const membersText = (app.members||[]).length
-    ? app.members.map(m=>m.name+(m.instrument?`（${m.instrument}）`:'')).join('、') : '';
+    ? app.members.map(m=>m.name+(m.kana?`（${m.kana}）`:'')+(m.instrument?`・${m.instrument}`:'')).join('、') : '';
+  const contactLabel = {'line_open':'LINEオープンチャット','line':'個別LINE','email':'メール'}[app.contactMethod]||'';
 
   const copyLines = [
     `【申し込み確認】${concertName}`,
     '',
-    `氏名：${app.name}${app.kana?' （'+app.kana+'）':''}`,
+    app.type==='group'&&app.groupName ? `グループ名：${app.groupName}` : null,
+    `${app.type==='group'?'代表者':'氏名'}：${app.name}${app.kana?' （'+app.kana+'）':''}`,
     `メール：${app.email}`,
     app.tel        ? `電話：${app.tel}` : null,
     app.instrument ? `楽器：${app.instrument}` : null,
-    app.type==='group'&&app.groupName ? `グループ名：${app.groupName}` : null,
     membersText    ? `メンバー：${membersText}` : null,
+    contactLabel   ? `連絡方法：${contactLabel}` : null,
     accText        ? `伴奏：${accText}` : null,
+    app.duration   ? `演奏時間：${app.duration}分` : null,
     '',
     '【演奏曲目】',
     piecesText,
-    app.message    ? '\n【備考】\n'+app.message : null,
+    app.message    ? '\n【メモ】\n'+app.message : null,
+    app.referrer   ? `紹介者：${app.referrer}` : null,
   ].filter(l=>l!==null).join('\n');
 
   document.getElementById('apply-form-wrap').style.display='none';
