@@ -2336,8 +2336,9 @@ function renderConcerts(){
       <div class="card-row" style="gap:1rem">
         <div style="flex:1">
           <div class="card-title">${esc(c.name)} ${badge}</div>
-          <div class="card-meta">
-            ${c.date||'日程未定'} ${c.time||''}${c.venue?' ｜ '+esc(c.venue):''}
+          ${c.venue?`<div style="margin-top:0.2rem;font-size:0.88rem;color:var(--text2)">${c.venueUrl?`<a href="${esc(c.venueUrl)}" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline;text-underline-offset:2px">${esc(c.venue)}</a>`:esc(c.venue)}</div>`:''}
+          <div class="card-meta" style="margin-top:0.25rem">
+            ${c.date?`📅 ${c.date}${c.venueOpen?`　開場 ${c.venueOpen}`:''}${c.time?`　開演 ${c.time}`:''}`:('日程未定')}
           </div>
           ${c.code?`<div style="font-size:0.7rem;color:var(--text3)">招待コード: <code style="background:var(--surface2);padding:0 4px;border-radius:3px;color:var(--gold)">${esc(c.code)}</code></div>`:''}
           ${c.lineUrl?`<div style="margin-top:0.3rem"><a href="${esc(c.lineUrl)}" target="_blank" style="font-size:0.72rem;color:#06c755;text-decoration:none">● LINE オープンチャット</a></div>`:''}
@@ -4589,7 +4590,7 @@ function reapplyMailTemplate(){
 function expandVars(text, target){
   const cid = document.getElementById('p-concert-sel')?.value;
   const concert = concerts.find(c=>c.id===cid)||{};
-  const url = location.href.split('?')[0];
+  const url = location.origin + location.pathname + '?cid=' + (cid||'');
   return text
     .replace(/{{氏名}}/g, target.name||'')
     .replace(/{{演奏会名}}/g, concert.name||'')
