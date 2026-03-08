@@ -1175,6 +1175,7 @@ select.status-sel{
       <div class="fg full"><label>演奏会名 *</label><input id="cm-name" type="text" placeholder="例：第3回 春のサロンコンサート"></div>
       <div class="fg"><label>開催日 *</label><input id="cm-date" type="date"></div>
       <div class="fg full"><label>会場</label><input id="cm-venue" type="text" placeholder="例：○○サロン"></div>
+      <div class="fg full"><label>会場URL（地図・公式サイトなど）</label><input id="cm-venue-url" type="url" placeholder="https://..."></div>
       <div class="fg full"><label>演奏会の説明・概要</label><textarea id="cm-description" rows="3" placeholder="演奏会のコンセプトや内容など"></textarea></div>
       <div class="fg full"><label>その他メモ・案内（演奏者に表示されます）</label><textarea id="cm-note"></textarea></div>
       <div class="fg full"><label>招待コード（演奏者がログインに使用）</label><input id="cm-code" type="text" placeholder="例: spring2025"></div>
@@ -2201,6 +2202,7 @@ function openConcertModal(id){
     document.getElementById('cm-rehearsal-gap').value=c.rehearsalGap??2;
     document.getElementById('cm-performance-gap').value=c.performanceGap??3;
     document.getElementById('cm-venue').value=c.venue||'';
+    document.getElementById('cm-venue-url').value=c.venueUrl||'';
     document.getElementById('cm-description').value=c.description||'';
     document.getElementById('cm-note').value=c.note||'';
     document.getElementById('cm-code').value=c.code||'';
@@ -2219,7 +2221,7 @@ function openConcertModal(id){
     } else { clearFlyer(); }
     document.getElementById('concert-modal-title').textContent='演奏会を編集';
   } else {
-    ['cm-name','cm-date','cm-venue','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note','cm-description'].forEach(i=>document.getElementById(i).value='');
+    ['cm-name','cm-date','cm-venue','cm-venue-url','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note','cm-description'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('cm-time').value='14:00';
     document.getElementById('cm-venue-start').value='';
     document.getElementById('cm-venue-open').value='';
@@ -2251,6 +2253,7 @@ function saveConcert(){
     rehearsalGap:Number(document.getElementById('cm-rehearsal-gap').value)||2,
     performanceGap:Number(document.getElementById('cm-performance-gap').value)||3,
     venue:document.getElementById('cm-venue').value.trim(),
+    venueUrl:document.getElementById('cm-venue-url').value.trim(),
     description:document.getElementById('cm-description').value.trim(),
     note:document.getElementById('cm-note').value.trim(),
     code:document.getElementById('cm-code').value.trim(),
@@ -3730,8 +3733,15 @@ function renderMyConvert(){
 
   const statusLabel={pending:'未確認',confirmed:'参加確定',absent:'欠席'};
   const statusBadge={pending:'badge-pending',confirmed:'badge-confirmed',absent:'badge-absent'};
-  const dateStr = concert.date ? `📅 ${concert.date}${concert.time?' &ensp;'+concert.time:''}` : '';
-  const venueStr = concert.venue ? `📍 ${esc(concert.venue)}` : '';
+  const vOpen = concert.venueOpen||'';
+  const pTime = concert.time||'';
+  const dateStr = concert.date
+    ? `📅 ${concert.date}${vOpen?`　開場 ${vOpen}`:''}${pTime?`　開演 ${pTime}`:(!vOpen&&pTime?`　${pTime}`:'')}` : '';
+  const venueStr = concert.venue
+    ? concert.venueUrl
+      ? `📍 <a href="${esc(concert.venueUrl)}" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline;text-underline-offset:2px">${esc(concert.venue)}</a>`
+      : `📍 ${esc(concert.venue)}`
+    : '';
 
   const entriesHtml = myEntries.map(e=>{
     // ソロは名前不要（自分しか出ない）、グループはグループ名を表示
