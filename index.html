@@ -3771,7 +3771,7 @@ function renderMyConvert(){
       出演順：${e.order||'未定'}&ensp;演奏時間：${e.duration?e.duration+'分':'未定'}
       ${e.type==='solo'&&e.instrument?`&ensp;楽器：${esc(e.instrument)}`:''}
       ${e.type==='solo'&&e.accType==='self'&&e.accName?`&ensp;伴奏：${esc(e.accName)}`:''}
-      ${e.type==='solo'&&e.accType==='needed'?'<span style="color:#f6c90e;margin-left:0.5rem">⚠ 伴奏者手配が必要</span>':''}
+      ${e.type==='solo'&&e.accType==='needed'&&!e.accName?'<span style="color:#f6c90e;margin-left:0.5rem">⚠ 伴奏者手配が必要</span>':''}
     </div>`;
 
     // グループメンバー一覧
