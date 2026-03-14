@@ -4,20 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Salon Concert — 演奏会管理</title>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Shippori+Mincho:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Shippori+Mincho:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #1a1814;
   --surface: #18150f;
-  --surface2: #211d15;
-  --border: #2e2820;
-  --border2: #3d3425;
-  --gold: #d4b46a;
-  --gold2: #f2d878;
-  --gold-dim: rgba(201,168,92,0.15);
-  --text: #f5f0e8;
-  --text2: #c8b896;
-  --text3: #9a8a6a;
+  --surface2: #252018;
+  --border: #3a3228;
+  --border2: #4a4030;
+  --gold: #e0c070;
+  --gold2: #f5e060;
+  --gold-dim: rgba(224,192,112,0.18);
+  --text: #f8f4ee;
+  --text2: #ddd0b0;
+  --text3: #b8a880;
   --red: #c0392b;
   --green: #2e7d5e;
   --green-bg: rgba(46,125,94,0.15);
@@ -27,7 +27,7 @@
   --amber-bg: rgba(183,119,13,0.15);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Shippori Mincho',serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body{font-family:'Shippori Mincho',serif;font-weight:500;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
 /* scrollbar */
 ::-webkit-scrollbar{width:6px;height:6px}
@@ -104,7 +104,7 @@ nav{
 }
 nav button{
   background:none;border:none;border-bottom:2px solid transparent;
-  color:var(--text3);font-family:'Shippori Mincho',serif;font-size:0.78rem;
+  color:var(--text3);font-family:'Shippori Mincho',serif;font-size:0.8rem;font-weight:600;
   letter-spacing:0.08em;padding:0.75rem 1.2rem;cursor:pointer;
   white-space:nowrap;transition:color 0.2s,border-color 0.2s;
 }
@@ -126,25 +126,25 @@ main{max-width:980px;margin:0 auto;padding:1.8rem 1.2rem 5rem}
 }
 .ph h2{
   font-family:'EB Garamond',serif;font-size:1.5rem;
-  font-weight:400;letter-spacing:0.05em;color:var(--gold2);
+  font-weight:500;letter-spacing:0.05em;color:var(--gold2);
 }
 .ph-actions{display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap}
 
 /* ── BUTTONS ── */
 .btn{
   padding:0.45rem 1rem;border:none;border-radius:5px;
-  font-family:'Shippori Mincho',serif;font-size:0.78rem;
+  font-family:'Shippori Mincho',serif;font-size:0.8rem;font-weight:600;
   letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;
 }
-.btn-gold{background:var(--gold);color:#0e0c0a;font-weight:600}
+.btn-gold{background:var(--gold);color:#0e0c0a;font-weight:700}
 .btn-gold:hover{background:var(--gold2)}
-.btn-outline{background:none;border:1px solid var(--border2);color:var(--text2)}
+.btn-outline{background:none;border:1px solid var(--border2);color:var(--text2);font-weight:600}
 .btn-outline:hover{border-color:var(--gold);color:var(--gold)}
-.btn-danger{background:#7b1d14;color:#fdd}
+.btn-danger{background:#7b1d14;color:#fdd;font-weight:600}
 .btn-danger:hover{background:var(--red)}
-.btn-green{background:var(--green);color:#fff}
+.btn-green{background:var(--green);color:#fff;font-weight:600}
 .btn-green:hover{background:#25634b}
-.btn-sm{padding:0.3rem 0.7rem;font-size:0.72rem}
+.btn-sm{padding:0.3rem 0.7rem;font-size:0.74rem}
 
 /* ── CARD ── */
 .card{
@@ -154,10 +154,10 @@ main{max-width:980px;margin:0 auto;padding:1.8rem 1.2rem 5rem}
 }
 .card:hover{border-color:var(--border2);box-shadow:0 4px 24px rgba(0,0,0,0.3)}
 .card-title{
-  font-family:'EB Garamond',serif;font-size:1.1rem;
+  font-family:'EB Garamond',serif;font-size:1.15rem;font-weight:500;
   color:var(--text);margin-bottom:0.25rem;
 }
-.card-meta{font-size:0.73rem;color:var(--text2);margin-bottom:0.6rem;line-height:1.6}
+.card-meta{font-size:0.75rem;color:var(--text2);font-weight:500;margin-bottom:0.6rem;line-height:1.6}
 .card-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
 .card-actions{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.9rem}
 
@@ -192,29 +192,29 @@ main{max-width:980px;margin:0 auto;padding:1.8rem 1.2rem 5rem}
 
 /* ── TABLE ── */
 .tbl-wrap{border:1px solid var(--border);border-radius:8px;overflow:hidden;overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:0.8rem}
+table{width:100%;border-collapse:collapse;font-size:0.82rem}
 thead{background:var(--surface2)}
 thead th{
   padding:0.65rem 0.9rem;text-align:left;
-  font-weight:700;font-size:0.72rem;letter-spacing:0.08em;
+  font-weight:700;font-size:0.73rem;letter-spacing:0.08em;
   color:var(--text2);white-space:nowrap;
 }
 tbody tr{border-bottom:1px solid var(--border);transition:background 0.15s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--surface2)}
-tbody td{padding:0.65rem 0.9rem;vertical-align:middle}
+tbody td{padding:0.7rem 0.9rem;vertical-align:middle;font-weight:500}
 
 /* ── FORM ── */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem 1.2rem}
 @media(max-width:560px){.form-grid{grid-template-columns:1fr}}
 .full{grid-column:1/-1}
 .fg{display:flex;flex-direction:column;gap:0.3rem}
-.fg label{font-size:0.72rem;letter-spacing:0.07em;color:var(--text2);font-weight:700}
+.fg label{font-size:0.73rem;letter-spacing:0.07em;color:var(--text2);font-weight:700}
 .fg input,.fg textarea,.fg select{
   padding:0.55rem 0.8rem;
   border:1px solid var(--border2);border-radius:5px;
   background:var(--surface2);color:var(--text);
-  font-family:'Shippori Mincho',serif;font-size:0.83rem;
+  font-family:'Shippori Mincho',serif;font-size:0.85rem;font-weight:500;
   transition:border-color 0.2s;
 }
 .fg input:focus,.fg textarea:focus,.fg select:focus{outline:none;border-color:var(--gold)}
@@ -986,13 +986,18 @@ select.status-sel{
         <div class="ph-actions">
           <label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0">📂 CSVインポート<input type="file" accept=".csv,text/csv" onchange="importCSV(event)" style="display:none"></label>
           <button class="btn btn-outline btn-sm" onclick="openMailModal()">✉ メール連絡</button>
-          <button class="btn btn-gold" onclick="openEntryModal()">＋ 参加者を追加</button>
+          <button class="btn btn-gold" id="btn-add-participant" onclick="openEntryModal()">＋ 参加者を追加</button>
         </div>
       </div>
       <div class="sel-bar">
         <select id="p-concert-sel" onchange="renderParticipants()"></select>
+        <div style="display:flex;gap:0.4rem;margin-left:0.5rem">
+          <button id="ptab-entries" class="btn btn-outline btn-sm active" onclick="switchParticipantTab('entries')">出演者</button>
+          <button id="ptab-acc" class="btn btn-outline btn-sm" onclick="switchParticipantTab('acc')">伴奏者</button>
+        </div>
       </div>
       <div id="participant-list"></div>
+      <div id="accompanist-list" style="display:none"></div>
     </div>
 
     <div class="page" id="page-program">
@@ -1095,6 +1100,12 @@ select.status-sel{
     <div class="page" id="page-my-profile">
       <div class="ph"><h2>出演者情報</h2></div>
       <div id="my-profile-content"></div>
+    </div>
+
+    <!-- 伴奏者ビュー -->
+    <div class="page" id="page-acc-view">
+      <div class="ph"><h2>担当出演者</h2></div>
+      <div id="acc-view-content"></div>
     </div>
   </main>
 </div>
@@ -1631,6 +1642,11 @@ select.status-sel{
   <option value="その他">
 </datalist>
 
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  emailjs.init('MXutqvlZ_pBSuWZSK');
+</script>
+
 <script type="module">
 // ════════════════════════
 //  FIREBASE SETUP
@@ -1665,6 +1681,7 @@ let concerts = [];
 let entries = [];
 let transactions = [];
 let applications = [];
+let accompanists = {};
 let instrumentList = [
   'ピアノ','ヴァイオリン','ヴィオラ','チェロ','ハープ','ギター',
   'フルート','ピッコロ','オーボエ','クラリネット','バスクラリネット','ファゴット','サクソフォン',
@@ -1697,7 +1714,7 @@ function textToAbbr(raw){
   });
   return m;
 }
-let currentUser = null; // {role:'organizer'|'performer', entryId?, name}
+let currentUser = null; // {role:'organizer'|'performer'|'accompanist', entryId?, name}
 let loginMode = 'performer';
 let editingConcertId = null;
 let editingEntryId = null;
@@ -1725,6 +1742,7 @@ async function persist(){
       entries,
       transactions,
       applications,
+      accompanists,
       instrumentList,
       instrumentAbbr,
       adminPassword,
@@ -1748,6 +1766,7 @@ async function hydrate(){
       if(data.entries)      entries       = data.entries;
       if(data.transactions) transactions  = data.transactions;
       if(data.applications) applications  = data.applications;
+      if(data.accompanists) accompanists  = data.accompanists;
       if(data.instrumentList) instrumentList = data.instrumentList;
       if(data.instrumentAbbr)  instrumentAbbr = data.instrumentAbbr;
       if(data.adminPassword)  adminPassword  = data.adminPassword;
@@ -1771,6 +1790,7 @@ function startRealtimeSync(){
     if(data.entries)      entries       = data.entries;
     if(data.transactions) transactions  = data.transactions;
     if(data.applications) applications  = data.applications;
+    if(data.accompanists) accompanists  = data.accompanists;
     if(data.instrumentList) instrumentList = data.instrumentList;
     if(data.instrumentAbbr)  instrumentAbbr = data.instrumentAbbr;
     if(data.adminPassword)  adminPassword  = data.adminPassword;
@@ -1868,7 +1888,30 @@ function doLogin(){
         }
         return false;
       });
-      if(!matched.length){ alert('コードが見つかりません。主催者にお問い合わせください。'); return; }
+      if(!matched.length){
+        // 伴奏者コードを試みる
+        const accList = accompanists[cid] || [];
+        const matchedAcc = accList.find(a=>a.code && a.code.toLowerCase()===inputCode);
+        if(matchedAcc){
+          // 同コードで出演者エントリも検索
+          const perfMatched = entries.filter(e=>{
+            if(e.concertId!==cid) return false;
+            if(e.performerCode && e.performerCode.split(',').map(c=>c.trim().toLowerCase()).includes(inputCode)) return true;
+            if(e.type==='group' && e.members) return e.members.some(m=>m.code && m.code.trim().toLowerCase()===inputCode);
+            return false;
+          });
+          currentUser = {
+            role: perfMatched.length ? 'both' : 'accompanist',
+            concertId: cid,
+            accompanistId: matchedAcc.id,
+            name: matchedAcc.name,
+            entryIds: perfMatched.map(e=>e.id),
+            entryId: perfMatched[0]?.id
+          };
+        } else {
+          alert('コードが見つかりません。主催者にお問い合わせください。'); return;
+        }
+      } else {
       const primary = matched.find(e=>e.concertId===cid) || matched[0];
       // 表示名：メンバーコードでマッチした場合はそのメンバー名を優先
       let displayName = primary.type==='group' ? primary.groupName : primary.name;
@@ -1876,13 +1919,18 @@ function doLogin(){
         const matchedMember = primary.members.find(m=>m.code && m.code.trim().toLowerCase()===inputCode);
         if(matchedMember) displayName = matchedMember.name;
       }
+      // 同コードで伴奏者マスタも検索（兼任チェック）
+      const accList = accompanists[cid] || [];
+      const matchedAcc = accList.find(a=>a.code && a.code.toLowerCase()===inputCode);
       currentUser = {
-        role:'performer',
+        role: matchedAcc ? 'both' : 'performer',
         entryId: primary.id,
         entryIds: matched.map(e=>e.id),
         concertId: primary.concertId,
+        accompanistId: matchedAcc?.id,
         name: displayName
       };
+      }
     }
   }
   startApp();
@@ -2101,6 +2149,12 @@ function startApp(){
   if(currentUser.role === 'organizer'){
     showPage('concerts');
     renderConcerts();
+  } else if(currentUser.role === 'accompanist'){
+    showPage('acc-view');
+    renderAccompanistView();
+  } else if(currentUser.role === 'both'){
+    showPage('acc-view');
+    renderAccompanistView();
   } else {
     showPage('my-concert-info');
     renderMyConcertInfo();
@@ -2118,6 +2172,18 @@ function buildNav(){
       <button onclick="showPage('schedule',this)">スケジュール</button>
       <button onclick="showPage('finance',this)">Finance</button>
 `;
+  } else if(currentUser.role === 'accompanist'){
+    nav.className = 'performer-nav';
+    nav.innerHTML = `
+      <button class="active" onclick="showPage('acc-view',this)">担当出演者</button>`;
+  } else if(currentUser.role === 'both'){
+    nav.className = 'performer-nav';
+    nav.innerHTML = `
+      <button class="active" onclick="showPage('acc-view',this)">担当出演者</button>
+      <button onclick="showPage('my-concert-info',this)">演奏会</button>
+      <button onclick="showPage('my-concert',this)">出演者情報</button>
+      <button onclick="showPage('my-program',this)">プログラム</button>
+      <button onclick="showPage('my-schedule',this)">スケジュール</button>`;
   } else {
     nav.className = 'performer-nav';
     nav.innerHTML = `
@@ -2126,7 +2192,6 @@ function buildNav(){
       <button onclick="showPage('my-program',this)">プログラム</button>
       <button onclick="showPage('my-schedule',this)">スケジュール</button>`;
   }
-  // show badge if new applications exist
   updateAppBadge();
 }
 
@@ -2154,6 +2219,7 @@ function showPage(name, btn){
   if(name==='my-program')     renderMyProgram();
   if(name==='my-schedule')    renderMySchedule();
   if(name==='my-profile')     renderMyProfile();
+  if(name==='acc-view')       renderAccompanistView();
 }
 
 // ════════════════════════
@@ -2845,6 +2911,86 @@ function populateSel2(selId){
   sel.innerHTML=concerts.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
 }
 
+// ════════════════════════
+//  ACCOMPANIST MANAGEMENT
+// ════════════════════════
+let _participantTab = 'entries'; // 'entries' | 'acc'
+
+function switchParticipantTab(tab){
+  _participantTab = tab;
+  document.getElementById('ptab-entries').classList.toggle('active', tab==='entries');
+  document.getElementById('ptab-acc').classList.toggle('active', tab==='acc');
+  document.getElementById('participant-list').style.display  = tab==='entries' ? '' : 'none';
+  document.getElementById('accompanist-list').style.display  = tab==='acc'     ? '' : 'none';
+  document.getElementById('btn-add-participant').style.display = tab==='entries' ? '' : 'none';
+  if(tab==='acc') renderAccompanistList();
+}
+
+function renderAccompanistList(){
+  const el = document.getElementById('accompanist-list');
+  const cid = document.getElementById('p-concert-sel')?.value;
+  if(!cid){ el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>'; return; }
+  const list = accompanists[cid] || [];
+
+  const rows = list.map(a=>`
+    <tr>
+      <td><strong>${esc(a.name)}</strong></td>
+      <td><span style="font-family:'EB Garamond',serif;color:var(--gold2);font-size:0.9rem">${esc(a.code||'—')}</span></td>
+      <td style="font-size:0.78rem;color:var(--text3)">${esc(a.email||'—')}</td>
+      <td style="font-size:0.78rem;color:var(--text3)">${esc(a.memo||'')}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-outline btn-sm" onclick="openAccompanistEdit('${cid}','${a.id}')">編集</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteAccompanist('${cid}','${a.id}')">削除</button>
+      </td>
+    </tr>`).join('');
+
+  el.innerHTML = `
+    <div style="margin-bottom:1rem;text-align:right">
+      <button class="btn btn-gold" onclick="openAccompanistEdit('${cid}',null)">＋ 伴奏者を追加</button>
+    </div>
+    ${list.length ? `
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>氏名</th><th>ログインコード</th><th>メール</th><th>メモ</th><th>操作</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>` : '<div class="empty"><p>伴奏者がまだ登録されていません</p></div>'}`;
+}
+
+function openAccompanistEdit(cid, accId){
+  const list = accompanists[cid] || [];
+  const a = accId ? list.find(x=>x.id===accId) : null;
+  const title = a ? '伴奏者を編集' : '伴奏者を追加';
+
+  // 既存モーダルを再利用（シンプルなプロンプト形式）
+  const name  = prompt('伴奏者氏名', a?.name||'');
+  if(name===null) return;
+  const code  = prompt('ログインコード（英数字）', a?.code||'');
+  if(code===null) return;
+  const email = prompt('メールアドレス（任意）', a?.email||'');
+  if(email===null) return;
+  const memo  = prompt('メモ（任意）', a?.memo||'');
+  if(memo===null) return;
+
+  if(!accompanists[cid]) accompanists[cid] = [];
+  if(a){
+    Object.assign(a, {name:name.trim(), code:code.trim(), email:email.trim(), memo:memo.trim()});
+  } else {
+    accompanists[cid].push({id:uid(), name:name.trim(), code:code.trim(), email:email.trim(), memo:memo.trim()});
+  }
+  persist();
+  renderAccompanistList();
+}
+
+function deleteAccompanist(cid, accId){
+  if(!confirm('この伴奏者を削除しますか？')) return;
+  if(accompanists[cid]) accompanists[cid] = accompanists[cid].filter(a=>a.id!==accId);
+  persist();
+  renderAccompanistList();
+}
+
 function renderParticipants(){
   const cid=document.getElementById('p-concert-sel')?.value;
   const el=document.getElementById('participant-list');
@@ -2856,18 +3002,14 @@ function renderParticipants(){
   }
   el.innerHTML=`<div class="tbl-wrap"><table>
     <thead><tr>
-      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th>楽器</th><th>時間</th><th>伴奏 / メンバー</th><th>ログインコード</th><th>参加状況</th><th>操作</th>
+      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th>時間</th><th>伴奏 / メンバー</th><th>ログインコード</th><th>参加状況</th><th>操作</th>
     </tr></thead><tbody id="participant-tbody">
     ${list.map(e=>{
       const concert = concerts.find(c=>c.id===cid);
+      const soloInstr = e.instrument ? `（${esc(instrAbbr(e.instrument))}）` : '';
       const nameCell = e.type==='group'
-        ? `<strong>${esc(e.groupName)}</strong><br><span style="font-size:0.7rem;color:var(--text3)">${(e.members||[]).map(m=>typeof m==='string'?esc(m):esc(m.name)).join(' / ')}</span>`
-        : `<strong>${esc(e.name)}</strong>${e.kana?`<br><span style="font-size:0.7rem;color:var(--text3)">${esc(e.kana)}</span>`:''}`;
-
-      // instrument cell
-      const instrCell = e.type==='group'
-        ? `<span style="font-size:0.72rem;color:var(--text3)">${(e.members||[]).map(m=>typeof m==='string'?'':esc(instrAbbr(m.instrument||''))).filter(Boolean).join('<br>')}</span>`
-        : `<span style="font-size:0.75rem;color:var(--text2)">${esc(instrAbbr(e.instrument||'')) || '—'}</span>`;
+        ? `<strong>${esc(e.groupName)}</strong><br><span style="font-size:0.7rem;color:var(--text3)">${(e.members||[]).map(m=>typeof m==='string'?esc(m):`${esc(m.name)}${m.instrument?`（${esc(instrAbbr(m.instrument))}）`:''}`).join(' / ')}</span>`
+        : `<strong>${esc(e.name)}${soloInstr}</strong>`;
 
       const accCell = e.type==='group'
         ? `<span style="font-size:0.72rem;color:var(--text3)">${(e.members||[]).length}名</span>`
@@ -2896,7 +3038,6 @@ function renderParticipants(){
         </td>
         <td>${nameCell}</td>
         <td><span class="badge ${e.type==='group'?'badge-group':'badge-solo'}">${e.type==='group'?'グループ':'ソロ'}</span></td>
-        <td>${instrCell}</td>
         <td style="font-size:0.75rem;color:var(--text3)">${e.duration?e.duration+'分':'—'}</td>
         <td>${accCell}</td>
         <td>${codeCell}</td>
@@ -3685,8 +3826,7 @@ function renderProgram(){
           const instr=typeof m==='string'?'':(m.instrument||'');
           return `${esc(nm)}${instr?` <span style="color:var(--text3);font-size:0.72rem">（${esc(instr)}）</span>`:''}`;
         }).join('　')}</div>`
-      :`<div class="prog-name">${esc(e.name)}${e.kana?` <span style="font-size:0.78rem;font-weight:300">（${esc(e.kana)}）</span>`:''}</div>
-        ${e.instrument?`<div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.15rem">${esc(e.instrument)}</div>`:''}`;
+      :`<div class="prog-name">${esc(e.name)}${e.instrument?` <span style="font-size:0.78rem;font-weight:300;color:var(--text3)">（${esc(e.instrument)}）</span>`:''}</div>`;
 
     const accLine=e.type==='solo'&&e.accType==='self'&&e.accName
       ?`<div class="prog-acc">伴奏：${esc(e.accName)}</div>`:'';
@@ -3864,8 +4004,7 @@ function renderMyProgram(){
           const instr=typeof m==='string'?'':(m.instrument||'');
           return `${esc(nm)}${instr?` <span style="color:var(--text3);font-size:0.72rem">（${esc(instr)}）</span>`:''}`;
         }).join('　')}</div>`
-      :`<div class="prog-name">${esc(e.name)}${e.kana?` <span style="font-size:0.78rem;font-weight:300">（${esc(e.kana)}）</span>`:''}</div>
-        ${e.instrument?`<div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.15rem">${esc(e.instrument)}</div>`:''}`;
+      :`<div class="prog-name">${esc(e.name)}${e.instrument?` <span style="font-size:0.78rem;font-weight:300;color:var(--text3)">（${esc(e.instrument)}）</span>`:''}</div>`;
     const accLine=e.type==='solo'&&e.accType==='self'&&e.accName
       ?`<div class="prog-acc">伴奏：${esc(e.accName)}</div>`:'';
     return `<div class="prog-item" style="${isMe?'background:rgba(201,168,92,0.08);border-left:3px solid var(--gold2)':''}">
@@ -4032,6 +4171,82 @@ function renderMySchedule(){
 
 function printMySchedule(){
   window.print();
+}
+
+// ════════════════════════
+//  ACCOMPANIST VIEW
+// ════════════════════════
+function renderAccompanistView(){
+  const el = document.getElementById('acc-view-content');
+  const cid = currentUser.concertId;
+  const concert = concerts.find(c=>c.id===cid);
+  if(!concert){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
+
+  const accName = currentUser.name;
+  const myEntries = entries.filter(e=>
+    e.concertId===cid &&
+    e.accType==='self' &&
+    e.accName &&
+    e.accName.trim() === accName.trim()
+  );
+
+  const vOpen = concert.venueOpen||'';
+  const pTime = concert.time||'';
+  const dateStr = concert.date
+    ? `📅 ${concert.date}${vOpen?`　開場 ${vOpen}`:''}${pTime?`　開演 ${pTime}`:''}`:'';
+  const venueHtml = concert.venue
+    ? (concert.venueUrl
+      ? `<div style="font-size:0.88rem;color:var(--text2);margin-top:0.2rem"><a href="${esc(concert.venueUrl)}" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline">${esc(concert.venue)}</a></div>`
+      : `<div style="font-size:0.88rem;color:var(--text2);margin-top:0.2rem">${esc(concert.venue)}</div>`)
+    : '';
+
+  if(!myEntries.length){
+    el.innerHTML = `
+      <div class="card">
+        <div class="card-title">${esc(concert.name)}</div>
+        ${venueHtml}
+        ${dateStr?`<div style="font-size:0.82rem;color:var(--text3);margin-top:0.25rem">${dateStr}</div>`:''}
+      </div>
+      <div class="empty"><p>担当する出演者が見つかりません。<br>主催者が出演者情報に伴奏者名を登録すると表示されます。</p></div>`;
+    return;
+  }
+
+  const entryCards = myEntries.map(e=>{
+    const name = e.type==='group' ? e.groupName : e.name;
+    const instr = e.instrument ? `（${esc(instrAbbr(e.instrument))}）` : '';
+    const pieces = Array.isArray(e.pieces) ? e.pieces : [];
+    const piecesHtml = pieces.length
+      ? pieces.map((p,i)=>`<div style="font-size:0.8rem;color:var(--text2);line-height:1.8">${pieces.length>1?`${i+1}. `:''}${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('')
+      : '<div style="font-size:0.78rem;color:var(--text3)">演奏曲目未登録</div>';
+    const timeInfo = [
+      e.order ? `出演順：${e.order}番` : null,
+      e.duration ? `演奏時間：${e.duration}分` : null,
+    ].filter(Boolean).join('　');
+    const memoReh  = e.memoReh  ? `<div style="font-size:0.78rem;color:var(--text2)">📝 リハ：${esc(e.memoReh)}</div>` : '';
+    const memoPerf = e.memoPerf ? `<div style="font-size:0.78rem;color:var(--text2)">📝 本番：${esc(e.memoPerf)}</div>` : '';
+    return `<div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem">
+        <div>
+          <div style="font-size:1rem;font-weight:700;color:var(--text)">${esc(name)}${instr}</div>
+          ${timeInfo?`<div style="font-size:0.78rem;color:var(--text3);margin-top:0.2rem">${timeInfo}</div>`:''}
+        </div>
+        <span class="badge ${e.status==='confirmed'?'badge-confirmed':'badge-pending'}" style="flex-shrink:0">${e.status==='confirmed'?'参加確定':'未確認'}</span>
+      </div>
+      <div style="margin-top:0.7rem;padding-top:0.6rem;border-top:1px solid var(--border)">${piecesHtml}</div>
+      ${memoReh||memoPerf?`<div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border)">${memoReh}${memoPerf}</div>`:''}
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:1.2rem">
+      <div class="card-title">${esc(concert.name)}</div>
+      ${venueHtml}
+      ${dateStr?`<div style="font-size:0.82rem;color:var(--text3);margin-top:0.25rem">${dateStr}</div>`:''}
+    </div>
+    <div style="font-size:0.72rem;color:var(--text3);letter-spacing:0.08em;font-weight:600;margin-bottom:0.6rem">
+      担当出演者 <span style="color:var(--gold2)">${myEntries.length}</span> 名
+    </div>
+    ${entryCards}`;
 }
 
 function renderMyProfile(){
@@ -5411,6 +5626,21 @@ async function submitApplication(){
 
   document.getElementById('apply-form-wrap').style.display='none';
   document.getElementById('apply-success-wrap').style.display='block';
+
+  // EmailJS で申し込み完了メールを自動送信
+  const accessUrl = location.origin + location.pathname + '?cid=' + applyConcertId;
+  const loginCode = app.email ? app.email.split('@')[0] : '';
+  emailjs.send('service_p7pw2an', 'template_6bx146p', {
+    to_email:     app.email,
+    name:         app.name,
+    concert_name: concertName,
+    access_url:   accessUrl,
+    login_code:   loginCode,
+  }).then(()=>{
+    console.log('確認メール送信完了');
+  }).catch(err=>{
+    console.warn('メール送信失敗:', err);
+  });
 
   // Use a data attribute to avoid quoting issues inside onclick
   const btn = document.createElement('button');
