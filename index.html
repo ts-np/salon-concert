@@ -1110,6 +1110,31 @@ select.status-sel{
   </main>
 </div>
 
+
+<!-- ══ MODAL: ACCOMPANIST EDIT ══ -->
+<div class="overlay" id="acc-edit-modal-overlay">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hd">
+      <h3 id="acc-edit-title">伴奏者を追加</h3>
+      <button class="close-btn" onclick="closeModal('acc-edit-modal')">×</button>
+    </div>
+    <div class="form-grid" style="margin-top:0.8rem">
+      <div class="fg full"><label>氏名</label><input id="acc-edit-name" type="text" placeholder="例：齋藤 美佐子"></div>
+      <div class="fg full"><label>ログインコード <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（英数字）</span></label>
+        <input id="acc-edit-code" type="text" placeholder="例：saito2026"
+          oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')"
+          autocomplete="off" autocapitalize="off" spellcheck="false">
+      </div>
+      <div class="fg full"><label>メールアドレス <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（任意）</span></label><input id="acc-edit-email" type="email" placeholder="例：saito@example.com"></div>
+      <div class="fg full"><label>メモ <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（任意）</span></label><textarea id="acc-edit-memo" rows="2" placeholder="備考など"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('acc-edit-modal')">キャンセル</button>
+      <button class="btn btn-gold" onclick="saveAccompanist()">保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODAL: MY ENTRY EDIT (performer) ══ -->
 <div class="overlay" id="my-entry-edit-modal-overlay">
   <div class="modal">
@@ -2959,28 +2984,41 @@ function renderAccompanistList(){
     </div>` : '<div class="empty"><p>伴奏者がまだ登録されていません</p></div>'}`;
 }
 
+let _accEditCid = null;
+let _accEditId  = null;
+
 function openAccompanistEdit(cid, accId){
+  _accEditCid = cid;
+  _accEditId  = accId;
   const list = accompanists[cid] || [];
   const a = accId ? list.find(x=>x.id===accId) : null;
-  const title = a ? '伴奏者を編集' : '伴奏者を追加';
+  document.getElementById('acc-edit-title').textContent = a ? '伴奏者を編集' : '伴奏者を追加';
+  document.getElementById('acc-edit-name').value  = a?.name  || '';
+  document.getElementById('acc-edit-code').value  = a?.code  || '';
+  document.getElementById('acc-edit-email').value = a?.email || '';
+  document.getElementById('acc-edit-memo').value  = a?.memo  || '';
+  openModal('acc-edit-modal');
+  setTimeout(()=>document.getElementById('acc-edit-name').focus(), 100);
+}
 
-  // 既存モーダルを再利用（シンプルなプロンプト形式）
-  const name  = prompt('伴奏者氏名', a?.name||'');
-  if(name===null) return;
-  const code  = prompt('ログインコード（英数字）', a?.code||'');
-  if(code===null) return;
-  const email = prompt('メールアドレス（任意）', a?.email||'');
-  if(email===null) return;
-  const memo  = prompt('メモ（任意）', a?.memo||'');
-  if(memo===null) return;
-
+function saveAccompanist(){
+  const name  = document.getElementById('acc-edit-name').value.trim();
+  const code  = document.getElementById('acc-edit-code').value.trim();
+  const email = document.getElementById('acc-edit-email').value.trim();
+  const memo  = document.getElementById('acc-edit-memo').value.trim();
+  if(!name){ alert('氏名を入力してください'); return; }
+  if(!code){ alert('ログインコードを入力してください'); return; }
+  const cid = _accEditCid;
   if(!accompanists[cid]) accompanists[cid] = [];
+  const list = accompanists[cid];
+  const a = _accEditId ? list.find(x=>x.id===_accEditId) : null;
   if(a){
-    Object.assign(a, {name:name.trim(), code:code.trim(), email:email.trim(), memo:memo.trim()});
+    Object.assign(a, {name, code, email, memo});
   } else {
-    accompanists[cid].push({id:uid(), name:name.trim(), code:code.trim(), email:email.trim(), memo:memo.trim()});
+    list.push({id:uid(), name, code, email, memo});
   }
   persist();
+  closeModal('acc-edit-modal');
   renderAccompanistList();
 }
 
