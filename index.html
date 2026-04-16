@@ -939,6 +939,47 @@ select.status-sel{
   </div>
 </div>
 
+<!-- ══ AUDIENCE REGISTRATION SCREEN ══ -->
+<div id="audience-screen" style="display:none">
+  <div class="apply-wrap">
+    <div class="apply-header">
+      <div style="font-family:'EB Garamond',serif;font-size:0.85rem;letter-spacing:0.15em;color:var(--text3);margin-bottom:0.8rem">Salon Concert</div>
+      <div class="apply-concert-name" id="aud-concert-name"></div>
+      <div class="apply-concert-info" id="aud-concert-info"></div>
+    </div>
+    <div class="apply-card" id="aud-form-wrap">
+      <h2>来場者登録</h2>
+
+      <!-- 残席表示 -->
+      <div id="aud-capacity-bar" style="display:none;margin-bottom:1.2rem;padding:0.8rem 1.2rem;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);text-align:center">
+        <div style="font-size:0.72rem;color:var(--text3);letter-spacing:0.08em;margin-bottom:0.2rem">残席</div>
+        <div style="font-family:'EB Garamond',serif;font-size:2.2rem;color:var(--gold2);line-height:1" id="aud-remaining"></div>
+        <div style="font-size:0.72rem;color:var(--text3);margin-top:0.1rem">席</div>
+        <div id="aud-capacity-sub" style="font-size:0.72rem;color:var(--text3);margin-top:0.4rem"></div>
+      </div>
+
+      <div class="form-grid">
+        <div class="fg full"><label>お名前 <span style="color:#eb5757">*</span></label><input id="aud-name" type="text" placeholder="山田 花子"></div>
+        <div class="fg full"><label>メールアドレス <span style="color:#eb5757">*</span></label><input id="aud-email" type="email" placeholder="example@email.com"></div>
+        <div class="fg full"><label>来場人数 <span style="color:#eb5757">*</span></label>
+          <input id="aud-tickets" type="number" min="1" max="10" value="1" inputmode="numeric" style="max-width:100px">
+        </div>
+      </div>
+      <button class="btn btn-gold" style="width:100%;padding:0.75rem;font-size:0.9rem;margin-top:1.2rem" onclick="submitAudienceApplication()">登録する</button>
+    </div>
+    <div class="apply-card" id="aud-success-wrap" style="display:none;text-align:center">
+      <div style="font-size:2rem;margin-bottom:0.8rem">🎵</div>
+      <div style="font-size:1.1rem;font-weight:600;color:var(--gold2);margin-bottom:0.5rem">ご登録ありがとうございます</div>
+      <p style="font-size:0.85rem;color:var(--text2);line-height:1.8">来場者登録を受け付けました。<br>主催者より確認のご連絡をいたします。</p>
+    </div>
+    <div class="apply-card" id="aud-full-wrap" style="display:none;text-align:center">
+      <div style="font-size:2rem;margin-bottom:0.8rem">🙏</div>
+      <div style="font-size:1.1rem;font-weight:600;color:var(--text2);margin-bottom:0.5rem">満席となりました</div>
+      <p style="font-size:0.85rem;color:var(--text3)">定員に達したため、現在ご登録を受け付けておりません。</p>
+    </div>
+  </div>
+</div>
+
 <!-- ══ LOGIN ══ -->
 <div id="login-screen">
   <div class="login-box">
@@ -1107,6 +1148,20 @@ select.status-sel{
       <div class="ph"><h2>担当出演者</h2></div>
       <div id="acc-view-content"></div>
     </div>
+
+    <!-- 来場者管理 -->
+    <div class="page" id="page-audience">
+      <div class="ph">
+        <h2>来場者管理</h2>
+        <div class="ph-actions">
+          <button class="btn btn-outline btn-sm" onclick="exportAudienceCSV()">📥 CSVエクスポート</button>
+        </div>
+      </div>
+      <div class="sel-bar">
+        <select id="aud-concert-sel" onchange="renderAudienceList()"></select>
+      </div>
+      <div id="audience-list"></div>
+    </div>
   </main>
 </div>
 
@@ -1119,13 +1174,13 @@ select.status-sel{
       <button class="close-btn" onclick="closeModal('acc-edit-modal')">×</button>
     </div>
     <div class="form-grid" style="margin-top:0.8rem">
-      <div class="fg full"><label>氏名</label><input id="acc-edit-name" type="text" placeholder="例：田中 麻子"></div>
+      <div class="fg full"><label>氏名</label><input id="acc-edit-name" type="text" placeholder="例：齋藤 美佐子"></div>
       <div class="fg full"><label>ログインコード <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（英数字）</span></label>
-        <input id="acc-edit-code" type="text" placeholder="例：asako2026"
+        <input id="acc-edit-code" type="text" placeholder="例：saito2026"
           oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')"
           autocomplete="off" autocapitalize="off" spellcheck="false">
       </div>
-      <div class="fg full"><label>メールアドレス <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（任意）</span></label><input id="acc-edit-email" type="email" placeholder="例：asako@example.com"></div>
+      <div class="fg full"><label>メールアドレス <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（任意）</span></label><input id="acc-edit-email" type="email" placeholder="例：saito@example.com"></div>
       <div class="fg full"><label>メモ <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（任意）</span></label><textarea id="acc-edit-memo" rows="2" placeholder="備考など"></textarea></div>
     </div>
     <div class="modal-footer">
@@ -1212,6 +1267,7 @@ select.status-sel{
       <div class="fg"><label>開催日 *</label><input id="cm-date" type="date"></div>
       <div class="fg full"><label>会場</label><input id="cm-venue" type="text" placeholder="例：○○サロン"></div>
       <div class="fg full"><label>会場URL（地図・公式サイトなど）</label><input id="cm-venue-url" type="url" placeholder="https://..."></div>
+      <div class="fg"><label>来場者上限（人）</label><input id="cm-audience-capacity" type="number" min="0" placeholder="例：50" inputmode="numeric"></div>
       <div class="fg full"><label>演奏会の説明・概要</label><textarea id="cm-description" rows="3" placeholder="演奏会のコンセプトや内容など"></textarea></div>
       <div class="fg full"><label>その他メモ・案内（演奏者に表示されます）</label><textarea id="cm-note"></textarea></div>
       <div class="fg full"><label>招待コード（演奏者がログインに使用）</label><input id="cm-code" type="text" placeholder="例: spring2025"></div>
@@ -1439,6 +1495,22 @@ select.status-sel{
       <div class="fg full"><label>メモ（必要機材、連絡事項）</label><textarea id="em-memo" rows="2" placeholder="例：譜面台が必要、当日14時までに入場"></textarea></div>
       <div class="fg"><label>メモ（リハ）</label><textarea id="em-memo-reh" rows="2" placeholder="リハーサル時の備考"></textarea></div>
       <div class="fg"><label>メモ（本番）</label><textarea id="em-memo-perf" rows="2" placeholder="本番時の備考"></textarea></div>
+    </div>
+
+    <!-- リハーサル設定 -->
+    <div style="margin-top:0.8rem;padding:0.6rem 0.8rem;background:var(--surface2);border-radius:8px;display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap">
+      <span style="font-size:0.75rem;color:var(--text3);font-weight:600;white-space:nowrap">リハーサル</span>
+      <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer">
+        <input type="checkbox" id="em-reh-enabled" onchange="updateRehFields()" style="accent-color:var(--gold);width:15px;height:15px">
+        <span style="font-size:0.78rem;color:var(--text2)">あり</span>
+      </label>
+      <div id="em-reh-dur-wrap" style="display:flex;align-items:center;gap:0.4rem">
+        <label style="font-size:0.75rem;color:var(--text3);white-space:nowrap">時間</label>
+        <input id="em-reh-duration" type="number" min="1" max="120" inputmode="numeric"
+          style="width:56px;text-align:right;font-family:'EB Garamond',serif;font-size:0.95rem">
+        <span style="font-size:0.75rem;color:var(--text3)">分</span>
+        <span style="font-size:0.7rem;color:var(--text3)" id="em-reh-default-hint"></span>
+      </div>
     </div>
 
     <!-- 参加状況・ログインコード -->
@@ -1706,6 +1778,7 @@ let concerts = [];
 let entries = [];
 let transactions = [];
 let applications = [];
+let audienceApplications = [];
 let accompanists = {};
 let instrumentList = [
   'ピアノ','ヴァイオリン','ヴィオラ','チェロ','ハープ','ギター',
@@ -1767,6 +1840,7 @@ async function persist(){
       entries,
       transactions,
       applications,
+      audienceApplications,
       accompanists,
       instrumentList,
       instrumentAbbr,
@@ -1791,6 +1865,7 @@ async function hydrate(){
       if(data.entries)      entries       = data.entries;
       if(data.transactions) transactions  = data.transactions;
       if(data.applications) applications  = data.applications;
+      if(data.audienceApplications) audienceApplications = data.audienceApplications;
       if(data.accompanists) accompanists  = data.accompanists;
       if(data.instrumentList) instrumentList = data.instrumentList;
       if(data.instrumentAbbr)  instrumentAbbr = data.instrumentAbbr;
@@ -1815,6 +1890,7 @@ function startRealtimeSync(){
     if(data.entries)      entries       = data.entries;
     if(data.transactions) transactions  = data.transactions;
     if(data.applications) applications  = data.applications;
+    if(data.audienceApplications) audienceApplications = data.audienceApplications;
     if(data.accompanists) accompanists  = data.accompanists;
     if(data.instrumentList) instrumentList = data.instrumentList;
     if(data.instrumentAbbr)  instrumentAbbr = data.instrumentAbbr;
@@ -1833,7 +1909,7 @@ function refreshCurrentPage(){
   else if(id==='page-applications') renderApplications();
   else if(id==='page-program')   renderProgram();
   else if(id==='page-schedule')  { renderSchedule(); if(schedTabMode==='staff') renderScheduleStaff(); if(schedTabMode==='members') renderStaffMembers(); }
-  else if(id==='page-my-concert-info') renderMyConcertInfo();
+  else if(id==='page-audience') renderAudienceList();
   else if(id==='page-my-concert')      renderMyConvert();
   else if(id==='page-my-program')      renderMyProgram();
   else if(id==='page-my-schedule')     renderMySchedule();
@@ -2193,6 +2269,7 @@ function buildNav(){
       <button class="active" onclick="showPage('concerts',this)">演奏会一覧</button>
       <button onclick="showPage('participants',this)">参加者管理</button>
       <button onclick="showPage('applications',this)" id="nav-applications">申し込み管理</button>
+      <button onclick="showPage('audience',this)" id="nav-audience">来場者管理</button>
       <button onclick="showPage('program',this)">プログラム</button>
       <button onclick="showPage('schedule',this)">スケジュール</button>
       <button onclick="showPage('finance',this)">Finance</button>
@@ -2243,6 +2320,7 @@ function showPage(name, btn){
   if(name==='my-concert')     renderMyConvert();
   if(name==='my-program')     renderMyProgram();
   if(name==='my-schedule')    renderMySchedule();
+  if(name==='audience')       { populateSel('aud-concert-sel'); renderAudienceList(); }
   if(name==='my-profile')     renderMyProfile();
   if(name==='acc-view')       renderAccompanistView();
 }
@@ -2311,6 +2389,7 @@ function openConcertModal(id){
     document.getElementById('cm-performance-gap').value=c.performanceGap??3;
     document.getElementById('cm-venue').value=c.venue||'';
     document.getElementById('cm-venue-url').value=c.venueUrl||'';
+    document.getElementById('cm-audience-capacity').value=c.audienceCapacity||'';
     document.getElementById('cm-description').value=c.description||'';
     document.getElementById('cm-note').value=c.note||'';
     document.getElementById('cm-code').value=c.code||'';
@@ -2329,7 +2408,7 @@ function openConcertModal(id){
     } else { clearFlyer(); }
     document.getElementById('concert-modal-title').textContent='演奏会を編集';
   } else {
-    ['cm-name','cm-date','cm-venue','cm-venue-url','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note','cm-description'].forEach(i=>document.getElementById(i).value='');
+    ['cm-name','cm-date','cm-venue','cm-venue-url','cm-audience-capacity','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note','cm-description'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('cm-time').value='14:00';
     document.getElementById('cm-venue-start').value='';
     document.getElementById('cm-venue-open').value='';
@@ -2362,6 +2441,7 @@ function saveConcert(){
     performanceGap:Number(document.getElementById('cm-performance-gap').value)||3,
     venue:document.getElementById('cm-venue').value.trim(),
     venueUrl:document.getElementById('cm-venue-url').value.trim(),
+    audienceCapacity:parseInt(document.getElementById('cm-audience-capacity').value)||0,
     description:document.getElementById('cm-description').value.trim(),
     note:document.getElementById('cm-note').value.trim(),
     code:document.getElementById('cm-code').value.trim(),
@@ -2439,6 +2519,9 @@ function renderConcerts(){
           </div>
           <div style="margin-top:0.2rem;font-size:0.7rem;color:var(--text3)">出演者ログインURL:
             <button onclick="navigator.clipboard.writeText('${location.origin+location.pathname}?cid=${c.id}').then(()=>{const b=event.target;const o=b.textContent;b.textContent='✓ コピー済';setTimeout(()=>b.textContent=o,2000)})" style="background:none;border:none;color:var(--gold2);cursor:pointer;font-size:0.7rem;padding:0 4px">🔗 コピー</button>
+          </div>
+          <div style="margin-top:0.2rem;font-size:0.7rem;color:var(--text3)">来場者登録URL:
+            <button onclick="navigator.clipboard.writeText('${location.origin+location.pathname}?audience=${c.id}').then(()=>{const b=event.target;const o=b.textContent;b.textContent='✓ コピー済';setTimeout(()=>b.textContent=o,2000)})" style="background:none;border:none;color:#74b9ff;cursor:pointer;font-size:0.7rem;padding:0 4px">🔗 コピー</button>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem">
@@ -2796,6 +2879,14 @@ function openEntryModal(id){
     document.getElementById('em-memo').value=e.memo||'';
     document.getElementById('em-memo-reh').value=e.memoReh||'';
     document.getElementById('em-memo-perf').value=e.memoPerf||'';
+    // リハーサル設定
+    const rehEnabled = e.rehearsalEnabled !== false; // デフォルトtrue
+    document.getElementById('em-reh-enabled').checked = rehEnabled;
+    const cReh = concerts.find(c=>c.id===e.concertId);
+    const defaultReh = cReh?.rehearsalDuration ?? 10;
+    document.getElementById('em-reh-duration').value = e.rehearsalDuration ?? defaultReh;
+    document.getElementById('em-reh-default-hint').textContent = `（演奏会設定：${defaultReh}分）`;
+    updateRehFields();
     setStatusSwitch(e.status||'pending');
     document.getElementById('em-performer-code').value=e.performerCode||'';
     // グループは1人当たり金額（feePerPerson）を表示、ソロはfeeAmountをそのまま
@@ -2831,9 +2922,23 @@ function openEntryModal(id){
       document.getElementById('em-concert').value=cid;
       onEmConcertChange();
     }
+    // リハーサル初期値（演奏会設定から）
+    const cidForReh = cid || document.getElementById('em-concert').value;
+    const cRehNew = concerts.find(c=>c.id===cidForReh);
+    const defaultRehNew = cRehNew?.rehearsalDuration ?? 10;
+    document.getElementById('em-reh-enabled').checked = true;
+    document.getElementById('em-reh-duration').value = defaultRehNew;
+    document.getElementById('em-reh-default-hint').textContent = `（演奏会設定：${defaultRehNew}分）`;
+    updateRehFields();
   }
   openModal('entry-modal');
 }
+function updateRehFields(){
+  const enabled = document.getElementById('em-reh-enabled').checked;
+  document.getElementById('em-reh-dur-wrap').style.opacity = enabled ? '1' : '0.35';
+  document.getElementById('em-reh-duration').disabled = !enabled;
+}
+
 function onEmConcertChange(){
   const feeField = document.getElementById('em-fee-amount');
   if(feeField.value !== '') return;
@@ -2856,6 +2961,8 @@ function saveEntry(){
     memo:document.getElementById('em-memo').value.trim(),
     memoReh:document.getElementById('em-memo-reh').value.trim(),
     memoPerf:document.getElementById('em-memo-perf').value.trim(),
+    rehearsalEnabled: document.getElementById('em-reh-enabled').checked,
+    rehearsalDuration: parseInt(document.getElementById('em-reh-duration').value)||null,
     status: document.getElementById('em-status-chk')?.checked ? 'confirmed' : 'pending',
     performerCode:document.getElementById('em-performer-code').value.trim(),
     feePerPerson:parseFloat(document.getElementById('em-fee-amount').value)||0,
@@ -3454,21 +3561,34 @@ function renderSchedule(forceCid){
 
   // ── カスタム zone分類ヘルパー ──
   const sortedC=customs.map((c,i)=>({...c,origIdx:i})).filter(c=>c.time).sort((a,b)=>a.time.localeCompare(b.time));
-  const rhEndTime=(rTime&&rhList.length)?addMinutes(rTime,rhList.length*(rDur+rGap)-rGap):'';
+  const rhEndTime=(rTime&&rhList.length)?(()=>{
+    let t=0;
+    rhList.forEach((e,i)=>{
+      const d = (e.rehearsalEnabled!==false) ? (e.rehearsalDuration??rDur) : 0;
+      if(i>0&&d>0) t+=rGap;
+      t+=d;
+    });
+    return rTime?addMinutes(rTime,t):'';
+  })():'';
 
   // pre-reh
   sortedC.filter(c=>!rTime||c.time<rTime).forEach(c=>rows.push(makeCustomRow(c,cid)));
 
   // リハーサル
+  let rhOffset=0;
   rhList.forEach((e,i)=>{
-    const start=rTime?addMinutes(rTime,i*(rDur+rGap)):'';
-    const end=rTime?addMinutes(rTime,i*(rDur+rGap)+rDur):'';
+    const entryRehDur = (e.rehearsalEnabled!==false) ? (e.rehearsalDuration??rDur) : 0;
+    if(entryRehDur===0){ return; } // リハなしはスキップ
+    if(i>0) rhOffset+=rGap;
+    const start=rTime?addMinutes(rTime,rhOffset):'';
+    const end=rTime?addMinutes(rTime,rhOffset+entryRehDur):'';
+    rhOffset+=entryRehDur;
     const name=e.type==='group'?e.groupName:e.name;
     const pieces=Array.isArray(e.pieces)?e.pieces:[];
     const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
     const accStr=(e.accType==='self'&&e.accName)?e.accName:'';
     rows.push({
-      time:start,duration:rDur,category:'リハーサル',content:name,
+      time:start,duration:entryRehDur,category:'リハーサル',content:name,
       person:accStr,note:noteStr,memo:e.memoReh||'',rowType:'rehearsal',entry:e,idx:i,total:rhList.length,end,rGap,cid,
       actionCol:`<div style="display:flex;flex-direction:column;gap:1px;align-items:center">
         ${i>0?`<button class="btn btn-outline btn-sm" style="padding:0 0.3rem;font-size:0.65rem;line-height:1.4" onclick="moveRehearsal('${cid}','${e.id}',-1)">↑</button>`:'<span style="height:20px"></span>'}
@@ -4098,20 +4218,33 @@ function renderMySchedule(){
   if(vStart) rows.push({time:vStart,duration:null,category:'会場準備',content:'会場利用開始',person:'',note:'',rowType:'event'});
 
   const sortedC=customs.map((c,i)=>({...c,origIdx:i})).filter(c=>c.time).sort((a,b)=>a.time.localeCompare(b.time));
-  const rhEndTime=(rTime&&rhList.length)?addMinutes(rTime,rhList.length*(rDur+rGap)-rGap):'';
+  const rhEndTime=(rTime&&rhList.length)?(()=>{
+    let t=0;
+    rhList.forEach((e,i)=>{
+      const d=(e.rehearsalEnabled!==false)?(e.rehearsalDuration??rDur):0;
+      if(i>0&&d>0) t+=rGap;
+      t+=d;
+    });
+    return rTime?addMinutes(rTime,t):'';
+  })():'';
 
   sortedC.filter(c=>!rTime||c.time<rTime).forEach(c=>rows.push({time:c.time,duration:c.duration,category:c.category,content:c.content,person:c.person,note:c.note,rowType:'ro_custom'}));
 
+  let rhOffset2=0;
   rhList.forEach((e,i)=>{
-    const start=rTime?addMinutes(rTime,i*(rDur+rGap)):'';
-    const end=rTime?addMinutes(rTime,i*(rDur+rGap)+rDur):'';
+    const entryRehDur=(e.rehearsalEnabled!==false)?(e.rehearsalDuration??rDur):0;
+    if(entryRehDur===0) return;
+    if(i>0) rhOffset2+=rGap;
+    const start=rTime?addMinutes(rTime,rhOffset2):'';
+    const end=rTime?addMinutes(rTime,rhOffset2+entryRehDur):'';
+    rhOffset2+=entryRehDur;
     const name=e.type==='group'?e.groupName:e.name;
     const instrTag=e.type==='solo'&&e.instrument?` <span style="font-size:0.72rem;color:var(--text3)">(${instrAbbr(e.instrument)})</span>`:'';
     const accStr=(e.accType==='self'&&e.accName)?e.accName:'';
     const pieces=Array.isArray(e.pieces)?e.pieces:[];
     const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
     const isMe=myIdsForCid.has(e.id);
-    rows.push({time:start,end,duration:rDur,category:'リハーサル',content:name,instrTag,person:accStr,note:noteStr,memo:e.memoReh||'',rowType:'rehearsal',isMe});
+    rows.push({time:start,end,duration:entryRehDur,category:'リハーサル',content:name,instrTag,person:accStr,note:noteStr,memo:e.memoReh||'',rowType:'rehearsal',isMe});
     if(i<rhList.length-1) rows.push({time:end,duration:rGap,category:'_gap',content:'── 入替 '+rGap+'分 ──',rowType:'gap'});
   });
 
@@ -5472,6 +5605,17 @@ async function init(){
       return;
     }
   }
+
+  // ── URL routing: ?audience=CONCERT_ID shows audience registration ──
+  const audienceCid = params.get('audience');
+  if(audienceCid){
+    const concert = concerts.find(c=>c.id===audienceCid);
+    if(concert){
+      showAudienceScreen(concert);
+      return;
+    }
+  }
+
   renderLoginForm();
 }
 
@@ -5848,6 +5992,207 @@ function deleteApplication(id){
   if(!confirm('この申し込みを削除しますか？')) return;
   applications = applications.filter(x=>x.id!==id);
   persist(); renderApplications();
+}
+
+// ════════════════════════
+//  AUDIENCE SCREEN (public)
+// ════════════════════════
+let audienceConcertId = null;
+
+function showAudienceScreen(concert){
+  audienceConcertId = concert.id;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='none';
+  document.getElementById('audience-screen').style.display='block';
+
+  document.getElementById('aud-concert-name').textContent = concert.name;
+  const dateStr = concert.date ? `📅 ${concert.date}${concert.time?' 開演 '+concert.time:''}` : '';
+  const venueStr = concert.venue ? `📍 ${concert.venue}` : '';
+  document.getElementById('aud-concert-info').textContent = [dateStr, venueStr].filter(Boolean).join('　');
+
+  // 残席計算
+  updateAudienceCapacityBar(concert);
+}
+
+function updateAudienceCapacityBar(concert){
+  const cap = concert.audienceCapacity || 0;
+  const bar = document.getElementById('aud-capacity-bar');
+  if(!cap){ bar.style.display='none'; return; }
+  const approved = audienceApplications
+    .filter(a=>a.concertId===concert.id && a.status==='accepted')
+    .reduce((s,a)=>s+(parseInt(a.tickets)||1), 0);
+  const remaining = cap - approved;
+  bar.style.display = 'block';
+  document.getElementById('aud-remaining').textContent = Math.max(0, remaining);
+  document.getElementById('aud-capacity-sub').textContent = `定員 ${cap} 席 ／ 申込済 ${approved} 席`;
+  // 残席わずかなら色を変える
+  document.getElementById('aud-remaining').style.color = remaining <= 5 ? '#eb5757' : 'var(--gold2)';
+  if(remaining <= 0){
+    document.getElementById('aud-form-wrap').style.display='none';
+    document.getElementById('aud-full-wrap').style.display='block';
+  }
+}
+
+async function submitAudienceApplication(){
+  const name    = document.getElementById('aud-name').value.trim();
+  const email   = document.getElementById('aud-email').value.trim();
+  const tickets = parseInt(document.getElementById('aud-tickets').value)||1;
+  if(!name){ alert('お名前を入力してください'); return; }
+  if(!email){ alert('メールアドレスを入力してください'); return; }
+
+  // 残席チェック
+  const concert = concerts.find(c=>c.id===audienceConcertId);
+  const cap = concert?.audienceCapacity || 0;
+  if(cap){
+    const approved = audienceApplications
+      .filter(a=>a.concertId===audienceConcertId && a.status==='accepted')
+      .reduce((s,a)=>s+(parseInt(a.tickets)||1), 0);
+    if(approved + tickets > cap){
+      alert(`残席が不足しています（残席：${cap-approved}席）`); return;
+    }
+  }
+
+  const app = {
+    id: uid(),
+    concertId: audienceConcertId,
+    submittedAt: new Date().toISOString(),
+    status: 'new',
+    name, email, tickets
+  };
+  audienceApplications.push(app);
+  await persist();
+
+  // EmailJS で登録確認メールを送信
+  emailjs.send('service_p7pw2an', 'template_tcktregister', {
+    to_email:     email,
+    name:         name,
+    concert_name: (concerts.find(c=>c.id===audienceConcertId)||{}).name || '',
+    tickets:      tickets,
+    submitted_at: new Date().toLocaleString('ja-JP'),
+  }).catch(err=>console.warn('メール送信失敗:', err));
+
+  document.getElementById('aud-form-wrap').style.display='none';
+  document.getElementById('aud-success-wrap').style.display='block';
+}
+
+// ════════════════════════
+//  AUDIENCE MANAGEMENT
+// ════════════════════════
+function renderAudienceList(){
+  const el = document.getElementById('audience-list');
+  const cid = document.getElementById('aud-concert-sel')?.value;
+  if(!cid){ el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>'; return; }
+
+  const concert = concerts.find(c=>c.id===cid);
+  const list = audienceApplications.filter(a=>a.concertId===cid);
+  const cap = concert?.audienceCapacity || 0;
+  const approved = list.filter(a=>a.status==='accepted').reduce((s,a)=>s+(parseInt(a.tickets)||1),0);
+  const newCount = list.filter(a=>a.status==='new').length;
+
+  // 残席サマリ
+  const summaryHtml = cap ? `
+    <div style="display:flex;gap:1.2rem;margin-bottom:1rem;flex-wrap:wrap">
+      <div style="padding:0.6rem 1.2rem;background:var(--surface2);border-radius:8px;font-size:0.82rem">
+        上限 <strong style="color:var(--gold2);font-size:1.1rem;margin-left:0.4rem">${cap}</strong> 席
+      </div>
+      <div style="padding:0.6rem 1.2rem;background:var(--surface2);border-radius:8px;font-size:0.82rem">
+        承認済 <strong style="color:#6fcf97;font-size:1.1rem;margin-left:0.4rem">${approved}</strong> 席
+      </div>
+      <div style="padding:0.6rem 1.2rem;background:var(--surface2);border-radius:8px;font-size:0.82rem">
+        残席 <strong style="color:var(--gold2);font-size:1.1rem;margin-left:0.4rem">${cap-approved}</strong> 席
+      </div>
+    </div>` : '';
+
+  if(!list.length){
+    el.innerHTML = summaryHtml + '<div class="empty"><p>来場者登録がまだありません</p></div>';
+    return;
+  }
+
+  const statusLabel = {new:'新規',accepted:'承認',rejected:'却下'};
+  const statusBadge = {new:'badge-pending',accepted:'badge-confirmed',rejected:'badge-past'};
+
+  const rows = list.map(a=>`
+    <tr>
+      <td><strong>${esc(a.name)}</strong></td>
+      <td style="font-size:0.78rem;color:var(--text3)">${esc(a.email)}</td>
+      <td style="text-align:center;font-weight:600">${a.tickets||1}</td>
+      <td><span class="badge ${statusBadge[a.status]||'badge-pending'}">${statusLabel[a.status]||'新規'}</span></td>
+      <td style="font-size:0.72rem;color:var(--text3)">${a.submittedAt?a.submittedAt.slice(0,10):''}</td>
+      <td style="white-space:nowrap">
+        ${a.status==='new'?`<button class="btn btn-green btn-sm" onclick="acceptAudience('${a.id}')">承認</button>
+        <button class="btn btn-outline btn-sm" onclick="rejectAudience('${a.id}')">却下</button>`:''}
+        <button class="btn btn-danger btn-sm" onclick="deleteAudience('${a.id}')">削除</button>
+      </td>
+    </tr>`).join('');
+
+  el.innerHTML = summaryHtml + `
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>氏名</th><th>メール</th><th style="text-align:center">人数</th><th>状況</th><th>登録日</th><th>操作</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function acceptAudience(id){
+  const a = audienceApplications.find(x=>x.id===id);
+  if(!a) return;
+  // 残席チェック
+  const concert = concerts.find(c=>c.id===a.concertId);
+  const cap = concert?.audienceCapacity || 0;
+  if(cap){
+    const approved = audienceApplications
+      .filter(x=>x.concertId===a.concertId && x.status==='accepted')
+      .reduce((s,x)=>s+(parseInt(x.tickets)||1), 0);
+    if(approved + (parseInt(a.tickets)||1) > cap){
+      alert(`残席不足のため承認できません（残席：${cap-approved}席）`); return;
+    }
+  }
+  a.status='accepted';
+  persist();
+  renderAudienceList();
+}
+
+function rejectAudience(id){
+  const a = audienceApplications.find(x=>x.id===id);
+  if(!a) return;
+  a.status='rejected';
+  persist();
+  renderAudienceList();
+}
+
+function deleteAudience(id){
+  if(!confirm('この登録を削除しますか？')) return;
+  audienceApplications = audienceApplications.filter(x=>x.id!==id);
+  persist();
+  renderAudienceList();
+}
+
+function exportAudienceCSV(){
+  const cid = document.getElementById('aud-concert-sel')?.value;
+  const concert = concerts.find(c=>c.id===cid);
+  const list = audienceApplications.filter(a=>a.concertId===cid);
+  if(!list.length){ alert('エクスポートするデータがありません'); return; }
+  const statusLabel = {new:'新規',accepted:'承認済',rejected:'却下'};
+  const header = ['氏名','メールアドレス','来場人数','状況','登録日時'].join(',');
+  const rows = list.map(a=>[
+    `"${(a.name||'').replace(/"/g,'""')}"`,
+    `"${(a.email||'').replace(/"/g,'""')}"`,
+    a.tickets||1,
+    `"${statusLabel[a.status]||'新規'}"`,
+    `"${(a.submittedAt||'').slice(0,16).replace('T',' ')}"`
+  ].join(','));
+  const bom = '\uFEFF';
+  const csv = bom + [header,...rows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a2 = document.createElement('a');
+  a2.href=url;
+  a2.download=`来場者_${concert?.name||cid}_${today()}.csv`;
+  a2.click();
+  URL.revokeObjectURL(url);
 }
 
 init();
