@@ -3147,7 +3147,7 @@ function renderParticipants(){
   }
   el.innerHTML=`<div class="tbl-wrap"><table>
     <thead><tr>
-      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th>時間</th><th>伴奏 / メンバー</th><th>ログインコード</th><th>参加状況</th><th>操作</th>
+      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th style="width:3.5rem;white-space:nowrap">時間</th><th>伴奏者</th><th>ログインコード</th><th>参加状況</th><th>操作</th>
     </tr></thead><tbody id="participant-tbody">
     ${list.map(e=>{
       const concert = concerts.find(c=>c.id===cid);
@@ -3156,11 +3156,9 @@ function renderParticipants(){
         ? `<strong>${esc(e.groupName)}</strong><br><span style="font-size:0.7rem;color:var(--text3)">${(e.members||[]).map(m=>typeof m==='string'?esc(m):`${esc(m.name)}${m.instrument?`（${esc(instrAbbr(m.instrument))}）`:''}`).join(' / ')}</span>`
         : `<strong>${esc(e.name)}${soloInstr}</strong>`;
 
-      const accCell = e.type==='group'
-        ? `<span style="font-size:0.72rem;color:var(--text3)">${(e.members||[]).length}名</span>`
-        : (e.accType==='self'?`<span style="font-size:0.72rem;color:var(--text2)">${esc(e.accName)||'（名前未入力）'}</span>`
-          :e.accType==='needed'?`<span style="font-size:0.72rem;color:#f6c90e">手配必要</span>`
-          :`<span style="font-size:0.72rem;color:var(--text3)">なし</span>`);
+      const accCell = (e.accType==='self' && e.accName)
+        ? `<span style="font-size:0.78rem;color:var(--text2)">${esc(e.accName)}</span>`
+        : `<span style="color:transparent">—</span>`;
 
       // 同じコードを持つ他のエントリー数を確認（複数コード対応）
       const myCodes = e.performerCode ? e.performerCode.split(',').map(c=>c.trim().toLowerCase()).filter(Boolean) : [];
@@ -3182,8 +3180,8 @@ function renderParticipants(){
           </div>
         </td>
         <td>${nameCell}</td>
-        <td><span class="badge ${e.type==='group'?'badge-group':'badge-solo'}">${e.type==='group'?'グループ':'ソロ'}</span></td>
-        <td style="font-size:0.75rem;color:var(--text3)">${e.duration?e.duration+'分':'—'}</td>
+        <td><span class="badge ${e.type==='group'?'badge-group':'badge-solo'}">${e.type==='group'?'Group.':'Solo'}</span></td>
+        <td style="font-size:0.75rem;color:var(--text3);white-space:nowrap">${e.duration?e.duration+'分':'—'}</td>
         <td>${accCell}</td>
         <td>${codeCell}</td>
         <td>
