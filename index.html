@@ -1420,7 +1420,13 @@ select.status-sel{
             </select>
           </div>
           <div class="fg" id="acc-name-wrap">
-            <label>伴奏者名</label><input id="em-acc-name" type="text" placeholder="伴奏者の氏名">
+            <label>伴奏者名</label>
+            <div style="display:flex;gap:0.4rem;align-items:center">
+              <input id="em-acc-name" type="text" placeholder="伴奏者の氏名" style="flex:1">
+              <select id="em-acc-name-sel" onchange="applyAccompanistSel()" style="flex:1;font-size:0.8rem;display:none">
+                <option value="">— 一覧から選択 —</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -2641,11 +2647,28 @@ function toggleAccFields(){
   // ソロ側
   const nameWrap = document.getElementById('acc-name-wrap');
   const nameInput = document.getElementById('em-acc-name');
+  const accNameSel = document.getElementById('em-acc-name-sel');
   if(nameWrap && nameInput){
     const enabled=(v==='self'||v==='needed');
     nameInput.disabled=!enabled;
     nameInput.style.opacity=enabled?'1':'0.4';
     nameInput.placeholder=v==='needed'?'手配予定の伴奏者名（決まっていれば）':'伴奏者の氏名';
+    // 「手配が必要」の時だけ伴奏者マスタセレクトを表示
+    if(accNameSel){
+      if(v==='needed'){
+        const cid = document.getElementById('em-concert')?.value;
+        const accList = cid ? (accompanists[cid]||[]) : [];
+        if(accList.length){
+          accNameSel.innerHTML = '<option value="">— 一覧から選択 —</option>' +
+            accList.map(a=>`<option value="${esc(a.name)}">${esc(a.name)}</option>`).join('');
+          accNameSel.style.display='';
+        } else {
+          accNameSel.style.display='none';
+        }
+      } else {
+        accNameSel.style.display='none';
+      }
+    }
   }
   // グループ側
   const nameWrapG = document.getElementById('acc-name-wrap-group');
@@ -2939,6 +2962,13 @@ function updateRehFields(){
   document.getElementById('em-reh-duration').disabled = !enabled;
 }
 
+function applyAccompanistSel(){
+  const sel = document.getElementById('em-acc-name-sel');
+  if(!sel || !sel.value) return;
+  document.getElementById('em-acc-name').value = sel.value;
+  sel.value = '';
+}
+
 function onEmConcertChange(){
   const feeField = document.getElementById('em-fee-amount');
   if(feeField.value !== '') return;
@@ -3147,7 +3177,7 @@ function renderParticipants(){
   }
   el.innerHTML=`<div class="tbl-wrap"><table>
     <thead><tr>
-      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th style="width:3.5rem;white-space:nowrap">時間</th><th>伴奏者</th><th>ログインコード</th><th>参加状況</th><th>操作</th>
+      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th style="width:3.5rem;white-space:nowrap">時間</th><th>伴奏者</th><th style="width:4rem"></th><th>ログインコード</th><th style="width:7rem;white-space:nowrap">参加状況</th><th>操作</th>
     </tr></thead><tbody id="participant-tbody">
     ${list.map(e=>{
       const concert = concerts.find(c=>c.id===cid);
@@ -3180,15 +3210,16 @@ function renderParticipants(){
           </div>
         </td>
         <td>${nameCell}</td>
-        <td><span class="badge ${e.type==='group'?'badge-group':'badge-solo'}">${e.type==='group'?'Group.':'Solo'}</span></td>
+        <td><span class="badge ${e.type==='group'?'badge-group':'badge-solo'}">${e.type==='group'?'Group':'Solo'}</span></td>
         <td style="font-size:0.75rem;color:var(--text3);white-space:nowrap">${e.duration?e.duration+'分':'—'}</td>
-        <td>${accCell}</td>
+        <td style="white-space:nowrap">${accCell}</td>
+        <td></td>
         <td>${codeCell}</td>
         <td>
           <select class="status-sel" onchange="changeStatus('${e.id}',this.value)">
-            <option value="pending" ${e.status==='pending'?'selected':''}>未確認</option>
-            <option value="confirmed" ${e.status==='confirmed'?'selected':''}>参加確定</option>
-            <option value="absent" ${e.status==='absent'?'selected':''}>欠席</option>
+            <option value="pending"   ${e.status==='pending'  ?'selected':''}>未確認</option>
+            <option value="confirmed" ${e.status==='confirmed'?'selected':''}>確定</option>
+            <option value="absent"    ${e.status==='absent'   ?'selected':''}>欠席</option>
           </select>
         </td>
         <td style="white-space:nowrap">
