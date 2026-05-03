@@ -3177,7 +3177,7 @@ function renderParticipants(){
   }
   el.innerHTML=`<div class="tbl-wrap"><table>
     <thead><tr>
-      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th style="width:3.5rem;white-space:nowrap">時間</th><th>伴奏者</th><th style="width:4rem"></th><th>ログインコード</th><th style="width:7rem;white-space:nowrap">参加状況</th><th>操作</th>
+      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th style="width:3.5rem;white-space:nowrap">時間</th><th>伴奏者</th><th>ログインコード</th><th style="width:6rem;white-space:nowrap">参加状況</th><th>操作</th>
     </tr></thead><tbody id="participant-tbody">
     ${list.map(e=>{
       const concert = concerts.find(c=>c.id===cid);
@@ -3213,7 +3213,6 @@ function renderParticipants(){
         <td><span class="badge ${e.type==='group'?'badge-group':'badge-solo'}">${e.type==='group'?'Group':'Solo'}</span></td>
         <td style="font-size:0.75rem;color:var(--text3);white-space:nowrap">${e.duration?e.duration+'分':'—'}</td>
         <td style="white-space:nowrap">${accCell}</td>
-        <td></td>
         <td>${codeCell}</td>
         <td>
           <select class="status-sel" onchange="changeStatus('${e.id}',this.value)">
