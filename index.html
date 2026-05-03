@@ -5279,8 +5279,10 @@ function buildFeePersonView(concertList){
   const personMap = {};
   const addPerson = (name, kana, label, entry, perFee) => {
     if(!name) return;
-    const key = kana ? (name+'|'+kana) : name;
-    if(!personMap[key]) personMap[key] = { name, kana, appearances:[] };
+    const key = name.trim(); // 名前のみをキーに（ふりがなの有無で分裂しない）
+    if(!personMap[key]) personMap[key] = { name:name.trim(), kana:kana||'', appearances:[] };
+    // ふりがなが後から入ってきた場合は補完
+    if(!personMap[key].kana && kana) personMap[key].kana = kana;
     personMap[key].appearances.push({ label, entry, perFee: perFee??entry.feeAmount??0 });
   };
 
