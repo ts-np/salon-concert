@@ -2909,7 +2909,12 @@ function openEntryModal(id){
       } else if(e.accType==='needed'){
         const selG=document.getElementById('em-acc-name-group-sel');
         if(selG && e.accName){
-          [...selG.options].forEach(o=>{ if(o.value===e.accName) o.selected=true; });
+          selG.value=e.accName;
+          if(selG.value!==e.accName){
+            const opt=document.createElement('option');
+            opt.value=e.accName; opt.textContent=e.accName; opt.selected=true;
+            selG.appendChild(opt);
+          }
         }
       }
     } else {
@@ -2925,7 +2930,14 @@ function openEntryModal(id){
       } else if(e.accType==='needed'){
         const sel=document.getElementById('em-acc-name-sel');
         if(sel && e.accName){
-          [...sel.options].forEach(o=>{ if(o.value===e.accName) o.selected=true; });
+          // toggleAccFields後にセレクトが再生成されるので値を直接セット
+          sel.value=e.accName;
+          // オプションが見つからない場合は追加
+          if(sel.value!==e.accName){
+            const opt=document.createElement('option');
+            opt.value=e.accName; opt.textContent=e.accName; opt.selected=true;
+            sel.appendChild(opt);
+          }
         }
       }
     }
