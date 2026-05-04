@@ -1421,12 +1421,14 @@ select.status-sel{
           </div>
           <div class="fg" id="acc-name-wrap">
             <label>伴奏者名</label>
-            <div style="display:flex;gap:0.4rem;align-items:center">
-              <input id="em-acc-name" type="text" placeholder="伴奏者の氏名" style="flex:1">
-              <select id="em-acc-name-sel" onchange="applyAccompanistSel()" style="flex:1;font-size:0.8rem;display:none">
-                <option value="">— 一覧から選択 —</option>
-              </select>
-            </div>
+            <!-- 伴奏なし：入力不可 -->
+            <input id="em-acc-name-disabled" type="text" placeholder="—" disabled style="display:none;opacity:0.35">
+            <!-- 自己手配：テキスト入力 -->
+            <input id="em-acc-name" type="text" placeholder="伴奏者の氏名" style="display:none">
+            <!-- 手配が必要：リストボックス -->
+            <select id="em-acc-name-sel" style="display:none">
+              <option value="">— 伴奏者を選択 —</option>
+            </select>
           </div>
         </div>
       </div>
@@ -2644,30 +2646,28 @@ function toggleAccFields(){
     : document.getElementById('em-acc-type');
   const v = accSel?.value || 'none';
 
-  // ソロ側
-  const nameWrap = document.getElementById('acc-name-wrap');
-  const nameInput = document.getElementById('em-acc-name');
-  const accNameSel = document.getElementById('em-acc-name-sel');
-  if(nameWrap && nameInput){
-    const enabled=(v==='self'||v==='needed');
-    nameInput.disabled=!enabled;
-    nameInput.style.opacity=enabled?'1':'0.4';
-    nameInput.placeholder=v==='needed'?'手配予定の伴奏者名（決まっていれば）':'伴奏者の氏名';
-    // 「手配が必要」の時だけ伴奏者マスタセレクトを表示
-    if(accNameSel){
-      if(v==='needed'){
-        const cid = document.getElementById('em-concert')?.value;
-        const accList = cid ? (accompanists[cid]||[]) : [];
-        if(accList.length){
-          accNameSel.innerHTML = '<option value="">— 一覧から選択 —</option>' +
-            accList.map(a=>`<option value="${esc(a.name)}">${esc(a.name)}</option>`).join('');
-          accNameSel.style.display='';
-        } else {
-          accNameSel.style.display='none';
-        }
-      } else {
-        accNameSel.style.display='none';
-      }
+  // ソロ側：3モード切替
+  const nameDisabled = document.getElementById('em-acc-name-disabled');
+  const nameInput    = document.getElementById('em-acc-name');
+  const accNameSel   = document.getElementById('em-acc-name-sel');
+  if(nameDisabled && nameInput && accNameSel){
+    if(v === 'none'){
+      nameDisabled.style.display = '';
+      nameInput.style.display    = 'none';
+      accNameSel.style.display   = 'none';
+    } else if(v === 'self'){
+      nameDisabled.style.display = 'none';
+      nameInput.style.display    = '';
+      accNameSel.style.display   = 'none';
+    } else { // needed
+      nameDisabled.style.display = 'none';
+      nameInput.style.display    = 'none';
+      // 伴奏者マスタを読み込む
+      const cid = document.getElementById('em-concert')?.value;
+      const accList = cid ? (accompanists[cid]||[]) : [];
+      accNameSel.innerHTML = '<option value="">— 伴奏者を選択 —</option>' +
+        accList.map(a=>`<option value="${esc(a.name)}">${esc(a.name)}</option>`).join('');
+      accNameSel.style.display = '';
     }
   }
   // グループ側
@@ -2891,7 +2891,15 @@ function openEntryModal(id){
       document.getElementById('em-tel').value=e.tel||'';
       document.getElementById('em-instrument').value=e.instrument||'';
       document.getElementById('em-acc-type').value=e.accType||'none';
-      document.getElementById('em-acc-name').value=e.accName||'';
+      toggleAccFields();
+      if(e.accType==='self'){
+        document.getElementById('em-acc-name').value=e.accName||'';
+      } else if(e.accType==='needed'){
+        const sel=document.getElementById('em-acc-name-sel');
+        if(sel && e.accName){
+          [...sel.options].forEach(o=>{ if(o.value===e.accName) o.selected=true; });
+        }
+      }
     }
     loadPieces(e.pieces);
     document.getElementById('em-order').value=e.order||'';
@@ -3019,7 +3027,12 @@ function saveEntry(){
       tel:document.getElementById('em-tel').value.trim(),
       instrument:document.getElementById('em-instrument').value.trim(),
       accType:document.getElementById('em-acc-type').value,
-      accName:document.getElementById('em-acc-name').value.trim(),
+      accName:(()=>{
+        const t=document.getElementById('em-acc-type').value;
+        if(t==='self') return document.getElementById('em-acc-name').value.trim();
+        if(t==='needed') return document.getElementById('em-acc-name-sel').value.trim();
+        return '';
+      })(),
     });
   } else {
     const gn=document.getElementById('em-group-name').value.trim();
