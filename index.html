@@ -1470,7 +1470,12 @@ select.status-sel{
             </select>
           </div>
           <div class="fg" id="acc-name-wrap-group">
-            <label>伴奏者名</label><input id="em-acc-name-group" type="text" placeholder="伴奏者の氏名">
+            <label>伴奏者名</label>
+            <input id="em-acc-name-group-disabled" type="text" placeholder="—" disabled style="display:none;opacity:0.35">
+            <input id="em-acc-name-group" type="text" placeholder="伴奏者の氏名" style="display:none">
+            <select id="em-acc-name-group-sel" style="display:none">
+              <option value="">— 伴奏者を選択 —</option>
+            </select>
           </div>
         </div>
       </div>
@@ -2670,14 +2675,29 @@ function toggleAccFields(){
       accNameSel.style.display = '';
     }
   }
-  // グループ側
-  const nameWrapG = document.getElementById('acc-name-wrap-group');
-  const nameInputG = document.getElementById('em-acc-name-group');
-  if(nameWrapG && nameInputG){
-    const enabled=(v==='self'||v==='needed');
-    nameInputG.disabled=!enabled;
-    nameInputG.style.opacity=enabled?'1':'0.4';
-    nameInputG.placeholder=v==='needed'?'手配予定の伴奏者名（決まっていれば）':'伴奏者の氏名';
+  // グループ側：3モード切替
+  const nameDisabledG = document.getElementById('em-acc-name-group-disabled');
+  const nameInputG    = document.getElementById('em-acc-name-group');
+  const accNameSelG   = document.getElementById('em-acc-name-group-sel');
+  if(nameDisabledG && nameInputG && accNameSelG){
+    const vg = document.getElementById('em-acc-type-group')?.value || 'none';
+    if(vg === 'none'){
+      nameDisabledG.style.display = '';
+      nameInputG.style.display    = 'none';
+      accNameSelG.style.display   = 'none';
+    } else if(vg === 'self'){
+      nameDisabledG.style.display = 'none';
+      nameInputG.style.display    = '';
+      accNameSelG.style.display   = 'none';
+    } else { // needed
+      nameDisabledG.style.display = 'none';
+      nameInputG.style.display    = 'none';
+      const cid = document.getElementById('em-concert')?.value;
+      const accList = cid ? (accompanists[cid]||[]) : [];
+      accNameSelG.innerHTML = '<option value="">— 伴奏者を選択 —</option>' +
+        accList.map(a=>`<option value="${esc(a.name)}">${esc(a.name)}</option>`).join('');
+      accNameSelG.style.display = '';
+    }
   }
   // 伴奏代フィールドの表示切替
   const accFeeWrap = document.getElementById('em-acc-fee-wrap');
@@ -2883,7 +2903,15 @@ function openEntryModal(id){
         members.forEach(m=>addMemberField(m.name||m, m.kana||'', m.instrument||'', m.code||''));
       }
       document.getElementById('em-acc-type-group').value=e.accType||'none';
-      document.getElementById('em-acc-name-group').value=e.accName||'';
+      toggleAccFields();
+      if(e.accType==='self'){
+        document.getElementById('em-acc-name-group').value=e.accName||'';
+      } else if(e.accType==='needed'){
+        const selG=document.getElementById('em-acc-name-group-sel');
+        if(selG && e.accName){
+          [...selG.options].forEach(o=>{ if(o.value===e.accName) o.selected=true; });
+        }
+      }
     } else {
       document.getElementById('em-name').value=e.name||'';
       document.getElementById('em-kana').value=e.kana||'';
@@ -3045,7 +3073,12 @@ function saveEntry(){
       groupTel:document.getElementById('em-group-tel').value.trim(),
       members:getMembers(),
       accType:document.getElementById('em-acc-type-group').value,
-      accName:document.getElementById('em-acc-name-group').value.trim(),
+      accName:(()=>{
+        const t=document.getElementById('em-acc-type-group').value;
+        if(t==='self') return document.getElementById('em-acc-name-group').value.trim();
+        if(t==='needed') return document.getElementById('em-acc-name-group-sel').value.trim();
+        return '';
+      })(),
     });
   }
   if(editingEntryId){
@@ -3199,9 +3232,11 @@ function renderParticipants(){
         ? `<strong>${esc(e.groupName)}</strong><br><span style="font-size:0.7rem;color:var(--text3)">${(e.members||[]).map(m=>typeof m==='string'?esc(m):`${esc(m.name)}${m.instrument?`（${esc(instrAbbr(m.instrument))}）`:''}`).join(' / ')}</span>`
         : `<strong>${esc(e.name)}${soloInstr}</strong>`;
 
-      const accCell = (e.accType==='self' && e.accName)
+      const accCell = e.accName
         ? `<span style="font-size:0.78rem;color:var(--text2)">${esc(e.accName)}</span>`
-        : `<span style="color:transparent">—</span>`;
+        : e.accType==='needed'
+          ? `<span style="font-size:0.72rem;color:#f6c90e">手配中</span>`
+          : `<span style="color:transparent">—</span>`;
 
       // 同じコードを持つ他のエントリー数を確認（複数コード対応）
       const myCodes = e.performerCode ? e.performerCode.split(',').map(c=>c.trim().toLowerCase()).filter(Boolean) : [];
