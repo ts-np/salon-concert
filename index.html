@@ -4074,7 +4074,7 @@ function renderProgram(){
         }).join('　')}</div>`
       :`<div class="prog-name">${esc(e.name)}${e.instrument?` <span style="font-size:0.78rem;font-weight:300;color:var(--text3)">（${esc(e.instrument)}）</span>`:''}</div>`;
 
-    const accLine=e.type==='solo'&&e.accType==='self'&&e.accName
+    const accLine=e.accName
       ?`<div class="prog-acc">伴奏：${esc(e.accName)}</div>`:'';
 
     return `<div class="prog-item">
@@ -4166,8 +4166,8 @@ function renderMyConvert(){
     const subInfo = `<div style="font-size:0.78rem;color:var(--text3);margin-top:0.3rem">
       出演順：${e.order||'未定'}&ensp;演奏時間：${e.duration?e.duration+'分':'未定'}
       ${e.type==='solo'&&e.instrument?`&ensp;楽器：${esc(e.instrument)}`:''}
-      ${e.type==='solo'&&e.accType==='self'&&e.accName?`&ensp;伴奏：${esc(e.accName)}`:''}
-      ${e.type==='solo'&&e.accType==='needed'&&!e.accName?'<span style="color:#f6c90e;margin-left:0.5rem">⚠ 伴奏者手配が必要</span>':''}
+      ${e.accName?`&ensp;伴奏：${esc(e.accName)}`:''}
+      ${e.accType==='needed'&&!e.accName?'<span style="color:#f6c90e;margin-left:0.5rem">⚠ 伴奏者手配が必要</span>':''}
     </div>`;
 
     // グループメンバー一覧
@@ -4251,7 +4251,7 @@ function renderMyProgram(){
           return `${esc(nm)}${instr?` <span style="color:var(--text3);font-size:0.72rem">（${esc(instr)}）</span>`:''}`;
         }).join('　')}</div>`
       :`<div class="prog-name">${esc(e.name)}${e.instrument?` <span style="font-size:0.78rem;font-weight:300;color:var(--text3)">（${esc(e.instrument)}）</span>`:''}</div>`;
-    const accLine=e.type==='solo'&&e.accType==='self'&&e.accName
+    const accLine=e.accName
       ?`<div class="prog-acc">伴奏：${esc(e.accName)}</div>`:'';
     return `<div class="prog-item" style="${isMe?'background:rgba(201,168,92,0.08);border-left:3px solid var(--gold2)':''}">
       <div class="prog-num">${e.order||i+1}</div>
