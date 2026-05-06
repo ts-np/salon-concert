@@ -3670,7 +3670,7 @@ function renderSchedule(forceCid){
     const name=e.type==='group'?e.groupName:e.name;
     const pieces=Array.isArray(e.pieces)?e.pieces:[];
     const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
-    const accStr=(e.accType==='self'&&e.accName)?e.accName:'';
+    const accStr=e.accName||'';
     rows.push({
       time:start,duration:entryRehDur,category:'リハーサル',content:name,
       person:accStr,note:noteStr,memo:e.memoReh||'',rowType:'rehearsal',entry:e,idx:i,total:rhList.length,end,rGap,cid,
@@ -3709,7 +3709,7 @@ function renderSchedule(forceCid){
     const name=e.type==='group'?e.groupName:e.name;
     const pieces=Array.isArray(e.pieces)?e.pieces:[];
     const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
-    const accStr=(e.accType==='self'&&e.accName)?e.accName:'';
+    const accStr=e.accName||'';
     rows.push({
       time:start,duration:dur||null,category:'本番',
       content:(e.order?e.order+'. ':'')+name,
@@ -4375,7 +4375,7 @@ function renderMySchedule(){
     rhOffset2+=entryRehDur;
     const name=e.type==='group'?e.groupName:e.name;
     const instrTag=e.type==='solo'&&e.instrument?` <span style="font-size:0.72rem;color:var(--text3)">(${instrAbbr(e.instrument)})</span>`:'';
-    const accStr=(e.accType==='self'&&e.accName)?e.accName:'';
+    const accStr=e.accName||'';
     const pieces=Array.isArray(e.pieces)?e.pieces:[];
     const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
     const isMe=myIdsForCid.has(e.id);
@@ -4401,7 +4401,7 @@ function renderMySchedule(){
     const end=(pTime&&dur)?addMinutes(pTime,pOffset):'';
     const name=e.type==='group'?e.groupName:e.name;
     const instrTag=e.type==='solo'&&e.instrument?` <span style="font-size:0.72rem;color:var(--text3)">(${instrAbbr(e.instrument)})</span>`:'';
-    const accStr=(e.accType==='self'&&e.accName)?e.accName:'';
+    const accStr=e.accName||'';
     const pieces=Array.isArray(e.pieces)?e.pieces:[];
     const noteStr=pieces.map((p,pi)=>(pieces.length>1?(pi+1)+'. ':'')+esc(p.title||'')+(p.composer?' / '+esc(p.composer):'')).join(' / ');
     const isMe=myIdsForCid.has(e.id);
