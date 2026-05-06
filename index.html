@@ -3066,7 +3066,10 @@ function saveEntry(){
       accName:(()=>{
         const t=document.getElementById('em-acc-type').value;
         if(t==='self') return document.getElementById('em-acc-name').value.trim();
-        if(t==='needed') return document.getElementById('em-acc-name-sel').value.trim();
+        if(t==='needed'){
+          const sel=document.getElementById('em-acc-name-sel');
+          return sel?.options[sel.selectedIndex]?.value?.trim()||'';
+        }
         return '';
       })(),
     });
@@ -3084,7 +3087,10 @@ function saveEntry(){
       accName:(()=>{
         const t=document.getElementById('em-acc-type-group').value;
         if(t==='self') return document.getElementById('em-acc-name-group').value.trim();
-        if(t==='needed') return document.getElementById('em-acc-name-group-sel').value.trim();
+        if(t==='needed'){
+          const sel=document.getElementById('em-acc-name-group-sel');
+          return sel?.options[sel.selectedIndex]?.value?.trim()||'';
+        }
         return '';
       })(),
     });
