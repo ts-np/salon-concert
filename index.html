@@ -1059,6 +1059,7 @@ select.status-sel{
       <div class="ph">
         <h2>スケジュール</h2>
         <div class="ph-actions">
+          <button class="btn btn-outline btn-sm" onclick="exportSchedulePDF()">📄 PDF出力</button>
           <button class="btn btn-outline btn-sm" onclick="printSchedule()">🖨 印刷</button>
         </div>
       </div>
@@ -1859,6 +1860,9 @@ async function persist(){
       instrumentAbbr,
       adminPassword,
       emailTemplates,
+      schedBreaks,
+      schedCustomEvents,
+      schedRehearsalOrders,
       updatedAt: Date.now()
     };
     try{
@@ -1884,6 +1888,9 @@ async function hydrate(){
       if(data.instrumentAbbr)  instrumentAbbr = data.instrumentAbbr;
       if(data.adminPassword)  adminPassword  = data.adminPassword;
       if(data.emailTemplates) emailTemplates = data.emailTemplates;
+      if(data.schedBreaks)         schedBreaks         = data.schedBreaks;
+      if(data.schedCustomEvents)   schedCustomEvents   = data.schedCustomEvents;
+      if(data.schedRehearsalOrders) schedRehearsalOrders = data.schedRehearsalOrders;
     }
   }catch(e){ console.warn('Firebase read error:', e); }
 }
@@ -1908,6 +1915,9 @@ function startRealtimeSync(){
     if(data.instrumentList) instrumentList = data.instrumentList;
     if(data.instrumentAbbr)  instrumentAbbr = data.instrumentAbbr;
     if(data.adminPassword)  adminPassword  = data.adminPassword;
+    if(data.schedBreaks)          schedBreaks          = data.schedBreaks;
+    if(data.schedCustomEvents)    schedCustomEvents    = data.schedCustomEvents;
+    if(data.schedRehearsalOrders) schedRehearsalOrders = data.schedRehearsalOrders;
     // 表示中のページを再描画
     refreshCurrentPage();
   });
@@ -3439,7 +3449,7 @@ function moveRehearsal(cid,entryId,dir){
   const idx=order.indexOf(entryId); if(idx<0)return;
   const ni=idx+dir; if(ni<0||ni>=order.length)return;
   [order[idx],order[ni]]=[order[ni],order[idx]];
-  schedRehearsalOrders[cid]=order; renderSchedule(cid);
+  schedRehearsalOrders[cid]=order; persist(); renderSchedule(cid);
 }
 
 // ── custom events (performer timeline) ──
@@ -3931,6 +3941,57 @@ function renderScheduleStaff(forceCid){
 
 function printSchedule(){
   window.print();
+}
+
+function exportSchedulePDF(){
+  const cid = document.getElementById('sched-concert-sel')?.value;
+  const concert = concerts.find(c=>c.id===cid);
+  if(!cid||!concert){ alert('演奏会を選択してください'); return; }
+
+  const tableEl = document.getElementById('schedule-content')?.querySelector('table');
+  if(!tableEl){ alert('スケジュール表が見つかりません'); return; }
+
+  // テーブルのHTMLを取得（操作列を除く）
+  const rows = [...tableEl.querySelectorAll('tr')].map(tr=>{
+    const cells = [...tr.querySelectorAll('th,td')];
+    // 最後の列（操作ボタン列）を除く
+    const filtered = cells.slice(0,-1);
+    const tag = tr.closest('thead') ? 'th' : 'td';
+    return `<tr>${filtered.map(c=>`<${tag} style="${c.getAttribute('style')||''}">${c.innerHTML}</${tag}>`).join('')}</tr>`;
+  }).join('');
+
+  const vOpen = concert.venueOpen ? `　開場 ${concert.venueOpen}` : '';
+  const pTime = concert.time ? `　開演 ${concert.time}` : '';
+  const dateStr = concert.date ? `${concert.date}${vOpen}${pTime}` : '';
+
+  const html = `<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8">
+<title>${concert.name} スケジュール</title>
+<style>
+  @page { size: A4 landscape; margin: 15mm; }
+  body { font-family: 'Hiragino Kaku Gothic Pro','Meiryo',sans-serif; font-size: 10px; color: #1a1a1a; }
+  h1 { font-size: 16px; margin: 0 0 4px; }
+  .info { font-size: 11px; color: #555; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 10px; }
+  th { background: #2a2a2a; color: #fff; padding: 5px 8px; text-align: left; white-space: nowrap; }
+  td { padding: 5px 8px; border-bottom: 1px solid #ddd; vertical-align: middle; }
+  tr:nth-child(even) td { background: #f9f9f7; }
+  .badge { display:inline-block; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:bold; }
+  input, select, button { display: none !important; }
+  span[style*="color:#f6c90e"] { color: #b8860b !important; }
+</style>
+</head><body>
+  <h1>${concert.name}</h1>
+  <div class="info">${dateStr}${concert.venue ? '　📍 ' + concert.venue : ''}</div>
+  <table><thead></thead><tbody>${rows}</tbody></table>
+</body></html>`;
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const w = window.open(url,'_blank');
+  if(w){
+    w.onload = ()=>{ w.print(); URL.revokeObjectURL(url); };
+  }
 }
 
 // ══════════════════════════════════
