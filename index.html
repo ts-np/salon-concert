@@ -2644,7 +2644,7 @@ function setType(t){
     togglePerformerCodeVisibility();
   }
 }
-function toggleAccFields(){
+function toggleAccFields(initialAccName=null, initialAccNameGroup=null){
   const isGroup = document.getElementById('group-fields')?.style.display !== 'none';
   const accSel = isGroup
     ? document.getElementById('em-acc-type-group')
@@ -2667,11 +2667,15 @@ function toggleAccFields(){
     } else { // needed
       nameDisabled.style.display = 'none';
       nameInput.style.display    = 'none';
-      // 伴奏者マスタを読み込む
       const cid = document.getElementById('em-concert')?.value;
       const accList = cid ? (accompanists[cid]||[]) : [];
+      const currentVal = initialAccName ?? accNameSel.value;
       accNameSel.innerHTML = '<option value="">— 伴奏者を選択 —</option>' +
-        accList.map(a=>`<option value="${esc(a.name)}">${esc(a.name)}</option>`).join('');
+        accList.map(a=>`<option value="${esc(a.name)}"${a.name===currentVal?' selected':''}>${esc(a.name)}</option>`).join('');
+      // マスタにない場合も表示
+      if(currentVal && !accList.find(a=>a.name===currentVal)){
+        accNameSel.innerHTML += `<option value="${esc(currentVal)}" selected>${esc(currentVal)}</option>`;
+      }
       accNameSel.style.display = '';
     }
   }
@@ -2694,8 +2698,12 @@ function toggleAccFields(){
       nameInputG.style.display    = 'none';
       const cid = document.getElementById('em-concert')?.value;
       const accList = cid ? (accompanists[cid]||[]) : [];
+      const currentValG = initialAccNameGroup ?? accNameSelG.value;
       accNameSelG.innerHTML = '<option value="">— 伴奏者を選択 —</option>' +
-        accList.map(a=>`<option value="${esc(a.name)}">${esc(a.name)}</option>`).join('');
+        accList.map(a=>`<option value="${esc(a.name)}"${a.name===currentValG?' selected':''}>${esc(a.name)}</option>`).join('');
+      if(currentValG && !accList.find(a=>a.name===currentValG)){
+        accNameSelG.innerHTML += `<option value="${esc(currentValG)}" selected>${esc(currentValG)}</option>`;
+      }
       accNameSelG.style.display = '';
     }
   }
@@ -2903,19 +2911,9 @@ function openEntryModal(id){
         members.forEach(m=>addMemberField(m.name||m, m.kana||'', m.instrument||'', m.code||''));
       }
       document.getElementById('em-acc-type-group').value=e.accType||'none';
-      toggleAccFields();
+      toggleAccFields(null, e.accName||null);
       if(e.accType==='self'){
         document.getElementById('em-acc-name-group').value=e.accName||'';
-      } else if(e.accType==='needed'){
-        const selG=document.getElementById('em-acc-name-group-sel');
-        if(selG && e.accName){
-          selG.value=e.accName;
-          if(selG.value!==e.accName){
-            const opt=document.createElement('option');
-            opt.value=e.accName; opt.textContent=e.accName; opt.selected=true;
-            selG.appendChild(opt);
-          }
-        }
       }
     } else {
       document.getElementById('em-name').value=e.name||'';
@@ -2924,21 +2922,9 @@ function openEntryModal(id){
       document.getElementById('em-tel').value=e.tel||'';
       document.getElementById('em-instrument').value=e.instrument||'';
       document.getElementById('em-acc-type').value=e.accType||'none';
-      toggleAccFields();
+      toggleAccFields(e.accName||null, null);
       if(e.accType==='self'){
         document.getElementById('em-acc-name').value=e.accName||'';
-      } else if(e.accType==='needed'){
-        const sel=document.getElementById('em-acc-name-sel');
-        if(sel && e.accName){
-          // toggleAccFields後にセレクトが再生成されるので値を直接セット
-          sel.value=e.accName;
-          // オプションが見つからない場合は追加
-          if(sel.value!==e.accName){
-            const opt=document.createElement('option');
-            opt.value=e.accName; opt.textContent=e.accName; opt.selected=true;
-            sel.appendChild(opt);
-          }
-        }
       }
     }
     loadPieces(e.pieces);
