@@ -1059,6 +1059,7 @@ select.status-sel{
       <div class="ph">
         <h2>スケジュール</h2>
         <div class="ph-actions">
+          <button class="btn btn-outline btn-sm" onclick="exportScheduleCSV()">📥 CSV出力</button>
           <button class="btn btn-outline btn-sm" onclick="exportSchedulePDF()">📄 PDF出力</button>
           <button class="btn btn-outline btn-sm" onclick="printSchedule()">🖨 印刷</button>
         </div>
@@ -3226,6 +3227,14 @@ function deleteAccompanist(cid, accId){
   renderAccompanistList();
 }
 
+function toggleRehearsalEnabled(id){
+  const e = entries.find(x=>x.id===id);
+  if(!e) return;
+  e.rehearsalEnabled = e.rehearsalEnabled === false ? true : false;
+  persist();
+  renderParticipants();
+}
+
 function renderParticipants(){
   const cid=document.getElementById('p-concert-sel')?.value;
   const el=document.getElementById('participant-list');
@@ -3237,7 +3246,7 @@ function renderParticipants(){
   }
   el.innerHTML=`<div class="tbl-wrap"><table>
     <thead><tr>
-      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th style="width:3.5rem;white-space:nowrap">時間</th><th>伴奏者</th><th>ログインコード</th><th style="width:6rem;white-space:nowrap">参加状況</th><th>操作</th>
+      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th style="width:3.5rem;white-space:nowrap">時間</th><th style="width:3.5rem;white-space:nowrap">リハ</th><th>伴奏者</th><th>ログインコード</th><th style="width:6rem;white-space:nowrap">参加状況</th><th>操作</th>
     </tr></thead><tbody id="participant-tbody">
     ${list.map(e=>{
       const concert = concerts.find(c=>c.id===cid);
@@ -3274,6 +3283,17 @@ function renderParticipants(){
         <td>${nameCell}</td>
         <td><span class="badge ${e.type==='group'?'badge-group':'badge-solo'}">${e.type==='group'?'Group':'Solo'}</span></td>
         <td style="font-size:0.75rem;color:var(--text3);white-space:nowrap">${e.duration?e.duration+'分':'—'}</td>
+        <td style="text-align:center">
+          <button onclick="toggleRehearsalEnabled('${e.id}')" style="background:none;border:none;cursor:pointer;padding:0"
+            title="${e.rehearsalEnabled!==false?'クリックでリハなしに':'クリックでリハありに'}">
+            <span style="font-size:0.72rem;font-weight:700;padding:0.15rem 0.4rem;border-radius:4px;
+              ${e.rehearsalEnabled!==false
+                ?'background:rgba(86,174,224,0.15);color:#7fb3d3;border:1px solid rgba(86,174,224,0.4)'
+                :'background:rgba(100,100,100,0.1);color:var(--text3);border:1px solid var(--border)'}">
+              ${e.rehearsalEnabled!==false?'あり':'なし'}
+            </span>
+          </button>
+        </td>
         <td style="white-space:nowrap">${accCell}</td>
         <td>${codeCell}</td>
         <td>
@@ -3947,6 +3967,63 @@ function renderScheduleStaff(forceCid){
 
 function printSchedule(){
   window.print();
+}
+
+function exportScheduleCSV(){
+  const cid = document.getElementById('sched-concert-sel')?.value;
+  const concert = concerts.find(c=>c.id===cid);
+  if(!cid||!concert){ alert('演奏会を選択してください'); return; }
+
+  // スケジュール行を取得（buildSchedTable に渡す rows と同じロジック）
+  const perfList = entries.filter(e=>e.concertId===cid&&e.status!=='absent').sort((a,b)=>(a.order||999)-(b.order||999));
+  const rTime = concert.rehearsalTime||'';
+  const pTime = concert.time||'';
+  const rDur  = concert.rehearsalDuration||10;
+  const rGap  = concert.rehearsalGap||3;
+  const rhOrder = getRehearsalOrder(cid, perfList);
+  const rhList  = rhOrder.map(id=>perfList.find(e=>e.id===id)).filter(Boolean);
+
+  const rows = [];
+
+  // リハーサル行
+  let rhOffset = 0;
+  rhList.forEach((e,i)=>{
+    const dur = (e.rehearsalEnabled!==false) ? (e.rehearsalDuration??rDur) : 0;
+    if(dur===0) return;
+    if(i>0) rhOffset += rGap;
+    const start = rTime ? addMinutes(rTime, rhOffset) : '';
+    const end   = rTime ? addMinutes(rTime, rhOffset+dur) : '';
+    rhOffset += dur;
+    const name = e.type==='group' ? e.groupName : e.name;
+    const pieces = Array.isArray(e.pieces) ? e.pieces : [];
+    const noteStr = pieces.map(p=>p.title||(p.composer?'/ '+p.composer:'')).filter(Boolean).join(' / ');
+    rows.push(['リハーサル', start, end, dur+'分', name, e.accName||'', noteStr, e.memoReh||'']);
+  });
+
+  // 本番行
+  let pOffset = 0;
+  perfList.forEach((e,i)=>{
+    const dur = e.duration||0;
+    const start = pTime ? addMinutes(pTime, pOffset) : '';
+    const end   = (pTime&&dur) ? addMinutes(pTime, pOffset+dur) : '';
+    pOffset += dur;
+    const name = e.type==='group' ? e.groupName : e.name;
+    const pieces = Array.isArray(e.pieces) ? e.pieces : [];
+    const noteStr = pieces.map(p=>p.title||(p.composer?'/ '+p.composer:'')).filter(Boolean).join(' / ');
+    rows.push(['本番', start, end, dur?dur+'分':'', (e.order?e.order+'. ':'')+name, e.accName||'', noteStr, e.memoPerf||'']);
+  });
+
+  const header = ['カテゴリ','開始','終了','時間','出演者','伴奏者','曲名','備考'];
+  const cell = s => (s.includes(',')||s.includes('\n')||s.includes('"')) ? `"${s.replace(/"/g,'""')}"` : s;
+  const csv = '\uFEFF' + [header, ...rows].map(r=>r.map(c=>cell(String(c||''))).join(',')).join('\n');
+
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `スケジュール_${concert.name}_${today()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function exportSchedulePDF(){
@@ -5334,15 +5411,17 @@ function renderFees(cid){
   const concertList = cid ? [concerts.find(c=>c.id===cid)].filter(Boolean) : [];
   if(!concertList.length){ el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>'; return; }
 
-  // 切り替えボタン
   const toggleHtml = `
     <div style="display:flex;gap:0.4rem;margin-bottom:1.2rem">
       <button class="btn btn-sm ${feeViewMode==='concert'?'btn-gold':'btn-outline'}" onclick="setFeeViewMode('concert')">出演者別</button>
       <button class="btn btn-sm ${feeViewMode==='person'?'btn-gold':'btn-outline'}" onclick="setFeeViewMode('person')">人別</button>
+      <button class="btn btn-sm ${feeViewMode==='acc'?'btn-gold':'btn-outline'}" onclick="setFeeViewMode('acc')">伴奏者別</button>
     </div>`;
 
   if(feeViewMode==='concert'){
     el.innerHTML = toggleHtml + buildFeeConcertView(concertList);
+  } else if(feeViewMode==='acc'){
+    el.innerHTML = toggleHtml + buildFeeAccView(concertList);
   } else {
     el.innerHTML = toggleHtml + buildFeePersonView(concertList);
   }
@@ -5364,13 +5443,23 @@ function buildFeeConcertView(concertList){
     const pending   = total - collected;
     const paidCnt   = withFee.filter(e=>e.feeStatus==='paid').length;
     const pct       = withFee.length ? Math.round(paidCnt/withFee.length*100) : 0;
+    const accTotal  = list.reduce((s,e)=>s+(e.accFee||0),0);
+    const grandTotal = total + accTotal;
 
     html += `
       ${concertList.length>1?`<h3 style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2);margin-bottom:0.8rem;margin-top:1.5rem">${esc(concert.name)}</h3>`:''}
       <div style="display:flex;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
-          <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">合計参加費</div>
+          <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">参加費合計</div>
           <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:var(--text)">${fmt(total)}</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
+          <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">伴奏代合計</div>
+          <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:var(--text2)">${fmt(accTotal)}</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
+          <div style="font-size:0.68rem;color:var(--gold);margin-bottom:0.3rem;font-weight:700">総合計</div>
+          <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:var(--gold2)">${fmt(grandTotal)}</div>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
           <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">回収済み</div>
@@ -5407,6 +5496,65 @@ function buildFeeConcertView(concertList){
         </div>`;
       }).join('')}
     </div>`;
+  });
+  return html;
+}
+
+function buildFeeAccView(concertList){
+  let html = '';
+  concertList.forEach(concert=>{
+    const list = entries.filter(e=>e.concertId===concert.id&&e.status!=='absent');
+
+    // 伴奏者ごとに集計
+    const accMap = {};
+    list.forEach(e=>{
+      if(!e.accName||!e.accFee) return;
+      const key = e.accName.trim();
+      if(!accMap[key]) accMap[key]={ name:key, entries:[], total:0 };
+      accMap[key].entries.push(e);
+      accMap[key].total += (e.accFee||0);
+    });
+
+    const accList = Object.values(accMap).sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+    const grandTotal = accList.reduce((s,a)=>s+a.total,0);
+
+    html += concertList.length>1
+      ?`<h3 style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2);margin-bottom:0.8rem;margin-top:1.5rem">${esc(concert.name)}</h3>`:'';
+
+    if(!accList.length){
+      html += '<div class="empty" style="padding:1.5rem"><p>伴奏代が設定されているエントリーがありません</p></div>';
+      return;
+    }
+
+    // 合計サマリ
+    html += `<div style="display:flex;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap">
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:0.8rem 1.2rem;min-width:140px">
+        <div style="font-size:0.68rem;color:var(--gold);margin-bottom:0.3rem;font-weight:700">伴奏代総合計</div>
+        <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:var(--gold2)">${fmt(grandTotal)}</div>
+        <div style="font-size:0.68rem;color:var(--text3);margin-top:0.2rem">伴奏者 ${accList.length}名</div>
+      </div>
+    </div>`;
+
+    // 伴奏者ごとの一覧
+    accList.forEach(acc=>{
+      html += `<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem">
+        <div style="background:var(--surface2);padding:0.6rem 1rem;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-weight:700;font-size:0.9rem;color:var(--text)">${esc(acc.name)}</span>
+          <span style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--gold2)">${fmt(acc.total)}</span>
+        </div>
+        <div style="background:var(--surface)">
+          ${acc.entries.map(e=>{
+            const perfName = e.type==='group'?esc(e.groupName):esc(e.name);
+            return `<div style="display:grid;grid-template-columns:2rem 1fr 1fr 90px;gap:0.5rem;padding:0.5rem 1rem;border-top:1px solid var(--border);align-items:center;font-size:0.82rem">
+              <span style="color:var(--text3)">${e.order||'—'}</span>
+              <span>${perfName}</span>
+              <span style="color:var(--text3);font-size:0.75rem">${e.type==='group'?'グループ':'ソロ'}${e.instrument?' / '+esc(instrAbbr(e.instrument)):''}</span>
+              <span style="text-align:right;color:var(--text2)">${fmt(e.accFee||0)}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    });
   });
   return html;
 }
