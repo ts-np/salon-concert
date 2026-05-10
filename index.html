@@ -190,6 +190,16 @@ main{max-width:980px;margin:0 auto;padding:1.8rem 1.2rem 5rem}
 }
 .sel-bar select:focus{outline:none;border-color:var(--gold)}
 
+/* ── CONCERT DETAIL TABS ── */
+button.cdt{
+  background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--text3);font-family:'Shippori Mincho',serif;font-size:0.8rem;font-weight:600;
+  letter-spacing:0.06em;padding:0.6rem 1.1rem;cursor:pointer;white-space:nowrap;
+  transition:color 0.2s,border-color 0.2s;
+}
+button.cdt.active{color:var(--gold2);border-bottom-color:var(--gold)}
+button.cdt:hover:not(.active){color:var(--text)}
+
 /* ── TABLE ── */
 .tbl-wrap{border:1px solid var(--border);border-radius:8px;overflow:hidden;overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:0.82rem}
@@ -1021,6 +1031,30 @@ select.status-sel{
       <div id="concert-list"></div>
     </div>
 
+    <!-- ══ CONCERT DETAIL PAGE ══ -->
+    <div class="page" id="page-concert-detail">
+      <div style="margin-bottom:1rem">
+        <button class="btn btn-outline btn-sm" onclick="backToConcerts()">← 演奏会一覧</button>
+      </div>
+      <div id="concert-detail-header" style="margin-bottom:1rem"></div>
+      <!-- 演奏会内タブ -->
+      <div id="concert-detail-tabs" style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.5rem;overflow-x:auto">
+        <button class="cdt active" onclick="switchConcertTab('info',this)">演奏会情報</button>
+        <button class="cdt" onclick="switchConcertTab('participants',this)">参加者</button>
+        <button class="cdt" onclick="switchConcertTab('audience',this)">来場者</button>
+        <button class="cdt" onclick="switchConcertTab('program',this)">プログラム</button>
+        <button class="cdt" onclick="switchConcertTab('schedule',this)">スケジュール</button>
+        <button class="cdt" onclick="switchConcertTab('finance',this)">Finance</button>
+      </div>
+      <!-- タブコンテンツ -->
+      <div id="cdt-info"></div>
+      <div id="cdt-participants" style="display:none"></div>
+      <div id="cdt-audience" style="display:none"></div>
+      <div id="cdt-program" style="display:none"></div>
+      <div id="cdt-schedule" style="display:none"></div>
+      <div id="cdt-finance" style="display:none"></div>
+    </div>
+
     <div class="page" id="page-participants">
       <div class="ph">
         <h2>参加者管理</h2>
@@ -1176,13 +1210,13 @@ select.status-sel{
       <button class="close-btn" onclick="closeModal('acc-edit-modal')">×</button>
     </div>
     <div class="form-grid" style="margin-top:0.8rem">
-      <div class="fg full"><label>氏名</label><input id="acc-edit-name" type="text" placeholder="例：齋藤 美佐子"></div>
+      <div class="fg full"><label>氏名</label><input id="acc-edit-name" type="text" placeholder="例：田中 美子"></div>
       <div class="fg full"><label>ログインコード <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（英数字）</span></label>
-        <input id="acc-edit-code" type="text" placeholder="例：saito2026"
+        <input id="acc-edit-code" type="text" placeholder="例：tanaka"
           oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')"
           autocomplete="off" autocapitalize="off" spellcheck="false">
       </div>
-      <div class="fg full"><label>メールアドレス <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（任意）</span></label><input id="acc-edit-email" type="email" placeholder="例：saito@example.com"></div>
+      <div class="fg full"><label>メールアドレス <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（任意）</span></label><input id="acc-edit-email" type="email" placeholder="例：tanaka@example.com"></div>
       <div class="fg full"><label>メモ <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（任意）</span></label><textarea id="acc-edit-memo" rows="2" placeholder="備考など"></textarea></div>
     </div>
     <div class="modal-footer">
@@ -1933,6 +1967,15 @@ function refreshCurrentPage(){
   else if(id==='page-applications') renderApplications();
   else if(id==='page-program')   renderProgram();
   else if(id==='page-schedule')  { renderSchedule(); if(schedTabMode==='staff') renderScheduleStaff(); if(schedTabMode==='members') renderStaffMembers(); }
+  else if(id==='page-concert-detail') {
+    renderConcertDetailHeader(currentConcertId);
+    if(currentConcertTab==='info')          renderConcertInfo(currentConcertId);
+    else if(currentConcertTab==='participants') renderConcertParticipants(currentConcertId);
+    else if(currentConcertTab==='audience')     renderConcertAudience(currentConcertId);
+    else if(currentConcertTab==='program')      renderConcertProgram(currentConcertId);
+    else if(currentConcertTab==='schedule')     renderConcertSchedule(currentConcertId);
+    else if(currentConcertTab==='finance')      renderConcertFinance(currentConcertId);
+  }
   else if(id==='page-audience') renderAudienceList();
   else if(id==='page-my-concert')      renderMyConvert();
   else if(id==='page-my-program')      renderMyProgram();
@@ -2290,13 +2333,7 @@ function buildNav(){
   const nav = document.getElementById('main-nav');
   if(currentUser.role === 'organizer'){
     nav.innerHTML = `
-      <button class="active" onclick="showPage('concerts',this)">演奏会一覧</button>
-      <button onclick="showPage('participants',this)">参加者管理</button>
-      <button onclick="showPage('applications',this)" id="nav-applications">申し込み管理</button>
-      <button onclick="showPage('audience',this)" id="nav-audience">来場者管理</button>
-      <button onclick="showPage('program',this)">プログラム</button>
-      <button onclick="showPage('schedule',this)">スケジュール</button>
-      <button onclick="showPage('finance',this)">Finance</button>
+      <button class="active" onclick="backToConcerts()">演奏会一覧</button>
 `;
   } else if(currentUser.role === 'accompanist'){
     nav.className = 'performer-nav';
@@ -2496,6 +2533,284 @@ function deleteConcert(id){
   entries=entries.filter(x=>x.concertId!==id);
   persist(); renderConcerts();
 }
+let currentConcertId = null;
+let currentConcertTab = 'info';
+
+function openConcertDetail(cid){
+  currentConcertId = cid;
+  currentConcertTab = 'info';
+  // 全ページ非表示
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-concert-detail').classList.add('active');
+  // タブをinfoにリセット
+  document.querySelectorAll('.cdt').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.cdt')[0].classList.add('active');
+  ['info','participants','audience','program','schedule','finance'].forEach(t=>{
+    document.getElementById('cdt-'+t).style.display = t==='info'?'':'none';
+  });
+  renderConcertDetailHeader(cid);
+  renderConcertInfo(cid);
+}
+
+function backToConcerts(){
+  currentConcertId = null;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-concerts').classList.add('active');
+  renderConcerts();
+}
+
+function switchConcertTab(tab, btn){
+  currentConcertTab = tab;
+  document.querySelectorAll('.cdt').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  ['info','participants','audience','program','schedule','finance'].forEach(t=>{
+    document.getElementById('cdt-'+t).style.display = t===tab?'':'none';
+  });
+  const cid = currentConcertId;
+  if(tab==='info')              renderConcertInfo(cid);
+  else if(tab==='participants') renderConcertParticipants(cid);
+  else if(tab==='audience')     renderConcertAudience(cid);
+  else if(tab==='program')      renderConcertProgram(cid);
+  else if(tab==='schedule')     renderConcertSchedule(cid);
+  else if(tab==='finance')      renderConcertFinance(cid);
+}
+
+function renderConcertDetailHeader(cid){
+  const c = concerts.find(x=>x.id===cid);
+  if(!c) return;
+  const el = document.getElementById('concert-detail-header');
+  const past = c.date && c.date < today();
+  const badge = c.date ? `<span class="badge ${past?'badge-past':'badge-upcoming'}">${past?'終了':'開催予定'}</span>` : '';
+  el.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+      <div style="flex:1">
+        <div style="font-family:'EB Garamond',serif;font-size:1.5rem;color:var(--text);font-weight:500">${esc(c.name)} ${badge}</div>
+        ${c.venue?`<div style="font-size:0.88rem;color:var(--text2);margin-top:0.2rem">${c.venueUrl?`<a href="${esc(c.venueUrl)}" target="_blank" rel="noopener" style="color:var(--gold2);text-decoration:underline">${esc(c.venue)}</a>`:esc(c.venue)}</div>`:''}
+        <div style="font-size:0.82rem;color:var(--text3);margin-top:0.2rem">
+          ${c.date?`📅 ${c.date}${c.venueOpen?`　開場 ${c.venueOpen}`:''}${c.time?`　開演 ${c.time}`:''}`:('日程未定')}
+        </div>
+      </div>
+      ${c.flyerData?`<img src="${c.flyerData}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">`:''}
+    </div>`;
+}
+
+// ── 各タブのrender関数（既存関数をラップ） ──
+
+function renderConcertInfo(cid){
+  const el = document.getElementById('cdt-info');
+  const c = concerts.find(x=>x.id===cid);
+  if(!c){ el.innerHTML=''; return; }
+
+  // 演奏会情報フォームを直接表示
+  const tiers = (c.entryFeeTiers||[{name:'一般',price:0}]);
+  const tiersHtml = tiers.map((t,i)=>`
+    <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.4rem">
+      <input type="text" value="${esc(t.name)}" placeholder="区分名" style="width:100px" onchange="updateConcertInfoTier(${i},'name',this.value)">
+      <input type="number" value="${t.price||0}" min="0" style="width:80px;text-align:right" onchange="updateConcertInfoTier(${i},'price',this.value)">
+      <span style="font-size:0.78rem;color:var(--text3)">円</span>
+      ${tiers.length>1?`<button onclick="removeConcertInfoTier(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.9rem">✕</button>`:''}
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.9rem 1.2rem;max-width:720px">
+      <div class="fg full"><label>演奏会名</label><input id="ci-name" type="text" value="${esc(c.name)}"></div>
+      <div class="fg"><label>開催日</label><input id="ci-date" type="date" value="${c.date||''}"></div>
+      <div class="fg"><label>開場時間</label><input id="ci-venue-open" type="time" value="${c.venueOpen||''}"></div>
+      <div class="fg"><label>開演時間</label><input id="ci-time" type="time" value="${c.time||''}"></div>
+      <div class="fg"><label>会場名</label><input id="ci-venue" type="text" value="${esc(c.venue||'')}"></div>
+      <div class="fg"><label>会場URL</label><input id="ci-venue-url" type="url" value="${esc(c.venueUrl||'')}"></div>
+      <div class="fg"><label>来場者上限（人）</label><input id="ci-audience-capacity" type="number" min="0" value="${c.audienceCapacity||''}"></div>
+      <div class="fg"><label>リハ持ち時間（分）</label><input id="ci-rehearsal-duration" type="number" min="1" value="${c.rehearsalDuration||''}"></div>
+      <div class="fg"><label>リハ間隔（分）</label><input id="ci-rehearsal-gap" type="number" min="0" value="${c.rehearsalGap||''}"></div>
+      <div class="fg"><label>リハ開始時刻</label><input id="ci-rehearsal-time" type="time" value="${c.rehearsalTime||''}"></div>
+      <div class="fg full"><label>演奏会の説明</label><textarea id="ci-description" rows="3">${esc(c.description||'')}</textarea></div>
+      <div class="fg full"><label>備考・連絡事項</label><textarea id="ci-note" rows="2">${esc(c.note||'')}</textarea></div>
+      <div class="fg"><label>LINE URL</label><input id="ci-line-url" type="url" value="${esc(c.lineUrl||'')}"></div>
+      <div class="fg"><label>主催者コード</label><input id="ci-code" type="text" value="${esc(c.code||'')}"></div>
+      <div class="fg full"><label>伴奏代（円）</label><input id="ci-acc-fee" type="number" min="0" value="${c.accFee||''}"></div>
+      <div class="fg full">
+        <label>参加費設定</label>
+        <div id="ci-fee-tiers">${tiersHtml}</div>
+        <button class="btn btn-outline btn-sm" style="margin-top:0.3rem" onclick="addConcertInfoTier()">＋ 区分を追加</button>
+      </div>
+      <div class="fg full"><label>フライヤー画像</label>
+        ${c.flyerData?`<img src="${c.flyerData}" style="max-height:160px;border-radius:6px;margin-bottom:0.4rem;display:block"><button class="btn btn-outline btn-sm" onclick="clearConcertInfoFlyer()">削除</button>`:''}
+        <input type="file" accept="image/*" onchange="setConcertInfoFlyer(event)" style="margin-top:0.4rem">
+      </div>
+    </div>
+    <div style="display:flex;gap:0.8rem;margin-top:1.5rem;align-items:center">
+      <button class="btn btn-gold" onclick="saveConcertInfo()">💾 保存</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteConcertFromDetail()">🗑 この演奏会を削除</button>
+    </div>
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <div style="font-size:0.72rem;color:var(--text3);margin-bottom:0.5rem;font-weight:600">共有リンク</div>
+      <div style="font-size:0.78rem;color:var(--text3)">申し込みリンク:
+        <button onclick="navigator.clipboard.writeText('${location.origin+location.pathname}?apply=${c.id}').then(()=>{const b=event.target;const o=b.textContent;b.textContent='✓';setTimeout(()=>b.textContent=o,2000)})" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.75rem;padding:0 6px">🔗 コピー</button>
+      </div>
+      <div style="font-size:0.78rem;color:var(--text3);margin-top:0.3rem">出演者ログインURL:
+        <button onclick="navigator.clipboard.writeText('${location.origin+location.pathname}?cid=${c.id}').then(()=>{const b=event.target;const o=b.textContent;b.textContent='✓';setTimeout(()=>b.textContent=o,2000)})" style="background:none;border:none;color:var(--gold2);cursor:pointer;font-size:0.75rem;padding:0 6px">🔗 コピー</button>
+      </div>
+      <div style="font-size:0.78rem;color:var(--text3);margin-top:0.3rem">来場者登録URL:
+        <button onclick="navigator.clipboard.writeText('${location.origin+location.pathname}?audience=${c.id}').then(()=>{const b=event.target;const o=b.textContent;b.textContent='✓';setTimeout(()=>b.textContent=o,2000)})" style="background:none;border:none;color:#74b9ff;cursor:pointer;font-size:0.75rem;padding:0 6px">🔗 コピー</button>
+      </div>
+    </div>`;
+
+  // 一時保存用 tiers
+  window._ciTiers = JSON.parse(JSON.stringify(tiers));
+  window._ciFlyer = c.flyerData||null;
+}
+
+function updateConcertInfoTier(i,field,val){
+  window._ciTiers[i][field] = field==='price'?parseInt(val)||0:val;
+}
+function addConcertInfoTier(){
+  window._ciTiers.push({name:'',price:0});
+  renderConcertInfo(currentConcertId);
+}
+function removeConcertInfoTier(i){
+  window._ciTiers.splice(i,1);
+  renderConcertInfo(currentConcertId);
+}
+function setConcertInfoFlyer(event){
+  const file=event.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=e=>{ window._ciFlyer=e.target.result; };
+  r.readAsDataURL(file);
+}
+function clearConcertInfoFlyer(){
+  window._ciFlyer=null;
+  renderConcertInfo(currentConcertId);
+}
+
+function saveConcertInfo(){
+  const c = concerts.find(x=>x.id===currentConcertId);
+  if(!c) return;
+  c.name           = document.getElementById('ci-name').value.trim();
+  c.date           = document.getElementById('ci-date').value;
+  c.venueOpen      = document.getElementById('ci-venue-open').value;
+  c.time           = document.getElementById('ci-time').value;
+  c.venue          = document.getElementById('ci-venue').value.trim();
+  c.venueUrl       = document.getElementById('ci-venue-url').value.trim();
+  c.audienceCapacity = parseInt(document.getElementById('ci-audience-capacity').value)||0;
+  c.rehearsalDuration= parseInt(document.getElementById('ci-rehearsal-duration').value)||10;
+  c.rehearsalGap   = parseInt(document.getElementById('ci-rehearsal-gap').value)||3;
+  c.rehearsalTime  = document.getElementById('ci-rehearsal-time').value;
+  c.description    = document.getElementById('ci-description').value.trim();
+  c.note           = document.getElementById('ci-note').value.trim();
+  c.lineUrl        = document.getElementById('ci-line-url').value.trim();
+  c.code           = document.getElementById('ci-code').value.trim();
+  c.accFee         = parseInt(document.getElementById('ci-acc-fee').value)||0;
+  c.entryFeeTiers  = window._ciTiers||[];
+  c.flyerData      = window._ciFlyer||null;
+  persist();
+  renderConcertDetailHeader(currentConcertId);
+  renderConcertInfo(currentConcertId);
+  alert('保存しました');
+}
+
+function deleteConcertFromDetail(){
+  const c = concerts.find(x=>x.id===currentConcertId);
+  if(!confirm(`「${c?.name}」を削除しますか？\n関連する参加者データも削除されます。`)) return;
+  concerts = concerts.filter(x=>x.id!==currentConcertId);
+  entries  = entries.filter(e=>e.concertId!==currentConcertId);
+  persist();
+  backToConcerts();
+}
+
+function renderConcertParticipants(cid){
+  const el = document.getElementById('cdt-participants');
+  // 既存のrenderParticipantsを流用（concert-selを設定）
+  // participant-listをcdt-participantsに差し替えてレンダリング
+  populateSel2('p-concert-sel');
+  document.getElementById('p-concert-sel').value = cid;
+  // cdt-participants内に参加者UIを生成
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">
+      <div style="display:flex;gap:0.4rem">
+        <button id="ptab-entries" class="btn btn-gold btn-sm" onclick="switchParticipantTab('entries')">出演者</button>
+        <button id="ptab-acc" class="btn btn-outline btn-sm" onclick="switchParticipantTab('acc')">伴奏者</button>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0">📂 CSVインポート<input type="file" accept=".csv,text/csv" onchange="importCSV(event)" style="display:none"></label>
+        <button class="btn btn-outline btn-sm" onclick="openMailModal()">✉ メール連絡</button>
+        <button class="btn btn-gold btn-sm" id="btn-add-participant" onclick="openEntryModal()">＋ 参加者を追加</button>
+      </div>
+    </div>
+    <div id="participant-list"></div>
+    <div id="accompanist-list" style="display:none"></div>`;
+  _participantTab = 'entries';
+  renderParticipants();
+}
+
+function renderConcertApplications(cid){
+  const el = document.getElementById('cdt-applications');
+  el.innerHTML = `<div id="application-list-inner"></div>`;
+  populateSel2('app-concert-sel');
+  document.getElementById('app-concert-sel').value = cid;
+  // application-listをcdt内に配置
+  el.innerHTML = `<div id="application-list"></div>`;
+  renderApplications();
+}
+
+function renderConcertAudience(cid){
+  const el = document.getElementById('cdt-audience');
+  el.innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+      <button class="btn btn-outline btn-sm" onclick="exportAudienceCSV()">📥 CSVエクスポート</button>
+    </div>
+    <div id="audience-list"></div>`;
+  populateSel2('aud-concert-sel');
+  document.getElementById('aud-concert-sel').value = cid;
+  renderAudienceList();
+}
+
+function renderConcertProgram(cid){
+  const el = document.getElementById('cdt-program');
+  el.innerHTML = `<div id="program-content"></div>`;
+  populateSel2('prog-concert-sel');
+  document.getElementById('prog-concert-sel').value = cid;
+  renderProgram();
+}
+
+function renderConcertSchedule(cid){
+  const el = document.getElementById('cdt-schedule');
+  el.innerHTML = `
+    <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-bottom:1rem;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="exportScheduleCSV()">📥 CSV出力</button>
+      <button class="btn btn-outline btn-sm" onclick="exportSchedulePDF()">📄 PDF出力</button>
+      <button class="btn btn-outline btn-sm" onclick="printSchedule()">🖨 印刷</button>
+    </div>
+    <div class="fin-tabs" style="margin-bottom:1rem">
+      <button class="fin-tab active" id="sched-tab-perf" onclick="switchSchedTab('perf',this)">出演者スケジュール</button>
+      <button class="fin-tab" id="sched-tab-staff" onclick="switchSchedTab('staff',this)">スタッフスケジュール</button>
+    </div>
+    <div id="schedule-content"></div>
+    <div id="schedule-staff-content" style="display:none"></div>`;
+  populateSel2('sched-concert-sel');
+  document.getElementById('sched-concert-sel').value = cid;
+  renderSchedule(cid);
+}
+
+function renderConcertFinance(cid){
+  const el = document.getElementById('cdt-finance');
+  el.innerHTML = `
+    <div class="fin-tabs" style="margin-bottom:1rem" id="fin-tab-bar">
+      <button class="fin-tab active" id="fin-tab-summary" onclick="switchFinTab('summary',this)">サマリ</button>
+      <button class="fin-tab" id="fin-tab-fees" onclick="switchFinTab('fees',this)">参加費管理</button>
+      <button class="fin-tab" id="fin-tab-txn" onclick="switchFinTab('txn',this)">収支明細</button>
+      <button class="fin-tab" id="fin-tab-breakdown" onclick="switchFinTab('breakdown',this)">内訳</button>
+    </div>
+    <div class="fin-summary-grid" id="fin-kpi"></div>
+    <div id="fin-summary" style="display:none"></div>
+    <div id="fin-fees" style="display:none"></div>
+    <div id="fin-txn" style="display:none"></div>
+    <div id="fin-breakdown" style="display:none"></div>`;
+  populateSel2('fin-concert-sel');
+  document.getElementById('fin-concert-sel').value = cid;
+  currentFinTab = 'summary';
+  renderFinance();
+}
+
 function renderConcerts(){
   const el=document.getElementById('concert-list');
   if(!concerts.length){
@@ -2559,12 +2874,7 @@ function renderConcerts(){
         </div>
       </div>
       <div class="card-actions">
-        <button class="btn btn-outline btn-sm" onclick="openConcertModal('${c.id}')">編集</button>
-        <button class="btn btn-outline btn-sm" onclick="goParticipants('${c.id}')">参加者管理</button>
-        <button class="btn btn-outline btn-sm" onclick="goApplications('${c.id}')">申し込み${newApps?` (${newApps})`:''}管理</button>
-        <button class="btn btn-outline btn-sm" onclick="goProgram('${c.id}')">プログラム</button>
-        <button class="btn btn-outline btn-sm" onclick="goSchedule('${c.id}')">スケジュール</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteConcert('${c.id}')">削除</button>
+        <button class="btn btn-gold" onclick="openConcertDetail('${c.id}')">開く →</button>
       </div>
     </div>`;
   }).join('');
@@ -5024,9 +5334,11 @@ function deleteTxn(id){
 function switchFinTab(tab, btn){
   currentFinTab = tab;
   document.querySelectorAll('.fin-tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.fin-section').forEach(s=>s.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('fin-'+tab).classList.add('active');
+  ['summary','fees','txn','breakdown'].forEach(t=>{
+    const el=document.getElementById('fin-'+t);
+    if(el) el.style.display = t===tab?'':'none';
+  });
   renderFinanceTab();
 }
 
@@ -5327,13 +5639,13 @@ function renderFinance(){
   const cid = selEl?.value;
   const txns = transactions.filter(t=>t.concertId===cid);
 
-  // participation fee stats
+  // participation fee stats（出演料＋伴奏代）
   const feeEntries = entries.filter(e=>e.concertId===cid);
-  const feeTotal   = feeEntries.filter(e=>e.feeAmount>0).reduce((s,e)=>s+(e.feeAmount||0),0);
-  const feeCollected = feeEntries.filter(e=>e.feeStatus==='paid').reduce((s,e)=>s+(e.feeAmount||0),0);
+  const feeTotal   = feeEntries.reduce((s,e)=>s+(e.feeAmount||0)+(e.accFeeAmount||0),0);
+  const feeCollected = feeEntries.filter(e=>e.feeStatus==='paid').reduce((s,e)=>s+(e.feeAmount||0)+(e.accFeeAmount||0),0);
   const feePending = feeTotal - feeCollected;
-  const paidCount  = feeEntries.filter(e=>e.feeStatus==='paid'&&e.feeAmount>0).length;
-  const totalCount = feeEntries.filter(e=>e.feeAmount>0).length;
+  const paidCount  = feeEntries.filter(e=>e.feeStatus==='paid'&&((e.feeAmount||0)+(e.accFeeAmount||0))>0).length;
+  const totalCount = feeEntries.filter(e=>((e.feeAmount||0)+(e.accFeeAmount||0))>0).length;
 
   const {income,expense,balance} = calcTotals(txns);
   const balCls = balance>=0?'balance-pos':'balance-neg';
@@ -5365,19 +5677,30 @@ function renderFinance(){
 function renderFinanceTab(){
   const cid = document.getElementById('fin-concert-sel')?.value;
   const txns = transactions.filter(t=>t.concertId===cid);
+  if(currentFinTab==='summary')   renderFinanceSummary(cid, txns);
   if(currentFinTab==='txn')       renderTxnList(txns);
   if(currentFinTab==='fees')      renderFees(cid);
   if(currentFinTab==='breakdown') renderBreakdown(txns);
 }
 
+function renderFinanceSummary(cid, txns){
+  const el = document.getElementById('fin-summary');
+  if(!el) return;
+  // サマリタブは KPI のみ（fin-kpiに表示済み）
+  el.innerHTML = '';
+}
+
 function renderTxnList(txns){
   const el = document.getElementById('fin-txn');
   const sorted = [...txns].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const btnHtml = `<div style="display:flex;justify-content:flex-end;margin-bottom:0.8rem">
+    <button class="btn btn-gold" onclick="openTxnModal()">＋ 収支を記録</button>
+  </div>`;
   if(!sorted.length){
-    el.innerHTML='<div class="empty"><div class="empty-icon">💴</div><p>収支データがまだありません。<br>「収支を記録」から追加してください。</p></div>';
+    el.innerHTML= btnHtml + '<div class="empty"><div class="empty-icon">💴</div><p>収支データがまだありません。<br>「収支を記録」から追加してください。</p></div>';
     return;
   }
-  el.innerHTML = `
+  el.innerHTML = btnHtml + `
     <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
       <div class="txn-row header">
         <span>日付</span>
@@ -5440,11 +5763,11 @@ function buildFeeConcertView(concertList){
 
     // 集計
     const perfFeeTotal = list.reduce((s,e)=>s+(e.feeAmount||0),0);
-    const accFeeTotal  = list.reduce((s,e)=>s+(e.accFee||0),0);
+    const accFeeTotal  = list.reduce((s,e)=>s+(e.accFeeAmount||0),0);
     const grandTotal   = perfFeeTotal + accFeeTotal;
-    const collected    = list.filter(e=>e.feeStatus==='paid').reduce((s,e)=>s+(e.feeAmount||0)+(e.accFee||0),0);
+    const collected    = list.filter(e=>e.feeStatus==='paid').reduce((s,e)=>s+(e.feeAmount||0)+(e.accFeeAmount||0),0);
     const pending      = grandTotal - collected;
-    const withFee      = list.filter(e=>(e.feeAmount||0)+(e.accFee||0)>0);
+    const withFee      = list.filter(e=>(e.feeAmount||0)+(e.accFeeAmount||0)>0);
     const paidCnt      = withFee.filter(e=>e.feeStatus==='paid').length;
     const pct          = withFee.length ? Math.round(paidCnt/withFee.length*100) : 0;
 
@@ -5490,7 +5813,7 @@ function buildFeeConcertView(concertList){
       ${list.map(e=>{
         const name = e.type==='group'?esc(e.groupName):esc(e.name);
         const perf = e.feeAmount||0;
-        const acc  = e.accFee||0;
+        const acc  = e.accFeeAmount||0;
         const total= perf+acc;
         const hasFee = total>0;
         return `<div class="fee-row" style="grid-template-columns:2rem 1fr 80px 80px 90px 100px 1fr 90px">
@@ -5521,11 +5844,11 @@ function buildFeeAccView(concertList){
     // 伴奏者ごとに集計
     const accMap = {};
     list.forEach(e=>{
-      if(!e.accName||!e.accFee) return;
+      if(!e.accName||!e.accFeeAmount) return;
       const key = e.accName.trim();
       if(!accMap[key]) accMap[key]={ name:key, entries:[], total:0 };
       accMap[key].entries.push(e);
-      accMap[key].total += (e.accFee||0);
+      accMap[key].total += (e.accFeeAmount||0);
     });
 
     const accList = Object.values(accMap).sort((a,b)=>a.name.localeCompare(b.name,'ja'));
@@ -5565,7 +5888,7 @@ function buildFeeAccView(concertList){
               <span style="color:var(--text3)">${e.order||'—'}</span>
               <span>${perfName}</span>
               <span style="color:var(--text3);font-size:0.75rem">${e.type==='group'?'グループ':'ソロ'}${e.instrument?' / '+esc(instrAbbr(e.instrument)):''}</span>
-              <span style="text-align:right;color:var(--text2)">${fmt(e.accFee||0)}</span>
+              <span style="text-align:right;color:var(--text2)">${fmt(e.accFeeAmount||0)}</span>
             </div>`;
           }).join('')}
         </div>
@@ -5699,7 +6022,7 @@ function toggleFeeStatusFin(id, concertId){
   if(!wasPaid){
     // 回収済みにした → 収入に自動計上
     const name = e.type==='group' ? e.groupName : e.name;
-    const total = (e.feeAmount||0) + (e.accFee||0);
+    const total = (e.feeAmount||0) + (e.accFeeAmount||0);
     if(total>0){
       const txn = {
         id: uid(),
@@ -5708,7 +6031,7 @@ function toggleFeeStatusFin(id, concertId){
         category: '参加費',
         amount: total,
         date: today(),
-        note: `${name}（出演料${fmt(e.feeAmount||0)}＋伴奏代${fmt(e.accFee||0)}）`,
+        note: `${name}（出演料${fmt(e.feeAmount||0)}＋伴奏代${fmt(e.accFeeAmount||0)}）`,
         autoFromFee: true,
         entryId: id
       };
