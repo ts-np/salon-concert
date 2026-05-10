@@ -5437,29 +5437,32 @@ function buildFeeConcertView(concertList){
   concertList.forEach(concert => {
     const list = entries.filter(e=>e.concertId===concert.id&&e.status!=='absent')
       .sort((a,b)=>(a.order||999)-(b.order||999));
-    const withFee   = list.filter(e=>e.feeAmount>0);
-    const total     = withFee.reduce((s,e)=>s+(e.feeAmount||0),0);
-    const collected = withFee.filter(e=>e.feeStatus==='paid').reduce((s,e)=>s+(e.feeAmount||0),0);
-    const pending   = total - collected;
-    const paidCnt   = withFee.filter(e=>e.feeStatus==='paid').length;
-    const pct       = withFee.length ? Math.round(paidCnt/withFee.length*100) : 0;
-    const accTotal  = list.reduce((s,e)=>s+(e.accFee||0),0);
-    const grandTotal = total + accTotal;
+
+    // 集計
+    const perfFeeTotal = list.reduce((s,e)=>s+(e.feeAmount||0),0);
+    const accFeeTotal  = list.reduce((s,e)=>s+(e.accFee||0),0);
+    const grandTotal   = perfFeeTotal + accFeeTotal;
+    const collected    = list.filter(e=>e.feeStatus==='paid').reduce((s,e)=>s+(e.feeAmount||0)+(e.accFee||0),0);
+    const pending      = grandTotal - collected;
+    const withFee      = list.filter(e=>(e.feeAmount||0)+(e.accFee||0)>0);
+    const paidCnt      = withFee.filter(e=>e.feeStatus==='paid').length;
+    const pct          = withFee.length ? Math.round(paidCnt/withFee.length*100) : 0;
 
     html += `
       ${concertList.length>1?`<h3 style="font-family:'EB Garamond',serif;font-size:1rem;color:var(--gold2);margin-bottom:0.8rem;margin-top:1.5rem">${esc(concert.name)}</h3>`:''}
       <div style="display:flex;gap:0.8rem;margin-bottom:1rem;flex-wrap:wrap">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
-          <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">参加費合計</div>
-          <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:var(--text)">${fmt(total)}</div>
+          <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">出演料合計</div>
+          <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:var(--text)">${fmt(perfFeeTotal)}</div>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
           <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">伴奏代合計</div>
-          <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:var(--text2)">${fmt(accTotal)}</div>
+          <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:var(--text2)">${fmt(accFeeTotal)}</div>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
-          <div style="font-size:0.68rem;color:var(--gold);margin-bottom:0.3rem;font-weight:700">総合計</div>
+          <div style="font-size:0.68rem;color:var(--gold);margin-bottom:0.3rem;font-weight:700">参加費合計</div>
           <div style="font-family:'EB Garamond',serif;font-size:1.3rem;color:var(--gold2)">${fmt(grandTotal)}</div>
+          <div style="font-size:0.65rem;color:var(--text3);margin-top:0.1rem">出演料＋伴奏代</div>
         </div>
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.8rem 1.2rem;min-width:120px">
           <div style="font-size:0.68rem;color:var(--text3);margin-bottom:0.3rem">回収済み</div>
@@ -5476,19 +5479,29 @@ function buildFeeConcertView(concertList){
     if(!list.length){ html += '<div class="empty" style="padding:1rem"><p>参加者がいません</p></div>'; return; }
 
     html += `<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1.5rem">
-      <div class="fee-row fee-header" style="grid-template-columns:2rem 1fr 80px 100px 1fr 90px">
-        <span>#</span><span>氏名</span><span style="text-align:right">参加費</span><span style="text-align:center">回収状況</span><span>備考</span><span></span>
+      <div class="fee-row fee-header" style="grid-template-columns:2rem 1fr 80px 80px 90px 100px 1fr 90px">
+        <span>#</span><span>氏名</span>
+        <span style="text-align:right">出演料</span>
+        <span style="text-align:right">伴奏代</span>
+        <span style="text-align:right;color:var(--gold)">参加費</span>
+        <span style="text-align:center">回収状況</span>
+        <span>備考</span><span></span>
       </div>
       ${list.map(e=>{
         const name = e.type==='group'?esc(e.groupName):esc(e.name);
-        const hasFee = e.feeAmount>0;
-        return `<div class="fee-row" style="grid-template-columns:2rem 1fr 80px 100px 1fr 90px">
+        const perf = e.feeAmount||0;
+        const acc  = e.accFee||0;
+        const total= perf+acc;
+        const hasFee = total>0;
+        return `<div class="fee-row" style="grid-template-columns:2rem 1fr 80px 80px 90px 100px 1fr 90px">
           <span style="color:var(--text3)">${e.order||'—'}</span>
-          <span><strong>${name}</strong>${e.kana&&e.type==='solo'?`<span style="font-size:0.7rem;color:var(--text3)"> ${esc(e.kana)}</span>`:''}</span>
-          <span style="text-align:right;font-size:0.82rem;color:var(--text2)">${hasFee?fmt(e.feeAmount):'<span style="color:var(--text3)">—</span>'}</span>
+          <span><strong>${name}</strong></span>
+          <span style="text-align:right;font-size:0.82rem;color:var(--text2)">${perf>0?fmt(perf):'<span style="color:var(--text3)">—</span>'}</span>
+          <span style="text-align:right;font-size:0.82rem;color:var(--text2)">${acc>0?fmt(acc):'<span style="color:var(--text3)">—</span>'}</span>
+          <span style="text-align:right;font-size:0.88rem;font-weight:700;color:var(--gold2)">${hasFee?fmt(total):'<span style="color:var(--text3)">—</span>'}</span>
           <span style="text-align:center">
             ${hasFee
-              ? `<button class="fee-pill ${e.feeStatus==='paid'?'paid':'unpaid'}" onclick="toggleFeeStatusFin('${e.id}')">${e.feeStatus==='paid'?'✓ 回収済み':'● 未回収'}</button>`
+              ? `<button class="fee-pill ${e.feeStatus==='paid'?'paid':'unpaid'}" onclick="toggleFeeStatusFin('${e.id}','${concert.id}')">${e.feeStatus==='paid'?'✓ 回収済み':'● 未回収'}</button>`
               : '<span style="font-size:0.7rem;color:var(--text3)">未設定</span>'}
           </span>
           <span style="font-size:0.75rem;color:var(--text3)">${esc(e.feeNote||'')}</span>
@@ -5540,7 +5553,10 @@ function buildFeeAccView(concertList){
       html += `<div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem">
         <div style="background:var(--surface2);padding:0.6rem 1rem;display:flex;align-items:center;justify-content:space-between">
           <span style="font-weight:700;font-size:0.9rem;color:var(--text)">${esc(acc.name)}</span>
-          <span style="font-family:'EB Garamond',serif;font-size:1.1rem;color:var(--gold2)">${fmt(acc.total)}</span>
+          <div style="display:flex;align-items:center;gap:1rem">
+            <span style="font-size:0.72rem;color:var(--text3)">${acc.entries.length}件</span>
+            <span style="font-family:'EB Garamond',serif;font-size:1.2rem;color:var(--gold2)">${fmt(acc.total)}</span>
+          </div>
         </div>
         <div style="background:var(--surface)">
           ${acc.entries.map(e=>{
@@ -5674,10 +5690,38 @@ function buildFeePersonView(concertList){
   html += '</div>';
   return html;
 }
-function toggleFeeStatusFin(id){
+function toggleFeeStatusFin(id, concertId){
   const e=entries.find(x=>x.id===id);
   if(!e) return;
-  e.feeStatus = e.feeStatus==='paid' ? 'unpaid' : 'paid';
+  const wasPaid = e.feeStatus==='paid';
+  e.feeStatus = wasPaid ? 'unpaid' : 'paid';
+
+  if(!wasPaid){
+    // 回収済みにした → 収入に自動計上
+    const name = e.type==='group' ? e.groupName : e.name;
+    const total = (e.feeAmount||0) + (e.accFee||0);
+    if(total>0){
+      const txn = {
+        id: uid(),
+        concertId: concertId || e.concertId,
+        type: 'income',
+        category: '参加費',
+        amount: total,
+        date: today(),
+        note: `${name}（出演料${fmt(e.feeAmount||0)}＋伴奏代${fmt(e.accFee||0)}）`,
+        autoFromFee: true,
+        entryId: id
+      };
+      if(!transactions) transactions=[];
+      // 同エントリの自動計上が既にあれば上書き
+      const existing = transactions.findIndex(t=>t.autoFromFee&&t.entryId===id);
+      if(existing>=0) transactions[existing]=txn;
+      else transactions.push(txn);
+    }
+  } else {
+    // 未回収に戻した → 自動計上を削除
+    transactions = (transactions||[]).filter(t=>!(t.autoFromFee&&t.entryId===id));
+  }
   persist(); renderFinance();
 }
 
