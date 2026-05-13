@@ -1029,6 +1029,10 @@ select.status-sel{
           <button class="btn btn-gold" onclick="openConcertModal()">＋ 演奏会を作成</button>
         </div>
       </div>
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.2rem">
+        <button id="cl-tab-upcoming" class="cdt active" onclick="switchConcertListTab('upcoming',this)">開催予定</button>
+        <button id="cl-tab-past" class="cdt" onclick="switchConcertListTab('past',this)">終了分</button>
+      </div>
       <div id="concert-list"></div>
     </div>
 
@@ -2812,18 +2816,37 @@ function renderConcertFinance(cid){
   renderFinance();
 }
 
+let concertListTab = 'upcoming'; // 'upcoming' | 'past'
+
+function switchConcertListTab(tab, btn){
+  concertListTab = tab;
+  document.querySelectorAll('#cl-tab-upcoming,#cl-tab-past').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderConcerts();
+}
+
 function renderConcerts(){
   const el=document.getElementById('concert-list');
   if(!concerts.length){
     el.innerHTML='<div class="empty"><div class="empty-icon">♪</div><p>演奏会がまだありません。<br>「演奏会を作成」から追加してください。</p></div>';
     return;
   }
+  const t = today();
   const sorted=[...concerts].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  el.innerHTML=sorted.map(c=>{
+  const filtered = concertListTab==='past'
+    ? sorted.filter(c=>c.date && c.date < t).reverse() // 終了分は新しい順
+    : sorted.filter(c=>!c.date || c.date >= t);        // 開催予定は古い順
+
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty"><p>${concertListTab==='past'?'終了した演奏会はありません':'開催予定の演奏会はありません'}</p></div>`;
+    return;
+  }
+
+  el.innerHTML=filtered.map(c=>{
     const cnt=entries.filter(e=>e.concertId===c.id).length;
     const confirmed=entries.filter(e=>e.concertId===c.id&&e.status==='confirmed').length;
     const newApps=applications.filter(a=>a.concertId===c.id&&a.status==='new').length;
-    const past=c.date&&c.date<today();
+    const past=c.date&&c.date<t;
     const badge=c.date?`<span class="badge ${past?'badge-past':'badge-upcoming'}">${past?'終了':'開催予定'}</span>`:'';
     const applyUrl = location.origin+location.pathname+'?apply='+c.id;
 
@@ -2853,7 +2876,7 @@ function renderConcerts(){
           </div>
           ${c.code?`<div style="font-size:0.7rem;color:var(--text3)">招待コード: <code style="background:var(--surface2);padding:0 4px;border-radius:3px;color:var(--gold)">${esc(c.code)}</code></div>`:''}
           ${c.lineUrl?`<div style="margin-top:0.3rem"><a href="${esc(c.lineUrl)}" target="_blank" style="font-size:0.72rem;color:#06c755;text-decoration:none">● LINE オープンチャット</a></div>`:''}
-          ${(concert=>{ const tiers=(concert.entryFeeTiers||[]).map(t=>`${t.name} ${fmt(t.price)}`).join('・'); const acc=concert.accFee?`伴奏費 ${fmt(concert.accFee)}`:''; return (tiers||acc)?`<div style="margin-top:0.3rem;font-size:0.72rem;color:var(--text3)">${[tiers,acc].filter(Boolean).join('　')}</div>`:''; })(c)}
+          ${(concert=>{ const tiers=(concert.entryFeeTiers||[]).map(t=>t.name+' '+fmt(t.price)).join('・'); const acc=concert.accFee?`伴奏費 ${fmt(concert.accFee)}`:''; return (tiers||acc)?`<div style="margin-top:0.3rem;font-size:0.72rem;color:var(--text3)">${[tiers,acc].filter(Boolean).join('　')}</div>`:''; })(c)}
           <div style="margin-top:0.4rem;font-size:0.7rem;color:var(--text3)">申し込みリンク:
             <button onclick="navigator.clipboard.writeText('${applyUrl}').then(()=>alert('コピーしました'))" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.7rem;padding:0 4px">🔗 コピー</button>
           </div>
