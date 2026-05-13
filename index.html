@@ -979,8 +979,9 @@ select.status-sel{
     </div>
     <div class="apply-card" id="aud-success-wrap" style="display:none;text-align:center">
       <div style="font-size:2rem;margin-bottom:0.8rem">🎵</div>
-      <div style="font-size:1.1rem;font-weight:600;color:var(--gold2);margin-bottom:0.5rem">ご登録ありがとうございます</div>
-      <p style="font-size:0.85rem;color:var(--text2);line-height:1.8">来場者登録を受け付けました。<br>主催者より確認のご連絡をいたします。</p>
+      <div style="font-size:1.1rem;font-weight:600;color:var(--gold2);margin-bottom:0.8rem">ご登録ありがとうございます</div>
+      <div id="aud-success-detail" style="text-align:left;font-size:0.85rem;color:var(--text2);line-height:2;background:var(--surface2);border-radius:8px;padding:1rem 1.2rem;margin-bottom:0.8rem"></div>
+      <p style="font-size:0.82rem;color:var(--text3);line-height:1.8">確認メールをお送りしました。<br>当日のご来場をお待ちしております。</p>
     </div>
     <div class="apply-card" id="aud-full-wrap" style="display:none;text-align:center">
       <div style="font-size:2rem;margin-bottom:0.8rem">🙏</div>
@@ -3600,7 +3601,7 @@ function renderParticipants(){
               ${e.rehearsalEnabled!==false
                 ?'background:rgba(86,174,224,0.15);color:#7fb3d3;border:1px solid rgba(86,174,224,0.4)'
                 :'background:rgba(100,100,100,0.1);color:var(--text3);border:1px solid var(--border)'}">
-              ${e.rehearsalEnabled!==false?'あり':'なし'}
+              ${e.rehearsalEnabled!==false?'有':'無'}
             </span>
           </button>
         </td>
@@ -6676,14 +6677,13 @@ function updateAudienceCapacityBar(concert){
   const cap = concert.audienceCapacity || 0;
   const bar = document.getElementById('aud-capacity-bar');
   if(!cap){ bar.style.display='none'; return; }
-  const approved = audienceApplications
-    .filter(a=>a.concertId===concert.id && a.status==='accepted')
+  const registered = audienceApplications
+    .filter(a=>a.concertId===concert.id && a.status!=='rejected')
     .reduce((s,a)=>s+(parseInt(a.tickets)||1), 0);
-  const remaining = cap - approved;
+  const remaining = cap - registered;
   bar.style.display = 'block';
   document.getElementById('aud-remaining').textContent = Math.max(0, remaining);
-  document.getElementById('aud-capacity-sub').textContent = `定員 ${cap} 席 ／ 申込済 ${approved} 席`;
-  // 残席わずかなら色を変える
+  document.getElementById('aud-capacity-sub').textContent = `定員 ${cap} 席 ／ 登録済 ${registered} 席`;
   document.getElementById('aud-remaining').style.color = remaining <= 5 ? '#eb5757' : 'var(--gold2)';
   if(remaining <= 0){
     document.getElementById('aud-form-wrap').style.display='none';
@@ -6698,35 +6698,61 @@ async function submitAudienceApplication(){
   if(!name){ alert('お名前を入力してください'); return; }
   if(!email){ alert('メールアドレスを入力してください'); return; }
 
-  // 残席チェック
   const concert = concerts.find(c=>c.id===audienceConcertId);
   const cap = concert?.audienceCapacity || 0;
+
+  // 残席チェック（全登録ベース）
   if(cap){
-    const approved = audienceApplications
-      .filter(a=>a.concertId===audienceConcertId && a.status==='accepted')
+    const registered = audienceApplications
+      .filter(a=>a.concertId===audienceConcertId && a.status!=='rejected')
       .reduce((s,a)=>s+(parseInt(a.tickets)||1), 0);
-    if(approved + tickets > cap){
-      alert(`残席が不足しています（残席：${cap-approved}席）`); return;
+    if(registered + tickets > cap){
+      // 満席表示に切替
+      document.getElementById('aud-form-wrap').style.display='none';
+      document.getElementById('aud-full-wrap').style.display='block';
+      return;
     }
   }
 
+  // 即時登録（承認不要）
   const app = {
     id: uid(),
     concertId: audienceConcertId,
     submittedAt: new Date().toISOString(),
-    status: 'new',
+    status: 'accepted',  // 即時承認
     name, email, tickets
   };
   audienceApplications.push(app);
   await persist();
 
-  // EmailJS で登録確認メールを送信
+  // 登録内容の表示
+  const vOpen = concert?.venueOpen ? `　開場 ${concert.venueOpen}` : '';
+  const pTime = concert?.time ? `　開演 ${concert.time}` : '';
+  const dateStr = concert?.date ? `${concert.date}${vOpen}${pTime}` : '';
+  const venueStr = concert?.venue || '';
+  const detailEl = document.getElementById('aud-success-detail');
+  if(detailEl){
+    detailEl.innerHTML = `
+      <div style="margin-bottom:0.3rem"><strong style="color:var(--text3);font-size:0.75rem">演奏会</strong></div>
+      <div style="font-weight:700;color:var(--gold2);margin-bottom:0.6rem">${esc(concert?.name||'')}</div>
+      ${dateStr?`<div>📅 ${dateStr}</div>`:''}
+      ${venueStr?`<div>📍 ${esc(venueStr)}</div>`:''}
+      <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--border)">
+        <div>お名前：${esc(name)}</div>
+        <div>来場人数：${tickets} 名</div>
+      </div>`;
+  }
+
+  // EmailJS で確認メール送信
   emailjs.send('service_p7pw2an', 'template_tcktregister', {
-    to_email:     email,
-    name:         name,
-    concert_name: (concerts.find(c=>c.id===audienceConcertId)||{}).name || '',
-    tickets:      tickets,
-    submitted_at: new Date().toLocaleString('ja-JP'),
+    to_email:      email,
+    name:          name,
+    concert_name:  concert?.name || '',
+    concert_date:  dateStr,
+    concert_venue: venueStr,
+    concert_venue_url: concert?.venueUrl || '',
+    tickets:       tickets,
+    submitted_at:  new Date().toLocaleString('ja-JP'),
   }).catch(err=>console.warn('メール送信失敗:', err));
 
   document.getElementById('aud-form-wrap').style.display='none';
