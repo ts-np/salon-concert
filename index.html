@@ -2771,9 +2771,12 @@ function renderConcertAudience(cid){
 
 function renderConcertProgram(cid){
   const el = document.getElementById('cdt-program');
-  el.innerHTML = `<div id="program-content"></div>`;
-  populateSel2('prog-concert-sel');
-  document.getElementById('prog-concert-sel').value = cid;
+  el.innerHTML = `<div id="program-output" style="margin-top:0"></div>`;
+  const sel = document.getElementById('prog-concert-sel');
+  if(sel){
+    populateSel2('prog-concert-sel');
+    sel.value = cid;
+  }
   renderProgram();
 }
 
@@ -4334,9 +4337,29 @@ function exportScheduleCSV(){
     rows.push(['リハーサル', start, end, dur+'分', name, e.accName||'', noteStr, e.memoReh||'']);
   });
 
-  // 本番行
+  // 本番行（休憩・カスタムイベント・奏者間ギャップを考慮）
   let pOffset = 0;
+  const breaks = schedBreaks[cid] || [];
+  const pGap = concert.performanceGap || 0;
+
   perfList.forEach((e,i)=>{
+    // 直前に休憩があれば追加
+    breaks.filter(b=>b.afterEntryIndex===i-1).forEach(b=>{
+      const bStart = pTime ? addMinutes(pTime, pOffset) : '';
+      const bDur   = b.duration||0;
+      const bEnd   = (pTime&&bDur) ? addMinutes(pTime, pOffset+bDur) : '';
+      pOffset += bDur;
+      rows.push(['休憩', bStart, bEnd, bDur?bDur+'分':'', b.note||'〈休憩〉', '', '', '']);
+    });
+
+    // 奏者間ギャップ（2番目以降）
+    if(i>0 && pGap>0){
+      const gStart = pTime ? addMinutes(pTime, pOffset) : '';
+      const gEnd   = pTime ? addMinutes(pTime, pOffset+pGap) : '';
+      pOffset += pGap;
+      rows.push(['奏者間', gStart, gEnd, pGap+'分', '', '', '', '']);
+    }
+
     const dur = e.duration||0;
     const start = pTime ? addMinutes(pTime, pOffset) : '';
     const end   = (pTime&&dur) ? addMinutes(pTime, pOffset+dur) : '';
