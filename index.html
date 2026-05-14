@@ -2323,11 +2323,11 @@ function startApp(){
     showPage('concerts');
     renderConcerts();
   } else if(currentUser.role === 'accompanist'){
-    showPage('acc-view');
-    renderAccompanistView();
+    showPage('my-concert-info');
+    renderMyConcertInfo();
   } else if(currentUser.role === 'both'){
-    showPage('acc-view');
-    renderAccompanistView();
+    showPage('my-concert-info');
+    renderMyConcertInfo();
   } else {
     showPage('my-concert-info');
     renderMyConcertInfo();
@@ -2343,13 +2343,14 @@ function buildNav(){
   } else if(currentUser.role === 'accompanist'){
     nav.className = 'performer-nav';
     nav.innerHTML = `
-      <button class="active" onclick="showPage('acc-view',this)">担当出演者</button>`;
+      <button class="active" onclick="showPage('my-concert-info',this)">演奏会</button>
+      <button onclick="showPage('acc-view',this)">担当出演者</button>`;
   } else if(currentUser.role === 'both'){
     nav.className = 'performer-nav';
     nav.innerHTML = `
-      <button class="active" onclick="showPage('acc-view',this)">担当出演者</button>
-      <button onclick="showPage('my-concert-info',this)">演奏会</button>
+      <button class="active" onclick="showPage('my-concert-info',this)">演奏会</button>
       <button onclick="showPage('my-concert',this)">出演者情報</button>
+      <button onclick="showPage('acc-view',this)">担当出演者</button>
       <button onclick="showPage('my-program',this)">プログラム</button>
       <button onclick="showPage('my-schedule',this)">スケジュール</button>`;
   } else {
@@ -2642,6 +2643,8 @@ function renderConcertInfo(cid){
         ${c.flyerData?`<img src="${c.flyerData}" style="max-height:160px;border-radius:6px;margin-bottom:0.4rem;display:block"><button class="btn btn-outline btn-sm" onclick="clearConcertInfoFlyer()">削除</button>`:''}
         <input type="file" accept="image/*" onchange="setConcertInfoFlyer(event)" style="margin-top:0.4rem">
       </div>
+      <div class="fg full"><label>振込先情報</label><textarea id="ci-bank-info" rows="3" placeholder="例：〇〇銀行 〇〇支店&#10;普通 1234567&#10;カナ名義">${esc(c.bankInfo||'')}</textarea></div>
+      <div class="fg full"><label>PayPayリンク（URL）</label><input id="ci-paypay-url" type="url" value="${esc(c.paypayUrl||'')}" placeholder="https://qr.paypay.ne.jp/..."></div>
     </div>
     <div style="display:flex;gap:0.8rem;margin-top:1.5rem;align-items:center">
       <button class="btn btn-gold" onclick="saveConcertInfo()">💾 保存</button>
@@ -2707,6 +2710,8 @@ function saveConcertInfo(){
   c.accFee         = parseInt(document.getElementById('ci-acc-fee').value)||0;
   c.entryFeeTiers  = window._ciTiers||[];
   c.flyerData      = window._ciFlyer||null;
+  c.bankInfo       = document.getElementById('ci-bank-info').value.trim();
+  c.paypayUrl      = document.getElementById('ci-paypay-url').value.trim();
   persist();
   renderConcertDetailHeader(currentConcertId);
   renderConcertInfo(currentConcertId);
@@ -4612,7 +4617,25 @@ function renderMyConcertInfo(){
       ${concert.note?`<div style="margin-top:0.3rem;font-size:0.82rem;color:var(--text3)">📝 ${esc(concert.note)}</div>`:''}
       ${concert.lineUrl?`<div style="margin-top:0.5rem"><a href="${esc(concert.lineUrl)}" target="_blank" style="font-size:0.82rem;color:#06c755;text-decoration:none">● LINE オープンチャット</a></div>`:''}
       ${concert.flyerData?`<div style="margin-top:1rem"><img src="${concert.flyerData}" style="max-width:100%;max-height:320px;border-radius:6px;object-fit:contain"></div>`:''}
-    </div>`;
+    </div>
+    ${(concert.bankInfo||concert.paypayUrl)?`
+    <div class="card" style="margin-top:0.5rem">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--gold);letter-spacing:0.08em;margin-bottom:0.8rem">💳 お支払い情報</div>
+      ${concert.bankInfo?`
+        <div style="margin-bottom:0.6rem">
+          <div style="font-size:0.72rem;color:var(--text3);margin-bottom:0.3rem;font-weight:600">振込先</div>
+          <div style="font-size:0.82rem;color:var(--text2);white-space:pre-line;line-height:1.8;background:var(--surface2);padding:0.6rem 0.8rem;border-radius:6px">${esc(concert.bankInfo)}</div>
+        </div>`:''}
+      ${concert.paypayUrl?`
+        <div>
+          <div style="font-size:0.72rem;color:var(--text3);margin-bottom:0.3rem;font-weight:600">PayPay</div>
+          <a href="${esc(concert.paypayUrl)}" target="_blank" rel="noopener"
+            style="display:inline-flex;align-items:center;gap:0.4rem;background:#e11d48;color:#fff;padding:0.5rem 1.2rem;border-radius:6px;font-size:0.85rem;font-weight:700;text-decoration:none">
+            💙 PayPayで支払う
+          </a>
+        </div>`:''}
+    </div>`:''}
+  `;
 }
 
 function renderMyConvert(){
@@ -4928,12 +4951,17 @@ function renderAccompanistView(){
   const concert = concerts.find(c=>c.id===cid);
   if(!concert){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
 
-  const accName = currentUser.name;
+  // 伴奏者マスタから自分の名前を取得
+  const accId = currentUser.accompanistId;
+  const accMaster = (accompanists[cid]||[]).find(a=>a.id===accId);
+  const accName = accMaster?.name || currentUser.name;
+
+  // accName で出演者エントリを検索（大文字小文字・全角半角スペースを正規化）
+  const normalize = s => s?.trim().replace(/\s+/g,' ') || '';
   const myEntries = entries.filter(e=>
     e.concertId===cid &&
-    e.accType==='self' &&
     e.accName &&
-    e.accName.trim() === accName.trim()
+    normalize(e.accName) === normalize(accName)
   );
 
   const vOpen = concert.venueOpen||'';
