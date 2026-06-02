@@ -1050,6 +1050,7 @@ select.status-sel{
         <button class="cdt" onclick="switchConcertTab('program',this)">プログラム</button>
         <button class="cdt" onclick="switchConcertTab('schedule',this)">スケジュール</button>
         <button class="cdt" onclick="switchConcertTab('finance',this)">Finance</button>
+        <button class="cdt" onclick="switchConcertTab('media',this)">📸 メディア</button>
       </div>
       <!-- タブコンテンツ -->
       <div id="cdt-info"></div>
@@ -1058,6 +1059,7 @@ select.status-sel{
       <div id="cdt-program" style="display:none"></div>
       <div id="cdt-schedule" style="display:none"></div>
       <div id="cdt-finance" style="display:none"></div>
+      <div id="cdt-media" style="display:none"></div>
     </div>
 
     <div class="page" id="page-participants">
@@ -1188,6 +1190,12 @@ select.status-sel{
     <div class="page" id="page-acc-view">
       <div class="ph"><h2>担当出演者</h2></div>
       <div id="acc-view-content"></div>
+    </div>
+
+    <!-- メディア -->
+    <div class="page" id="page-my-media">
+      <div class="ph"><h2>📸 メディア</h2></div>
+      <div id="my-media-content"></div>
     </div>
 
     <!-- 来場者管理 -->
@@ -2352,14 +2360,16 @@ function buildNav(){
       <button onclick="showPage('my-concert',this)">出演者情報</button>
       <button onclick="showPage('acc-view',this)">担当出演者</button>
       <button onclick="showPage('my-program',this)">プログラム</button>
-      <button onclick="showPage('my-schedule',this)">スケジュール</button>`;
+      <button onclick="showPage('my-schedule',this)">スケジュール</button>
+      <button onclick="showPage('my-media',this)">📸 メディア</button>`;
   } else {
     nav.className = 'performer-nav';
     nav.innerHTML = `
       <button class="active" onclick="showPage('my-concert-info',this)">演奏会</button>
       <button onclick="showPage('my-concert',this)">出演者情報</button>
       <button onclick="showPage('my-program',this)">プログラム</button>
-      <button onclick="showPage('my-schedule',this)">スケジュール</button>`;
+      <button onclick="showPage('my-schedule',this)">スケジュール</button>
+      <button onclick="showPage('my-media',this)">📸 メディア</button>`;
   }
   updateAppBadge();
 }
@@ -2390,6 +2400,7 @@ function showPage(name, btn){
   if(name==='audience')       { populateSel('aud-concert-sel'); renderAudienceList(); }
   if(name==='my-profile')     renderMyProfile();
   if(name==='acc-view')       renderAccompanistView();
+  if(name==='my-media')       renderMyMedia();
 }
 
 // ════════════════════════
@@ -2551,7 +2562,7 @@ function openConcertDetail(cid){
   // タブをinfoにリセット
   document.querySelectorAll('.cdt').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.cdt')[0].classList.add('active');
-  ['info','participants','audience','program','schedule','finance'].forEach(t=>{
+  ['info','participants','audience','program','schedule','finance','media'].forEach(t=>{
     document.getElementById('cdt-'+t).style.display = t==='info'?'':'none';
   });
   renderConcertDetailHeader(cid);
@@ -2569,7 +2580,7 @@ function switchConcertTab(tab, btn){
   currentConcertTab = tab;
   document.querySelectorAll('.cdt').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
-  ['info','participants','audience','program','schedule','finance'].forEach(t=>{
+  ['info','participants','audience','program','schedule','finance','media'].forEach(t=>{
     document.getElementById('cdt-'+t).style.display = t===tab?'':'none';
   });
   const cid = currentConcertId;
@@ -2579,6 +2590,7 @@ function switchConcertTab(tab, btn){
   else if(tab==='program')      renderConcertProgram(cid);
   else if(tab==='schedule')     renderConcertSchedule(cid);
   else if(tab==='finance')      renderConcertFinance(cid);
+  else if(tab==='media')        renderConcertMedia(cid);
 }
 
 function renderConcertDetailHeader(cid){
@@ -2629,6 +2641,12 @@ function renderConcertInfo(cid){
       <div class="fg"><label>リハ持ち時間（分）</label><input id="ci-rehearsal-duration" type="number" min="1" value="${c.rehearsalDuration||''}"></div>
       <div class="fg"><label>リハ間隔（分）</label><input id="ci-rehearsal-gap" type="number" min="0" value="${c.rehearsalGap||''}"></div>
       <div class="fg"><label>リハ開始時刻</label><input id="ci-rehearsal-time" type="time" value="${c.rehearsalTime||''}"></div>
+      <div class="fg full"><label>申し込み承認方法</label>
+        <select id="ci-apply-approval">
+          <option value="manual" ${(c.applyApproval||'manual')==='manual'?'selected':''}>手動承認（申し込みタブで確認後に登録）</option>
+          <option value="auto"   ${c.applyApproval==='auto'?'selected':''}>自動承認（申し込み送信と同時に参加者登録）</option>
+        </select>
+      </div>
       <div class="fg full"><label>演奏会の説明</label><textarea id="ci-description" rows="3">${esc(c.description||'')}</textarea></div>
       <div class="fg full"><label>備考・連絡事項</label><textarea id="ci-note" rows="2">${esc(c.note||'')}</textarea></div>
       <div class="fg"><label>LINE URL</label><input id="ci-line-url" type="url" value="${esc(c.lineUrl||'')}"></div>
@@ -2645,6 +2663,8 @@ function renderConcertInfo(cid){
       </div>
       <div class="fg full"><label>振込先情報</label><textarea id="ci-bank-info" rows="3" placeholder="例：〇〇銀行 〇〇支店&#10;普通 1234567&#10;カナ名義">${esc(c.bankInfo||'')}</textarea></div>
       <div class="fg full"><label>PayPayリンク（URL）</label><input id="ci-paypay-url" type="url" value="${esc(c.paypayUrl||'')}" placeholder="https://qr.paypay.ne.jp/..."></div>
+      <div class="fg full"><label>📸 写真アルバムURL（Google フォト・Drive など）</label><input id="ci-photo-url" type="url" value="${esc(c.photoUrl||'')}" placeholder="https://photos.google.com/..."></div>
+      <div class="fg full"><label>🎬 動画URL（YouTube・Vimeo など）</label><textarea id="ci-video-urls" rows="3" placeholder="1行に1URLずつ入力&#10;https://youtube.com/...">${esc(c.videoUrls||'')}</textarea></div>
     </div>
     <div style="display:flex;gap:0.8rem;margin-top:1.5rem;align-items:center">
       <button class="btn btn-gold" onclick="saveConcertInfo()">💾 保存</button>
@@ -2710,8 +2730,10 @@ function saveConcertInfo(){
   c.accFee         = parseInt(document.getElementById('ci-acc-fee').value)||0;
   c.entryFeeTiers  = window._ciTiers||[];
   c.flyerData      = window._ciFlyer||null;
-  c.bankInfo       = document.getElementById('ci-bank-info').value.trim();
+  c.applyApproval  = document.getElementById('ci-apply-approval').value;
   c.paypayUrl      = document.getElementById('ci-paypay-url').value.trim();
+  c.photoUrl       = document.getElementById('ci-photo-url').value.trim();
+  c.videoUrls      = document.getElementById('ci-video-urls').value.trim();
   persist();
   renderConcertDetailHeader(currentConcertId);
   renderConcertInfo(currentConcertId);
@@ -2729,25 +2751,29 @@ function deleteConcertFromDetail(){
 
 function renderConcertParticipants(cid){
   const el = document.getElementById('cdt-participants');
-  // 既存のrenderParticipantsを流用（concert-selを設定）
-  // participant-listをcdt-participantsに差し替えてレンダリング
+  const concert = concerts.find(c=>c.id===cid);
+  const isPast = concert?.date && concert.date < today();
   populateSel2('p-concert-sel');
   document.getElementById('p-concert-sel').value = cid;
-  // cdt-participants内に参加者UIを生成
+  const newApps = applications.filter(a=>a.concertId===cid&&a.status==='new').length;
   el.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">
       <div style="display:flex;gap:0.4rem">
         <button id="ptab-entries" class="btn btn-gold btn-sm" onclick="switchParticipantTab('entries')">出演者</button>
         <button id="ptab-acc" class="btn btn-outline btn-sm" onclick="switchParticipantTab('acc')">伴奏者</button>
+        <button id="ptab-apps" class="btn btn-outline btn-sm" onclick="switchParticipantTab('apps')" style="position:relative">
+          申し込み${newApps?`<span style="position:absolute;top:-4px;right:-4px;background:#74b9ff;color:#fff;font-size:0.6rem;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center">${newApps}</span>`:''}
+        </button>
       </div>
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-        <label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0">📂 CSVインポート<input type="file" accept=".csv,text/csv" onchange="importCSV(event)" style="display:none"></label>
+        ${!isPast?`<label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0">📂 CSVインポート<input type="file" accept=".csv,text/csv" onchange="importCSV(event)" style="display:none"></label>`:''}
         <button class="btn btn-outline btn-sm" onclick="openMailModal()">✉ メール連絡</button>
-        <button class="btn btn-gold btn-sm" id="btn-add-participant" onclick="openEntryModal()">＋ 参加者を追加</button>
+        ${!isPast?`<button class="btn btn-gold btn-sm" id="btn-add-participant" onclick="openEntryModal()">＋ 参加者を追加</button>`:''}
       </div>
     </div>
     <div id="participant-list"></div>
-    <div id="accompanist-list" style="display:none"></div>`;
+    <div id="accompanist-list" style="display:none"></div>
+    <div id="application-list" style="display:none"></div>`;
   _participantTab = 'entries';
   renderParticipants();
 }
@@ -2831,6 +2857,39 @@ function switchConcertListTab(tab, btn){
   document.querySelectorAll('#cl-tab-upcoming,#cl-tab-past').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   renderConcerts();
+}
+
+function renderConcertMedia(cid){
+  const el = document.getElementById('cdt-media');
+  const c = concerts.find(x=>x.id===cid);
+  if(!c){ el.innerHTML=''; return; }
+  const videos = (c.videoUrls||'').split('\n').map(u=>u.trim()).filter(Boolean);
+  const hasMedia = c.photoUrl || videos.length;
+  if(!hasMedia){
+    el.innerHTML=`
+      <div class="empty"><p>メディアがまだ登録されていません。<br>「演奏会情報」タブで写真・動画URLを入力してください。</p></div>`;
+    return;
+  }
+  el.innerHTML=`
+    ${c.photoUrl?`
+    <div class="card" style="margin-bottom:1rem">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--gold);letter-spacing:0.08em;margin-bottom:0.8rem">📸 写真アルバム</div>
+      <a href="${esc(c.photoUrl)}" target="_blank" rel="noopener"
+        style="display:inline-flex;align-items:center;gap:0.5rem;background:var(--surface2);border:1px solid var(--border2);color:var(--gold2);padding:0.6rem 1.2rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-decoration:none">
+        📷 アルバムを開く
+      </a>
+    </div>`:''}
+    ${videos.length?`
+    <div class="card">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--gold);letter-spacing:0.08em;margin-bottom:0.8rem">🎬 動画</div>
+      <div style="display:flex;flex-direction:column;gap:0.6rem">
+        ${videos.map((url,i)=>`
+          <a href="${esc(url)}" target="_blank" rel="noopener"
+            style="display:inline-flex;align-items:center;gap:0.5rem;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:0.6rem 1.2rem;border-radius:6px;font-size:0.85rem;text-decoration:none">
+            ▶ 動画${videos.length>1?' '+(i+1):''}を見る
+          </a>`).join('')}
+      </div>
+    </div>`:''}`;
 }
 
 function renderConcerts(){
@@ -3483,12 +3542,27 @@ let _participantTab = 'entries'; // 'entries' | 'acc'
 
 function switchParticipantTab(tab){
   _participantTab = tab;
-  document.getElementById('ptab-entries').classList.toggle('active', tab==='entries');
-  document.getElementById('ptab-acc').classList.toggle('active', tab==='acc');
-  document.getElementById('participant-list').style.display  = tab==='entries' ? '' : 'none';
-  document.getElementById('accompanist-list').style.display  = tab==='acc'     ? '' : 'none';
-  document.getElementById('btn-add-participant').style.display = tab==='entries' ? '' : 'none';
-  if(tab==='acc') renderAccompanistList();
+  ['entries','acc','apps'].forEach(t=>{
+    const btn = document.getElementById('ptab-'+t);
+    if(!btn) return;
+    btn.classList.toggle('btn-gold',    t===tab);
+    btn.classList.toggle('btn-outline', t!==tab);
+  });
+  const pList = document.getElementById('participant-list');
+  const aList = document.getElementById('accompanist-list');
+  const appList = document.getElementById('application-list');
+  const addBtn = document.getElementById('btn-add-participant');
+  if(pList)   pList.style.display   = tab==='entries' ? '' : 'none';
+  if(aList)   aList.style.display   = tab==='acc'     ? '' : 'none';
+  if(appList) appList.style.display = tab==='apps'    ? '' : 'none';
+  if(addBtn)  addBtn.style.display  = tab==='entries' ? '' : 'none';
+  if(tab==='acc')  renderAccompanistList();
+  if(tab==='apps'){
+    populateSel2('app-concert-sel');
+    const cid = document.getElementById('p-concert-sel')?.value||'';
+    document.getElementById('app-concert-sel').value = cid;
+    renderApplications();
+  }
 }
 
 function renderAccompanistList(){
@@ -3581,6 +3655,8 @@ function renderParticipants(){
   const cid=document.getElementById('p-concert-sel')?.value;
   const el=document.getElementById('participant-list');
   if(!cid){el.innerHTML='<div class="empty"><p>演奏会を選択してください</p></div>';return;}
+  const concert = concerts.find(c=>c.id===cid);
+  const isPast = concert?.date && concert.date < today();
   const list=entries.filter(e=>e.concertId===cid).sort((a,b)=>(a.order||999)-(b.order||999));
   if(!list.length){
     el.innerHTML='<div class="empty"><div class="empty-icon">♩</div><p>参加者がまだいません。<br>「参加者を追加」から登録してください。</p></div>';
@@ -3591,7 +3667,6 @@ function renderParticipants(){
       <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th style="width:3.5rem;white-space:nowrap">時間</th><th style="width:3.5rem;white-space:nowrap">リハ</th><th>伴奏者</th><th>ログインコード</th><th style="width:6rem;white-space:nowrap">参加状況</th><th>操作</th>
     </tr></thead><tbody id="participant-tbody">
     ${list.map(e=>{
-      const concert = concerts.find(c=>c.id===cid);
       const soloInstr = e.instrument ? `（${esc(instrAbbr(e.instrument))}）` : '';
       const nameCell = e.type==='group'
         ? `<strong>${esc(e.groupName)}</strong><br><span style="font-size:0.7rem;color:var(--text3)">${(e.members||[]).map(m=>typeof m==='string'?esc(m):`${esc(m.name)}${m.instrument?`（${esc(instrAbbr(m.instrument))}）`:''}`).join(' / ')}</span>`
@@ -3647,8 +3722,10 @@ function renderParticipants(){
         </td>
         <td style="white-space:nowrap">
           <button class="btn btn-outline btn-sm" onclick="openMailModal('${e.id}')">✉</button>
-          <button class="btn btn-outline btn-sm" onclick="openEntryModal('${e.id}')">編集</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteEntry('${e.id}')">削除</button>
+          ${isPast
+            ? `<span style="font-size:0.7rem;color:var(--text3);margin-left:0.3rem">終了</span>`
+            : `<button class="btn btn-outline btn-sm" onclick="openEntryModal('${e.id}')">編集</button>
+               <button class="btn btn-danger btn-sm" onclick="deleteEntry('${e.id}')">削除</button>`}
         </td>
       </tr>`;
     }).join('')}
@@ -4945,6 +5022,39 @@ function printMySchedule(){
 // ════════════════════════
 //  ACCOMPANIST VIEW
 // ════════════════════════
+function renderMyMedia(){
+  const el = document.getElementById('my-media-content');
+  const cid = currentUser.concertId;
+  const c = concerts.find(x=>x.id===cid);
+  if(!c){ el.innerHTML='<div class="empty"><p>演奏会情報が見つかりません</p></div>'; return; }
+  const videos = (c.videoUrls||'').split('\n').map(u=>u.trim()).filter(Boolean);
+  const hasMedia = c.photoUrl || videos.length;
+  if(!hasMedia){
+    el.innerHTML='<div class="empty"><p>メディアはまだ公開されていません。<br>演奏会終了後に写真・動画が共有されます。</p></div>';
+    return;
+  }
+  el.innerHTML=`
+    ${c.photoUrl?`
+    <div class="card" style="margin-bottom:1rem">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--gold);letter-spacing:0.08em;margin-bottom:0.8rem">📸 写真アルバム</div>
+      <a href="${esc(c.photoUrl)}" target="_blank" rel="noopener"
+        style="display:inline-flex;align-items:center;gap:0.5rem;background:var(--surface2);border:1px solid var(--border2);color:var(--gold2);padding:0.6rem 1.2rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-decoration:none">
+        📷 アルバムを開く
+      </a>
+    </div>`:''}
+    ${videos.length?`
+    <div class="card">
+      <div style="font-size:0.78rem;font-weight:700;color:var(--gold);letter-spacing:0.08em;margin-bottom:0.8rem">🎬 動画</div>
+      <div style="display:flex;flex-direction:column;gap:0.6rem">
+        ${videos.map((url,i)=>`
+          <a href="${esc(url)}" target="_blank" rel="noopener"
+            style="display:inline-flex;align-items:center;gap:0.5rem;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:0.6rem 1.2rem;border-radius:6px;font-size:0.85rem;text-decoration:none">
+            ▶ 動画${videos.length>1?' '+(i+1):''}を見る
+          </a>`).join('')}
+      </div>
+    </div>`:''}`;
+}
+
 function renderAccompanistView(){
   const el = document.getElementById('acc-view-content');
   const cid = currentUser.concertId;
@@ -6505,7 +6615,14 @@ async function submitApplication(){
   }
 
   applications.push(app);
-  await persist();
+
+  // 自動承認の場合は即時参加者登録
+  const applyConcertObj = concerts.find(c=>c.id===applyConcertId);
+  if(applyConcertObj?.applyApproval === 'auto'){
+    await acceptApplicationById(app.id);
+  } else {
+    await persist();
+  }
 
   // 確認テキスト生成
   const concert = concerts.find(c=>c.id===applyConcertId);
@@ -6543,14 +6660,21 @@ async function submitApplication(){
   document.getElementById('apply-success-wrap').style.display='block';
 
   // EmailJS で申し込み完了メールを自動送信
+  const applyConcert = concerts.find(c=>c.id===applyConcertId);
   const accessUrl = location.origin + location.pathname + '?cid=' + applyConcertId;
   const loginCode = app.email ? app.email.split('@')[0] : '';
+  const vOpen = applyConcert?.venueOpen ? `　開場 ${applyConcert.venueOpen}` : '';
+  const pTime = applyConcert?.time ? `　開演 ${applyConcert.time}` : '';
+  const concertDate = applyConcert?.date ? `${applyConcert.date}${vOpen}${pTime}` : '';
   emailjs.send('service_p7pw2an', 'template_6bx146p', {
-    to_email:     app.email,
-    name:         app.name,
-    concert_name: concertName,
-    access_url:   accessUrl,
-    login_code:   loginCode,
+    to_email:      app.email,
+    name:          app.name,
+    concert_name:  concertName,
+    concert_date:  concertDate,
+    concert_venue: applyConcert?.venue || '',
+    concert_venue_url: applyConcert?.venueUrl || '',
+    access_url:    accessUrl,
+    login_code:    loginCode,
   }).then(()=>{
     console.log('確認メール送信完了');
   }).catch(err=>{
@@ -6680,6 +6804,31 @@ function renderApplications(){
       </div>`;
     }).join('')}
     </div>`;
+}
+
+async function acceptApplicationById(id){
+  const a = applications.find(x=>x.id===id);
+  if(!a) return;
+  const entry = {
+    id: uid(), concertId: a.concertId, type: a.type,
+    name: a.name, kana: a.kana, email: a.email, tel: a.tel,
+    instrument: a.instrument, pieces: a.pieces||[],
+    profile: '', order: 0, duration: 0,
+    status: 'pending', performerCode: '',
+    feeAmount: 0, feeStatus: 'unpaid', feeNote: '',
+  };
+  if(a.type==='group'){
+    entry.groupName = a.groupName;
+    entry.groupEmail = a.email;
+    entry.groupTel = a.tel;
+    entry.members = a.members||[];
+  } else {
+    entry.accType = a.accType||'none';
+    entry.accName = a.accName||'';
+  }
+  entries.push(entry);
+  a.status = 'accepted';
+  await persist();
 }
 
 async function acceptApplication(id){
