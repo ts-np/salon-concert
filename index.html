@@ -2647,6 +2647,8 @@ function renderConcertInfo(cid){
           <option value="auto"   ${c.applyApproval==='auto'?'selected':''}>自動承認（申し込み送信と同時に参加者登録）</option>
         </select>
       </div>
+      <div class="fg"><label>申し込み期限</label><input id="ci-apply-deadline" type="date" value="${c.applyDeadline||''}"></div>
+      <div class="fg"><label>承認連絡予定日</label><input id="ci-decision-date" type="date" value="${c.decisionDate||''}"></div>
       <div class="fg full"><label>演奏会の説明</label><textarea id="ci-description" rows="3">${esc(c.description||'')}</textarea></div>
       <div class="fg full"><label>備考・連絡事項</label><textarea id="ci-note" rows="2">${esc(c.note||'')}</textarea></div>
       <div class="fg"><label>LINE URL</label><input id="ci-line-url" type="url" value="${esc(c.lineUrl||'')}"></div>
@@ -2731,6 +2733,8 @@ function saveConcertInfo(){
   c.entryFeeTiers  = window._ciTiers||[];
   c.flyerData      = window._ciFlyer||null;
   c.applyApproval  = document.getElementById('ci-apply-approval').value;
+  c.applyDeadline  = document.getElementById('ci-apply-deadline').value;
+  c.decisionDate   = document.getElementById('ci-decision-date').value;
   c.paypayUrl      = document.getElementById('ci-paypay-url').value.trim();
   c.photoUrl       = document.getElementById('ci-photo-url').value.trim();
   c.videoUrls      = document.getElementById('ci-video-urls').value.trim();
@@ -6661,20 +6665,24 @@ async function submitApplication(){
 
   // EmailJS で申し込み完了メールを自動送信
   const applyConcert = concerts.find(c=>c.id===applyConcertId);
+  const isAuto = applyConcert?.applyApproval === 'auto';
   const accessUrl = location.origin + location.pathname + '?cid=' + applyConcertId;
   const loginCode = app.email ? app.email.split('@')[0] : '';
   const vOpen = applyConcert?.venueOpen ? `　開場 ${applyConcert.venueOpen}` : '';
   const pTime = applyConcert?.time ? `　開演 ${applyConcert.time}` : '';
   const concertDate = applyConcert?.date ? `${applyConcert.date}${vOpen}${pTime}` : '';
   emailjs.send('service_p7pw2an', 'template_6bx146p', {
-    to_email:      app.email,
-    name:          app.name,
-    concert_name:  concertName,
-    concert_date:  concertDate,
-    concert_venue: applyConcert?.venue || '',
+    to_email:          app.email,
+    name:              app.name,
+    concert_name:      concertName,
+    concert_date:      concertDate,
+    concert_venue:     applyConcert?.venue || '',
     concert_venue_url: applyConcert?.venueUrl || '',
-    access_url:    accessUrl,
-    login_code:    loginCode,
+    access_url:        isAuto ? accessUrl : '',
+    login_code:        isAuto ? loginCode : '',
+    apply_deadline:    applyConcert?.applyDeadline || '',
+    decision_date:     applyConcert?.decisionDate || '',
+    approval_type:     isAuto ? 'auto' : 'manual',
   }).then(()=>{
     console.log('確認メール送信完了');
   }).catch(err=>{
