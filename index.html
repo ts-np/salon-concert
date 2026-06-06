@@ -6671,13 +6671,15 @@ async function submitApplication(){
   const vOpen = applyConcert?.venueOpen ? `　開場 ${applyConcert.venueOpen}` : '';
   const pTime = applyConcert?.time ? `　開演 ${applyConcert.time}` : '';
   const concertDate = applyConcert?.date ? `${applyConcert.date}${vOpen}${pTime}` : '';
-  emailjs.send('service_p7pw2an', 'template_6bx146p', {
+  const templateId = isAuto ? 'template_6bx146p' : 'template_97dpdma';
+  emailjs.send('service_p7pw2an', templateId, {
     to_email:          app.email,
     name:              app.name,
     concert_name:      concertName,
     concert_date:      concertDate,
     concert_venue:     applyConcert?.venue || '',
     concert_venue_url: applyConcert?.venueUrl || '',
+    line_url:          applyConcert?.lineUrl || '',
     access_url:        isAuto ? accessUrl : '',
     login_code:        isAuto ? loginCode : '',
     apply_deadline:    applyConcert?.applyDeadline || '',
