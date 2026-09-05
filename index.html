@@ -2635,6 +2635,8 @@ function renderConcertInfo(cid){
       <div class="fg"><label>開催日</label><input id="ci-date" type="date" value="${c.date||''}"></div>
       <div class="fg"><label>開場時間</label><input id="ci-venue-open" type="time" value="${c.venueOpen||''}"></div>
       <div class="fg"><label>開演時間</label><input id="ci-time" type="time" value="${c.time||''}"></div>
+      <div class="fg"><label>会場利用開始時間</label><input id="ci-venue-start" type="time" value="${c.venueStart||''}"></div>
+      <div class="fg"><label>会場利用終了時間</label><input id="ci-venue-end" type="time" value="${c.venueEnd||''}"></div>
       <div class="fg"><label>会場名</label><input id="ci-venue" type="text" value="${esc(c.venue||'')}"></div>
       <div class="fg"><label>会場URL</label><input id="ci-venue-url" type="url" value="${esc(c.venueUrl||'')}"></div>
       <div class="fg"><label>来場者上限（人）</label><input id="ci-audience-capacity" type="number" min="0" value="${c.audienceCapacity||''}"></div>
@@ -2719,6 +2721,8 @@ function saveConcertInfo(){
   c.date           = document.getElementById('ci-date').value;
   c.venueOpen      = document.getElementById('ci-venue-open').value;
   c.time           = document.getElementById('ci-time').value;
+  c.venueStart     = document.getElementById('ci-venue-start').value;
+  c.venueEnd       = document.getElementById('ci-venue-end').value;
   c.venue          = document.getElementById('ci-venue').value.trim();
   c.venueUrl       = document.getElementById('ci-venue-url').value.trim();
   c.audienceCapacity = parseInt(document.getElementById('ci-audience-capacity').value)||0;
