@@ -1240,6 +1240,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
       <div id="my-concert-info-content"></div>
     </div>
 
+    <div class="page" id="page-my-party"><div id="my-party-content"></div></div>
     <div class="page" id="page-my-concert">
       <div class="ph"><h2>出演者情報</h2></div>
       <div id="my-concert-content"></div>
@@ -1982,9 +1983,8 @@ const PARTY_LABELS = {'':'未回答',yes:'参加',no:'不参加',undecided:'未�
 const VIDEO_LABELS = {'':'未回答',public:'公開可',limited:'限定公開のみ可',private:'公開不可'};
 function participationFields(prefix, data={}){
   const options=(labels,value)=>Object.entries(labels).map(([v,label])=>`<option value="${v}" ${v===(value||'')?'selected':''}>${label}</option>`).join('');
-  return `<fieldset class="participation-options"><legend>打ち上げ・録画について</legend>
+  return `<fieldset class="participation-options"><legend>録画について</legend>
     <div class="form-grid">
-      <div class="fg"><label for="${prefix}-party">打ち上げへの参加</label><select id="${prefix}-party">${options(PARTY_LABELS,data.afterParty)}</select></div>
       <div class="fg"><label for="${prefix}-video">録画の公開範囲</label><select id="${prefix}-video" onchange="toggleVideoConditions('${prefix}')">${options(VIDEO_LABELS,data.videoPublication)}</select></div>
       <div class="fg full"><span class="field-label">公開する場合の条件（複数選択可）</span>
         <div class="consent-checks" id="${prefix}-conditions">
@@ -1993,7 +1993,7 @@ function participationFields(prefix, data={}){
         </div>
         <p class="field-help">条件を満たせない場合は公開しません。未回答は公開許可として扱いません。</p>
       </div>
-      <div class="fg full"><label for="${prefix}-participation-note">補足（グループ内で回答が異なる場合など）</label><textarea id="${prefix}-participation-note" rows="2" placeholder="例：打ち上げは3人中2人参加。録画は全員ぼかし希望。">${esc(data.participationNote||'')}</textarea></div>
+      <div class="fg full"><label for="${prefix}-participation-note">補足（グループ内で回答が異なる場合など）</label><textarea id="${prefix}-participation-note" rows="2" placeholder="例：録画は全員ぼかし希望。">${esc(data.participationNote||'')}</textarea></div>
     </div></fieldset>`;
 }
 function toggleVideoConditions(prefix){
@@ -2003,7 +2003,7 @@ function toggleVideoConditions(prefix){
 function readParticipation(prefix){
   const videoPublication=document.getElementById(prefix+'-video').value;
   const allowed=['public','limited'].includes(videoPublication);
-  return {afterParty:document.getElementById(prefix+'-party').value, videoPublication,
+  return {videoPublication,
     videoAnonymous:allowed&&document.getElementById(prefix+'-anonymous').checked,
     videoBlur:allowed&&document.getElementById(prefix+'-blur').checked,
     participationNote:document.getElementById(prefix+'-participation-note').value.trim()};
@@ -2014,7 +2014,7 @@ function videoLabel(data){
   return (VIDEO_LABELS[data.videoPublication]||'未回答')+(conditions.length?'（'+conditions.join('・')+'が条件）':'');
 }
 function participationSummary(data){
-  return `<div class="participation-summary"><span>打ち上げ：${PARTY_LABELS[data.afterParty]||'未回答'}</span><span>録画：${videoLabel(data)}</span>${data.participationNote?`<span class="participation-note">補足：${esc(data.participationNote)}</span>`:''}</div>`;
+  return `<div class="participation-summary"><span>録画：${videoLabel(data)}</span>${data.participationNote?`<span class="participation-note">補足：${esc(data.participationNote)}</span>`:''}</div>`;
 }
 function readNonnegative(id, fallback=0){
   const raw=document.getElementById(id).value.trim();
@@ -2058,7 +2058,7 @@ function cloneData(value){return JSON.parse(JSON.stringify(value));}
 function storageData(){
   return cloneData({concerts,entries,transactions,applications,audienceApplications,accompanists,
     instrumentList,instrumentAbbr,adminPassword,emailTemplates,schedBreaks,schedCustomEvents,
-    schedRehearsalOrders,schedStaffEvents,concertStaff});
+    schedRehearsalOrders,schedStaffEvents,concertStaff,partyResponses});
 }
 function applyStorage(data){
   concerts=(data.concerts||[]).filter(Boolean).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
@@ -2069,6 +2069,7 @@ function applyStorage(data){
   schedBreaks=data.schedBreaks||{};schedCustomEvents=data.schedCustomEvents||{};
   schedRehearsalOrders=data.schedRehearsalOrders||{};schedStaffEvents=data.schedStaffEvents||{};
   concertStaff=data.concertStaff||{};
+  partyResponses=data.partyResponses||[];
 }
 function sameData(a,b){return JSON.stringify(a)===JSON.stringify(b);}
 function mergeChanges(remote,before,after){
@@ -2213,6 +2214,7 @@ function refreshCurrentPage(){
     else if(currentConcertTab==='finance')      renderConcertFinance(currentConcertId);
   }
   else if(id==='page-audience') renderAudienceList();
+  else if(id==='page-my-party') renderMyParty();
   else if(id==='page-my-concert')      renderMyConvert();
   else if(id==='page-my-program')      renderMyProgram();
   else if(id==='page-my-schedule')     renderMySchedule();
@@ -2341,6 +2343,7 @@ function doLogin(){
       }
     }
   }
+  if(currentUser?.role!=='organizer')currentUser.loginCode=document.getElementById('perf-code')?.value.trim().toLowerCase()||'';
   startApp();
 }
 
@@ -2585,6 +2588,7 @@ function buildNav(){
     nav.innerHTML = `
       <button class="active" onclick="showPage('my-concert-info',this)">演奏会</button>
       <button onclick="showPage('my-concert',this)">出演者情報</button>
+      <button onclick="showPage('my-party',this)">打ち上げ</button>
       <button onclick="showPage('acc-view',this)">担当出演者</button>
       <button onclick="showPage('my-program',this)">プログラム</button>
       <button onclick="showPage('my-schedule',this)">スケジュール</button>
@@ -2594,6 +2598,7 @@ function buildNav(){
     nav.innerHTML = `
       <button class="active" onclick="showPage('my-concert-info',this)">演奏会</button>
       <button onclick="showPage('my-concert',this)">出演者情報</button>
+      <button onclick="showPage('my-party',this)">打ち上げ</button>
       <button onclick="showPage('my-program',this)">プログラム</button>
       <button onclick="showPage('my-schedule',this)">スケジュール</button>
       <button onclick="showPage('my-media',this)">📸 メディア</button>`;
@@ -2621,6 +2626,7 @@ function showPage(name, btn){
   if(name==='schedule')       { populateSel('sched-concert-sel'); renderSchedule(); if(schedTabMode==='staff') renderScheduleStaff(); if(schedTabMode==='members') renderStaffMembers(); }
   if(name==='finance')        { populateSel('fin-concert-sel'); renderFinance(); }
   if(name==='my-concert-info') renderMyConcertInfo();
+  if(name==='my-party') renderMyParty();
   if(name==='my-concert')     renderMyConvert();
   if(name==='my-program')     renderMyProgram();
   if(name==='my-schedule')    renderMySchedule();
@@ -3475,10 +3481,11 @@ function togglePerformerCodeVisibility(){
 }
 
 // ── MEMBER ROWS (name + instrument) ──
-function addMemberField(name='', kana='', instrument='', code=''){
+function addMemberField(name='', kana='', instrument='', code='', memberId=uid()){
   const wrap=document.getElementById('member-list-fields');
   const row=document.createElement('div');
   row.className='member-row';
+  row.dataset.memberId=memberId;
   row.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr 0.8fr auto;gap:0.3rem 0.5rem;margin-bottom:0.3rem';
   row.innerHTML=`
     <input type="text" placeholder="氏名" class="member-name-input" value="${esc(name)}">
@@ -3492,6 +3499,7 @@ function addMemberField(name='', kana='', instrument='', code=''){
 function getMembers(){
   const rows=document.querySelectorAll('#member-list-fields .member-row');
   return [...rows].map(r=>({
+    id:r.dataset.memberId,
     name: r.querySelector('.member-name-input').value.trim(),
     kana: r.querySelector('.member-kana-input')?.value.trim()||'',
     instrument: r.querySelector('.member-instrument-input').value.trim(),
@@ -3573,9 +3581,9 @@ function openEntryModal(id){
       document.getElementById('member-list-fields').innerHTML='';
       const members=e.members||[];
       if(members.length && typeof members[0]==='string'){
-        members.forEach(m=>addMemberField(m,'','',''));
+        members.forEach((m,i)=>addMemberField(m,'','','','legacy-'+i));
       } else {
-        members.forEach(m=>addMemberField(m.name||m, m.kana||'', m.instrument||'', m.code||''));
+        members.forEach((m,i)=>addMemberField(m.name||m, m.kana||'', m.instrument||'', m.code||'',m.id||'legacy-'+i));
       }
       document.getElementById('em-acc-type-group').value=e.accType||'none';
       toggleAccFields(null, e.accName||null);
@@ -3829,6 +3837,89 @@ function switchParticipantTab(tab){
 }
 
 
+// Person-based after-party responses, scoped to each concert.
+let partyResponses=[];
+function partyCodes(value){return String(value||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);}
+function partyPeople(cid){
+  const nodes=[];
+  const add=(ref,name,codes,e,legacy='')=>nodes.push({refs:[ref],name:name||'氏名未設定',codes,entryIds:[e.id],groups:[e.type==='group'?(e.groupName||'グループ'):'ソロ'],legacy:legacy?[legacy]:[]});
+  entries.filter(e=>e.concertId===cid&&e.status!=='absent').forEach(e=>{
+    if(e.type!=='group'){add('entry:'+e.id,e.name,partyCodes(e.performerCode),e,e.afterParty);return;}
+    const members=(e.members||[]).map((m,i)=>typeof m==='string'?{name:m,id:'legacy-'+i}:{...m,id:m.id||'legacy-'+i});
+    const repMatches=members.filter(m=>(m.name||'').trim()===(e.groupRep||'').trim());
+    members.forEach(m=>add('member:'+e.id+':'+m.id,m.name,[...partyCodes(m.code),...(repMatches.length===1&&m===repMatches[0]?partyCodes(e.performerCode):[])],e));
+    if(repMatches.length!==1&&e.groupRep)add('rep:'+e.id,e.groupRep,partyCodes(e.performerCode),e);
+  });
+  // Only explicit personal/representative codes join people; names never join entries.
+  const result=[];
+  for(const node of nodes){
+    const matches=result.filter(p=>p.codes.some(code=>node.codes.includes(code)));
+    for(const p of matches){
+      node.refs.push(...p.refs);node.codes.push(...p.codes);node.entryIds.push(...p.entryIds);node.groups.push(...p.groups);node.legacy.push(...p.legacy);
+      if(node.name!==p.name)node.name=p.name+' / '+node.name;
+      result.splice(result.indexOf(p),1);
+    }
+    for(const key of ['refs','codes','entryIds','groups','legacy'])node[key]=[...new Set(node[key])];
+    node.refs.sort();node.id=node.refs[0];result.push(node);
+  }
+  return result;
+}
+function partyAnswer(person,cid){
+  const saved=partyResponses.filter(r=>r.concertId===cid&&(r.personRefs||[]).some(ref=>person.refs.includes(ref)));
+  const answers=[...new Set(saved.map(r=>r.answer))];
+  if(answers.length>1)return {answer:'',conflict:true};
+  if(saved.length)return {answer:answers[0],saved:true};
+  const legacy=[...new Set(person.legacy.filter(x=>Object.hasOwn(PARTY_LABELS,x)&&x))];
+  return legacy.length===1?{answer:legacy[0],legacy:true}:{answer:'',conflict:legacy.length>1};
+}
+function partyCanEdit(person,cid){
+  if(currentUser?.role==='organizer')return true;
+  if(currentUser?.concertId!==cid||!currentUser.loginCode)return false;
+  const code=currentUser.loginCode;
+  if(person.codes.includes(code))return true;
+  // A group representative may answer separately for every member of their group.
+  return entries.some(e=>e.concertId===cid&&e.type==='group'&&person.entryIds.includes(e.id)&&partyCodes(e.performerCode).includes(code));
+}
+function partyView(cid,organizer){
+  const people=partyPeople(cid).filter(p=>organizer||partyCanEdit(p,cid));
+  const counts={yes:0,no:0,undecided:0,'':0};people.forEach(p=>counts[partyAnswer(p,cid).answer||'']++);
+  const legacyGroups=organizer?entries.filter(e=>e.concertId===cid&&e.type==='group'&&e.afterParty):[];
+  return `<h2 class="report-title">打ち上げ</h2><p class="report-help">人ごとに回答します。同じ個人用ログインコードの出演枠は1人として集計します。グループはメンバーごとに回答してください。</p>
+    <div class="capacity-summary">参加 ${counts.yes}人 ／ 不参加 ${counts.no}人 ／ 未定 ${counts.undecided}人 ／ 未回答・要確認 ${counts['']}人</div>
+    ${organizer?'<p class="report-help">同じ人が別々に表示される場合は、各出演枠の本人用コード（グループの場合はそのメンバーの個人コード）を同じにしてください。同姓同名だけでは統合しません。承認前の申込は集計に含みません。</p>':''}
+    ${people.length?people.map(p=>{
+      const state=partyAnswer(p,cid),domId='party-'+encodeURIComponent(p.id);
+      return `<article class="report-person"><strong>${esc(p.name)}</strong><p class="report-meta">${esc(p.groups.join('・'))}</p>
+        ${state.conflict?'<p class="report-help">回答が一致していません。確認して選び直してください。</p>':''}
+        ${state.legacy?'<p class="report-help">以前の個人の回答を引き継いで表示しています。</p>':''}
+        <label for="${domId}">打ち上げへの参加</label>
+        <select id="${domId}">${Object.entries(PARTY_LABELS).map(([v,label])=>`<option value="${v}" ${v===state.answer?'selected':''}>${label}</option>`).join('')}</select>
+        <button class="btn btn-gold btn-sm" data-person="${esc(p.id)}" data-concert="${esc(cid)}" onclick="savePartyAnswer(this)">回答を保存</button>
+        <span role="status" id="${domId}-status"></span></article>`;
+    }).join(''):'<p class="report-help">回答できる本人情報がありません。主催者に個人用ログインコードをご確認ください。</p>'}
+    ${legacyGroups.length?`<details style="margin-top:1rem"><summary>以前のグループ単位の回答（人数集計には含めません）</summary>${legacyGroups.map(e=>`<p>${esc(e.groupName||e.groupRep)}：${PARTY_LABELS[e.afterParty]||'未回答'}${e.participationNote?' ／ '+esc(e.participationNote):''}</p>`).join('')}</details>`:''}`;
+}
+function renderMyParty(){
+  const el=document.getElementById('my-party-content');
+  if(el)el.innerHTML=partyView(currentUser?.concertId,false);
+}
+async function savePartyAnswer(button){
+  const cid=button.dataset.concert,id=button.dataset.person;
+  const person=partyPeople(cid).find(p=>p.id===id);
+  if(!person||!partyCanEdit(person,cid)){alert('この回答を変更できません。ログインし直してください。');return;}
+  const field=document.getElementById('party-'+encodeURIComponent(id));
+  const answer=field.value;if(!Object.hasOwn(PARTY_LABELS,answer))return;
+  button.disabled=true;
+  const old=partyResponses.filter(r=>r.concertId===cid&&(r.personRefs||[]).some(ref=>person.refs.includes(ref)));
+  partyResponses=partyResponses.filter(r=>!old.includes(r));
+  partyResponses.push({id:old[0]?.id||uid(),concertId:cid,personRefs:person.refs,answer,updatedAt:Date.now()});
+  const ok=await persist();
+  if(ok){
+    if(currentUser.role==='organizer')renderParticipantReport('party');else renderMyParty();
+    const status=document.getElementById('party-'+encodeURIComponent(id)+'-status');if(status)status.textContent='保存しました';
+  }else button.disabled=false;
+}
+
 // Read-only summaries share the saved entry/application answers; no duplicate state.
 function participantReportItems(cid){
   return [
@@ -3864,6 +3955,7 @@ function renderParticipantReport(kind){
   const el=document.getElementById('participant-report');
   if(!el)return;
   const cid=document.getElementById('p-concert-sel')?.value;
+  if(kind==='party'){el.innerHTML=partyView(cid,true);return;}
   const items=participantReportItems(cid);
   const note='<p class="report-help">ソロ・グループを各1組として集計しています。承認待ちの申込も含み、欠席・不承認は除いています。グループ内で回答が異なる場合は補足をご確認ください。</p>';
   if(kind==='pending'){
@@ -5599,9 +5691,10 @@ function openMyEntryEdit(entryId){
   // グループメンバー
   if(e.type==='group'){
     const ml=document.getElementById('mpe-member-list');
-    window.addMpeMember=(name='',kana='',instrument='',code='')=>{
+    window.addMpeMember=(name='',kana='',instrument='',code='',memberId=uid())=>{
       const row=document.createElement('div');
       row.className='member-row';
+      row.dataset.memberId=memberId;
       row.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr 0.8fr auto;gap:0.3rem 0.5rem;margin-bottom:0.3rem';
       row.innerHTML=`
         <input type="text" placeholder="氏名" class="member-name-input" value="${esc(name)}">
@@ -5612,7 +5705,7 @@ function openMyEntryEdit(entryId){
       ml.appendChild(row);
     };
     const members=e.members||[];
-    if(members.length) members.forEach(m=>addMpeMember(typeof m==='string'?m:m.name||'', typeof m==='string'?'':m.kana||'', typeof m==='string'?'':m.instrument||'', typeof m==='string'?'':m.code||''));
+    if(members.length) members.forEach((m,i)=>addMpeMember(typeof m==='string'?m:m.name||'', typeof m==='string'?'':m.kana||'', typeof m==='string'?'':m.instrument||'', typeof m==='string'?'':m.code||'',m.id||'legacy-'+i));
     else addMpeMember();
   }
 
@@ -5684,6 +5777,7 @@ async function saveMyEntryEdit(entryId){
     e.groupEmail=document.getElementById('mpe-email').value.trim();
     e.groupTel=document.getElementById('mpe-tel').value.trim();
     e.members=[...document.querySelectorAll('#mpe-member-list .member-row')].map(r=>({
+      id:r.dataset.memberId,
       name:r.querySelector('.member-name-input').value.trim(),
       kana:r.querySelector('.member-kana-input')?.value.trim()||'',
       instrument:r.querySelector('.member-instrument-input').value.trim(),
