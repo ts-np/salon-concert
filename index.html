@@ -1529,6 +1529,12 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
     </div>
 
     <!-- SOLO FIELDS -->
+    <div id="em-performer-code-wrap" class="fg" style="margin:1rem 0;padding:0.8rem;background:var(--surface2);border-radius:8px">
+      <label id="em-performer-code-label" for="em-performer-code">ログインコード</label>
+      <input id="em-performer-code" type="text" placeholder="未発行" autocomplete="off" spellcheck="false" style="width:100%;box-sizing:border-box;font-family:monospace">
+      <p id="em-performer-code-help" class="field-help"></p>
+    </div>
+
     <div id="solo-fields">
       <div class="form-grid">
         <div class="fg"><label for="em-name">氏名 *</label><input id="em-name" type="text" placeholder="山田 花子"></div>
@@ -1668,11 +1674,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,te
         </label>
         <span style="font-size:0.75rem;font-weight:600" id="em-status-label">未確認</span>
       </div>
-      <!-- ログインコード（ソロのみ） -->
-      <div id="em-performer-code-wrap" style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.8rem;background:var(--surface2);border-radius:8px">
-        <label style="font-size:0.75rem;color:var(--text3);white-space:nowrap;cursor:default">ログインコード</label>
-        <input id="em-performer-code" type="text" placeholder="例: yamada2025" style="width:130px;font-size:0.82rem">
-      </div>
+
     </div>
 
     <!-- PARTICIPATION FEE -->
@@ -3463,7 +3465,9 @@ function setStatusSwitch(status){
 function togglePerformerCodeVisibility(){
   const isGroup=document.getElementById('group-fields')?.style.display!=='none';
   const wrap=document.getElementById('em-performer-code-wrap');
-  if(wrap) wrap.style.display='';
+  if(wrap) wrap.style.display='block';
+  document.getElementById('em-performer-code-label').textContent=isGroup?'グループ／代表者のログインコード':'ログインコード';
+  document.getElementById('em-performer-code-help').textContent=isGroup?'参加確定メールで代表者に案内するコードです。メンバー個人のコードとは別に管理します。':'参加確定メールでご本人に案内するコードです。';
 }
 
 // ── MEMBER ROWS (name + instrument) ──
