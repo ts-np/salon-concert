@@ -2230,6 +2230,10 @@ function setLoginMode(mode, btn){
 }
 
 function renderLoginForm(){
+  const performerOnly=new URLSearchParams(location.search).has('cid');
+  document.querySelector('.login-tabs').style.display=performerOnly?'none':'';
+  document.querySelector('.login-sub').textContent=performerOnly?'出演者ログイン':'演奏会管理システム';
+  if(performerOnly)loginMode='performer';
   const f = document.getElementById('login-form');
   const n = document.getElementById('login-note');
   if(loginMode === 'organizer'){
