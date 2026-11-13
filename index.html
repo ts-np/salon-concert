@@ -783,6 +783,84 @@ select.status-sel{
     font-size:0.88rem !important;
   }
 }
+
+/* Readable forms and participant cards */
+.participation-options{border:1px solid var(--border2);border-radius:10px;padding:1rem;margin:1rem 0;min-width:0}
+.participation-options legend{color:var(--gold2);padding:0 .4rem;font-size:.95rem}
+.field-help{font-size:.8rem;color:var(--text3);line-height:1.7;margin-top:.4rem}
+.field-label{font-size:.85rem;color:var(--text2)}
+.consent-checks{display:flex;flex-direction:column;gap:.3rem}
+.consent-checks label{display:flex;align-items:center;gap:.6rem;min-height:44px;font-size:.9rem;cursor:pointer}
+.consent-checks input{width:20px;height:20px;flex:none;accent-color:var(--gold)}
+.consent-checks label:has(input:disabled){opacity:.55}
+.participation-summary{display:flex;flex-direction:column;gap:.35rem;font-size:.85rem;line-height:1.7;margin:.6rem 0;white-space:normal;overflow-wrap:anywhere}
+.participation-note{color:var(--text2);white-space:pre-wrap}
+.capacity-summary{display:flex;flex-wrap:wrap;gap:.5rem 1rem;border:1px solid var(--border2);background:var(--gold-dim);border-radius:10px;padding:1rem;margin:0 0 1rem;font-size:.85rem;line-height:1.6}
+.capacity-summary strong{font-size:1.1rem;color:var(--gold2)}
+.capacity-summary.is-full{border-color:var(--amber)}
+button:disabled{opacity:.6;cursor:not-allowed}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
+.fg{min-width:0}
+@media screen and (max-width:600px){
+ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;line-height:1.7}
+ main{padding:1rem .75rem 3rem}
+ header{height:auto;min-height:58px;padding:.5rem .75rem;gap:.5rem;flex-wrap:wrap}
+ .hdr-right{gap:.4rem;flex-wrap:wrap}
+ .user-pill{max-width:160px;font-size:.8rem}
+ .btn,.btn-sm,.ph-actions .btn,.card-actions .btn,.type-btn,nav button,.cdt,.fin-tab,.remove-btn,.close-btn{min-height:44px;min-width:44px;font-size:.9rem!important;padding:.55rem .8rem;line-height:1.4}
+ nav,#concert-detail-tabs,.fin-tabs{gap:.25rem;scrollbar-width:thin;scrollbar-color:var(--gold) var(--surface);padding-bottom:.4rem}
+ nav button,.cdt,.fin-tab{flex-shrink:0;white-space:nowrap}
+ .ph-actions,.card-actions,.modal-footer{flex-wrap:wrap;gap:.5rem}
+ .card,.apply-card{padding:1rem}
+ .card-title{font-size:1.15rem}.card-meta{font-size:.9rem;line-height:1.8;overflow-wrap:anywhere}
+ .fg label,.login-note,.field-help,.badge{font-size:.85rem}
+ input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea{font-size:16px!important;min-height:46px;max-width:100%;border-radius:7px}
+ input[type=checkbox],input[type=radio]{min-width:20px;min-height:20px;accent-color:var(--gold)}
+ .form-grid,.concert-info-grid{grid-template-columns:minmax(0,1fr)!important;gap:1rem}
+ .full{grid-column:1/-1!important}
+ .overlay{align-items:flex-end}.modal{max-height:94dvh;padding:1.1rem .9rem calc(1.25rem + env(safe-area-inset-bottom));overflow-x:hidden}
+ .modal-hd{gap:.5rem}.modal-hd h3{font-size:1.1rem;overflow-wrap:anywhere}
+ .modal-footer{position:sticky;bottom:-1px;background:var(--surface);padding:1rem 0 .3rem;z-index:2}
+ .modal-footer .btn{flex:1 1 auto}
+ .apply-wrap{padding:1rem .75rem 3rem}.apply-concert-info{font-size:.95rem;line-height:1.8}
+ .apply-concert-name{font-size:1.55rem;overflow-wrap:anywhere}
+ .subsect-title{flex-wrap:wrap;gap:.5rem;font-size:.9rem}
+ .subsect-title>div{flex-wrap:wrap}
+ .member-row{grid-template-columns:minmax(0,1fr) 44px!important;gap:.5rem!important;border:1px solid var(--border2);border-radius:8px;padding:.75rem;margin:.5rem 0!important}
+ .member-row input{grid-column:1;width:100%!important}.member-row .remove-btn{grid-column:2;grid-row:1}
+ .piece-row{grid-template-columns:22px minmax(0,1fr) 44px!important;gap:.4rem!important}
+ .piece-row input{width:100%;min-width:0}.piece-row .piece-composer{grid-row:2;color:var(--text)}
+ .subsect>div[style*="grid-template-columns:1fr 1fr 1fr"],.subsect>div[style*="grid-template-columns:1.4rem"]{display:none!important}
+ .tbl-wrap{max-width:100%;overflow-x:auto}
+ .participant-table{overflow:visible;border:0;background:none}
+ .participant-table table,.participant-table tbody{display:block;width:100%;min-width:0}
+ .participant-table thead{display:none}
+ .participant-table tr{display:grid;grid-template-columns:minmax(0,1fr);padding:1rem;background:var(--surface);border:1px solid var(--border2);border-radius:12px;margin-bottom:1rem;cursor:default!important}
+ .participant-table td{display:grid;grid-template-columns:7rem minmax(0,1fr);gap:.6rem;border:0;padding:.45rem 0;text-align:left!important;white-space:normal!important;font-size:.95rem!important;min-width:0;overflow-wrap:anywhere}
+ .participant-table td::before{content:attr(data-label);font-size:.8rem;color:var(--text3);font-weight:600;align-self:center}
+ .participant-table td:first-child>div{flex-direction:row!important;justify-content:flex-start;gap:.5rem!important}
+ .participant-table td button{min-height:44px;min-width:44px}
+ .participant-table td:last-child{display:flex;flex-wrap:wrap}.participant-table td:last-child::before{width:100%}
+ .participant-table td:nth-child(2){display:block;font-size:1.1rem!important}.participant-table td:nth-child(2)::before{display:none}
+ .capacity-summary{flex-direction:column;gap:.25rem}
+ #my-concert-content [style*="font-size:0.7"],#my-concert-info-content [style*="font-size:0.7"],#application-list [style*="font-size:0.7"]{font-size:.9rem!important}
+}
+
+
+.report-title{font-size:1.15rem;color:var(--gold2);margin:0 0 .7rem}
+.report-title span,.report-section h3 span{font-size:.85rem;color:var(--text2);margin-left:.5rem;white-space:nowrap}
+.report-help{font-size:.85rem;line-height:1.8;color:var(--text2);margin-bottom:1rem}
+.report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;align-items:start}
+.report-section{border:1px solid var(--border2);border-radius:10px;background:var(--surface);padding:1rem;min-width:0}
+.report-section h3{font-size:1rem;color:var(--gold2);margin:0 0 .75rem}
+.report-person{border-top:1px solid var(--border);padding:.85rem 0;overflow-wrap:anywhere;font-size:.9rem;line-height:1.8}
+.report-person-heading{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .65rem;margin-bottom:.4rem}
+.report-person-heading strong{font-size:1rem}
+.report-meta,.report-note{color:var(--text2);white-space:pre-wrap}
+.report-actions{margin-top:.65rem}
+.report-empty{font-size:.9rem;color:var(--text3)}
+@media screen and (max-width:600px){.report-grid{grid-template-columns:minmax(0,1fr)}.participant-tabs{gap:.5rem!important}.report-help{font-size:.9rem}.report-person{font-size:1rem}}
+
 </style>
 </head>
 <body>
@@ -796,14 +874,11 @@ select.status-sel{
       <div class="apply-concert-info" id="apply-concert-info"></div>
       <div id="apply-fee-info" style="display:none;font-size:0.8rem;color:var(--gold2);background:rgba(197,166,96,0.1);border:1px solid rgba(197,166,96,0.25);border-radius:7px;padding:0.6rem 1rem;margin-bottom:1rem;line-height:1.9;text-align:left"></div>
       <img class="apply-flyer" id="apply-flyer-img" src="" alt="チラシ">
-      <a class="apply-line-btn" id="apply-line-btn" href="#" target="_blank" style="display:none">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.02 2 11c0 3.54 2.29 6.53 5.47 8.34L7 22l2.81-1.5C10.54 20.82 11.27 21 12 21c5.52 0 10-4.02 10-9S17.52 2 12 2z"/></svg>
-        LINE オープンチャットに参加する
-      </a>
     </div>
 
     <div class="apply-card" id="apply-form-wrap">
       <h2>参加申し込み</h2>
+      <div id="apply-capacity"></div>
 
       <!-- 1. 出演形式 -->
       <div style="margin:0 0 1rem">
@@ -817,38 +892,40 @@ select.status-sel{
       <!-- 2a. ソロ個人情報 -->
       <div id="af-solo-info">
         <div class="form-grid">
-          <div class="fg"><label>氏名 *</label><input id="af-name" type="text" placeholder="山田 花子"></div>
-          <div class="fg"><label>ふりがな</label><input id="af-kana" type="text" placeholder="やまだ はなこ"></div>
-          <div class="fg"><label>メール *</label><input id="af-email" type="email" placeholder="example@mail.com"></div>
-          <div class="fg"><label>電話</label><input id="af-tel" type="tel" placeholder="090-0000-0000"></div>
-          <div class="fg full"><label>楽器</label><input id="af-instrument" type="text" list="instrument-list" placeholder="ピアノ、ヴァイオリン 等"></div>
+          <div class="fg"><label for="af-name">氏名 *</label><input id="af-name" type="text" placeholder="山田 花子"></div>
+          <div class="fg"><label for="af-kana">ふりがな</label><input id="af-kana" type="text" placeholder="やまだ はなこ"></div>
+          <div class="fg"><label for="af-email">メール *</label><input id="af-email" type="email" placeholder="example@mail.com"></div>
+          <div class="fg"><label for="af-tel">電話</label><input id="af-tel" type="tel" placeholder="090-0000-0000"></div>
+          <div class="fg full"><label for="af-instrument">楽器</label><input id="af-instrument" type="text" list="instrument-list" placeholder="ピアノ、ヴァイオリン 等"></div>
         </div>
         <div style="margin-top:0.8rem">
           <label style="font-size:0.78rem;color:var(--text2);display:block;margin-bottom:0.4rem">連絡方法</label>
           <div style="display:flex;gap:1.2rem;flex-wrap:wrap">
-            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact" value="line_open" checked style="accent-color:var(--gold2)"> LINEオープンチャット</label>
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact" value="line_official" checked style="accent-color:var(--gold2)"> 公式LINE</label>
             <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact" value="line" style="accent-color:var(--gold2)"> 個別LINE</label>
             <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact" value="email" style="accent-color:var(--gold2)"> メール</label>
           </div>
+            <a href="https://lin.ee/ur7P23U" target="_blank" rel="noopener noreferrer" style="color:var(--gold2)">公式LINEを友だち追加</a>
         </div>
       </div>
 
       <!-- 2b. グループ情報 -->
       <div id="af-group-fields" style="display:none">
         <div class="form-grid">
-          <div class="fg full"><label>グループ名</label><input id="af-group-name" type="text" placeholder="例：トリオ・ラ・フルール"></div>
-          <div class="fg"><label>代表者名 *</label><input id="af-group-rep" type="text" placeholder="代表者の氏名"></div>
-          <div class="fg"><label>代表者ふりがな</label><input id="af-group-rep-kana" type="text" placeholder="ふりがな"></div>
-          <div class="fg"><label>代表者メール *</label><input id="af-group-email" type="email" placeholder="example@mail.com"></div>
-          <div class="fg"><label>代表者電話</label><input id="af-group-tel" type="tel" placeholder="090-0000-0000"></div>
+          <div class="fg full"><label for="af-group-name">グループ名</label><input id="af-group-name" type="text" placeholder="例：トリオ・ラ・フルール"></div>
+          <div class="fg"><label for="af-group-rep">代表者名 *</label><input id="af-group-rep" type="text" placeholder="代表者の氏名"></div>
+          <div class="fg"><label for="af-group-rep-kana">代表者ふりがな</label><input id="af-group-rep-kana" type="text" placeholder="ふりがな"></div>
+          <div class="fg"><label for="af-group-email">代表者メール *</label><input id="af-group-email" type="email" placeholder="example@mail.com"></div>
+          <div class="fg"><label for="af-group-tel">代表者電話</label><input id="af-group-tel" type="tel" placeholder="090-0000-0000"></div>
         </div>
         <div style="margin-top:0.8rem">
           <label style="font-size:0.78rem;color:var(--text2);display:block;margin-bottom:0.4rem">連絡方法</label>
           <div style="display:flex;gap:1.2rem;flex-wrap:wrap">
-            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact-g" value="line_open" checked style="accent-color:var(--gold2)"> LINEオープンチャット</label>
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact-g" value="line_official" checked style="accent-color:var(--gold2)"> 公式LINE</label>
             <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact-g" value="line" style="accent-color:var(--gold2)"> 個別LINE</label>
             <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer"><input type="radio" name="af-contact-g" value="email" style="accent-color:var(--gold2)"> メール</label>
           </div>
+            <a href="https://lin.ee/ur7P23U" target="_blank" rel="noopener noreferrer" style="color:var(--gold2)">公式LINEを友だち追加</a>
         </div>
 
         <!-- 3. メンバー -->
@@ -877,7 +954,7 @@ select.status-sel{
               </select>
             </div>
             <div class="fg" id="af-acc-name-wrap-group" style="display:none">
-              <label>伴奏者名</label><input id="af-acc-name-group" type="text" placeholder="伴奏者の氏名">
+              <label for="af-acc-name-group">伴奏者名</label><input id="af-acc-name-group" type="text" placeholder="伴奏者の氏名">
             </div>
           </div>
         </div>
@@ -896,7 +973,7 @@ select.status-sel{
             </select>
           </div>
           <div class="fg" id="af-acc-name-wrap" style="display:none">
-            <label>伴奏者名</label><input id="af-acc-name" type="text" placeholder="伴奏者の氏名">
+            <label for="af-acc-name">伴奏者名</label><input id="af-acc-name" type="text" placeholder="伴奏者の氏名">
           </div>
         </div>
       </div>
@@ -922,6 +999,7 @@ select.status-sel{
         <button class="btn btn-outline btn-sm" onclick="addAfPiece()">＋ 曲を追加</button>
       </div>
 
+      <div id="af-participation"></div>
       <!-- 5/6. メモ -->
       <div class="form-grid">
         <div class="fg full"><label>メモ（必要機材、連絡事項）</label>
@@ -931,11 +1009,11 @@ select.status-sel{
 
       <!-- 6/7. 紹介者 -->
       <div class="form-grid" style="margin-top:0.6rem">
-        <div class="fg"><label>紹介者</label><input id="af-referrer" type="text" placeholder="紹介者のお名前"></div>
+        <div class="fg"><label for="af-referrer">紹介者</label><input id="af-referrer" type="text" placeholder="紹介者のお名前"></div>
       </div>
 
       <div style="margin-top:1.2rem">
-        <button class="btn btn-gold" style="width:100%;padding:0.75rem;font-size:0.9rem" onclick="submitApplication()">申し込む</button>
+        <button id="af-submit" class="btn btn-gold" style="width:100%;padding:0.75rem;font-size:0.9rem" onclick="submitApplication()">申し込む</button>
       </div>
     </div>
 
@@ -944,6 +1022,7 @@ select.status-sel{
       <div class="apply-success-icon">✅</div>
       <h3>申し込みを受け付けました</h3>
       <p>主催者よりご連絡をお待ちください。</p>
+      <div id="af-official-next" hidden><p>演奏会の連絡を受け取るため、友だち追加後に「演奏会名」と「申込時のお名前」をトークでお送りください。</p><a class="apply-line-btn" href="https://lin.ee/ur7P23U" target="_blank" rel="noopener noreferrer">公式LINEを友だち追加</a></div>
       <div id="apply-mailto-wrap" style="margin-top:1.2rem"></div>
     </div>
   </div>
@@ -1223,7 +1302,7 @@ select.status-sel{
       <button class="close-btn" onclick="closeModal('acc-edit-modal')">×</button>
     </div>
     <div class="form-grid" style="margin-top:0.8rem">
-      <div class="fg full"><label>氏名</label><input id="acc-edit-name" type="text" placeholder="例：田中 美子"></div>
+      <div class="fg full"><label for="acc-edit-name">氏名</label><input id="acc-edit-name" type="text" placeholder="例：田中 美子"></div>
       <div class="fg full"><label>ログインコード <span style="font-size:0.68rem;color:var(--text3);font-weight:400">（英数字）</span></label>
         <input id="acc-edit-code" type="text" placeholder="例：tanaka"
           oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')"
@@ -1312,35 +1391,36 @@ select.status-sel{
       <button class="close-btn" onclick="closeModalWithConfirm('concert-modal')">×</button>
     </div>
     <div class="form-grid">
-      <div class="fg full"><label>演奏会名 *</label><input id="cm-name" type="text" placeholder="例：第3回 春のサロンコンサート"></div>
-      <div class="fg"><label>開催日 *</label><input id="cm-date" type="date"></div>
-      <div class="fg full"><label>会場</label><input id="cm-venue" type="text" placeholder="例：○○サロン"></div>
-      <div class="fg full"><label>会場URL（地図・公式サイトなど）</label><input id="cm-venue-url" type="url" placeholder="https://..."></div>
-      <div class="fg"><label>来場者上限（人）</label><input id="cm-audience-capacity" type="number" min="0" placeholder="例：50" inputmode="numeric"></div>
-      <div class="fg full"><label>演奏会の説明・概要</label><textarea id="cm-description" rows="3" placeholder="演奏会のコンセプトや内容など"></textarea></div>
-      <div class="fg full"><label>その他メモ・案内（演奏者に表示されます）</label><textarea id="cm-note"></textarea></div>
-      <div class="fg full"><label>招待コード（演奏者がログインに使用）</label><input id="cm-code" type="text" placeholder="例: spring2025"></div>
-      <div class="fg full"><label>LINE オープンチャット URL</label><input id="cm-line-url" type="url" placeholder="https://line.me/ti/g2/..."></div>
+      <div class="fg full"><label for="cm-name">演奏会名 *</label><input id="cm-name" type="text" placeholder="例：第3回 春のサロンコンサート"></div>
+      <div class="fg"><label for="cm-date">開催日 *</label><input id="cm-date" type="date"></div>
+      <div class="fg full"><label for="cm-venue">会場</label><input id="cm-venue" type="text" placeholder="例：○○サロン"></div>
+      <div class="fg full"><label for="cm-venue-url">会場URL（地図・公式サイトなど）</label><input id="cm-venue-url" type="url" placeholder="https://..."></div>
+      <div class="fg"><label for="cm-entry-capacity">参加枠の上限（組）</label><input id="cm-entry-capacity" type="number" min="0" step="1" inputmode="numeric" placeholder="上限なし"><p class="field-help">空欄・0は上限なし。申込受付時に1組1枠を確保します。</p></div>
+      <div class="fg"><label for="cm-audience-capacity">来場者上限（人）</label><input id="cm-audience-capacity" type="number" min="0" placeholder="例：50" inputmode="numeric"></div>
+      <div class="fg full"><label for="cm-description">演奏会の説明・概要</label><textarea id="cm-description" rows="3" placeholder="演奏会のコンセプトや内容など"></textarea></div>
+      <div class="fg full"><label for="cm-note">その他メモ・案内（演奏者に表示されます）</label><textarea id="cm-note"></textarea></div>
+      <div class="fg full"><label for="cm-code">招待コード（演奏者がログインに使用）</label><input id="cm-code" type="text" placeholder="例: spring2025"></div>
+      <div class="fg full"><label for="cm-line-url">LINE オープンチャット URL</label><input id="cm-line-url" type="url" placeholder="https://line.me/ti/g2/..."></div>
 
       <div class="fg full" style="margin-top:0.4rem">
         <div style="font-size:0.7rem;letter-spacing:0.1em;color:var(--gold2);font-weight:600;margin-bottom:0.5rem">▸ 会場タイムライン</div>
       </div>
-      <div class="fg"><label>会場利用開始</label><input id="cm-venue-start" type="time"></div>
-      <div class="fg"><label>開場（お客様入場）</label><input id="cm-venue-open" type="time"></div>
-      <div class="fg"><label>本番開始</label><input id="cm-time" type="time" value="14:00"></div>
-      <div class="fg"><label>会場利用終了</label><input id="cm-venue-end" type="time"></div>
+      <div class="fg"><label for="cm-venue-start">会場利用開始</label><input id="cm-venue-start" type="time"></div>
+      <div class="fg"><label for="cm-venue-open">開場（お客様入場）</label><input id="cm-venue-open" type="time"></div>
+      <div class="fg"><label for="cm-time">本番開始</label><input id="cm-time" type="time" value="14:00"></div>
+      <div class="fg"><label for="cm-venue-end">会場利用終了</label><input id="cm-venue-end" type="time"></div>
 
       <div class="fg full" style="margin-top:0.4rem">
         <div style="font-size:0.7rem;letter-spacing:0.1em;color:var(--gold2);font-weight:600;margin-bottom:0.5rem">▸ リハーサル</div>
       </div>
-      <div class="fg"><label>リハーサル開始</label><input id="cm-rehearsal-time" type="time"></div>
-      <div class="fg"><label>リハ持ち時間（分）</label><input id="cm-rehearsal-duration" type="number" min="1" value="10" inputmode="numeric"></div>
-      <div class="fg"><label>リハ奏者間（分）</label><input id="cm-rehearsal-gap" type="number" min="0" value="2" inputmode="numeric"></div>
+      <div class="fg"><label for="cm-rehearsal-time">リハーサル開始</label><input id="cm-rehearsal-time" type="time"></div>
+      <div class="fg"><label for="cm-rehearsal-duration">リハ持ち時間（分）</label><input id="cm-rehearsal-duration" type="number" min="1" value="10" inputmode="numeric"></div>
+      <div class="fg"><label for="cm-rehearsal-gap">リハ奏者間（分）</label><input id="cm-rehearsal-gap" type="number" min="0" value="2" inputmode="numeric"></div>
 
       <div class="fg full" style="margin-top:0.4rem">
         <div style="font-size:0.7rem;letter-spacing:0.1em;color:var(--gold2);font-weight:600;margin-bottom:0.5rem">▸ 本番</div>
       </div>
-      <div class="fg"><label>本番奏者間（分）</label><input id="cm-performance-gap" type="number" min="0" value="3" inputmode="numeric"></div>
+      <div class="fg"><label for="cm-performance-gap">本番奏者間（分）</label><input id="cm-performance-gap" type="number" min="0" value="3" inputmode="numeric"></div>
     </div>
 
     <!-- チラシアップロード -->
@@ -1427,7 +1507,7 @@ select.status-sel{
     </div>
 
     <div class="form-grid">
-      <div class="fg full"><label>演奏会 *</label><select id="em-concert" onchange="onEmConcertChange()"></select></div>
+      <div class="fg full"><label for="em-concert">演奏会 *</label><select id="em-concert" onchange="onEmConcertChange()"></select></div>
     </div>
 
     <!-- TYPE + 出演順（表示のみ） -->
@@ -1451,11 +1531,11 @@ select.status-sel{
     <!-- SOLO FIELDS -->
     <div id="solo-fields">
       <div class="form-grid">
-        <div class="fg"><label>氏名 *</label><input id="em-name" type="text" placeholder="山田 花子"></div>
-        <div class="fg"><label>ふりがな</label><input id="em-kana" type="text" placeholder="やまだ はなこ"></div>
-        <div class="fg"><label>メール</label><input id="em-email" type="email"></div>
-        <div class="fg"><label>電話</label><input id="em-tel" type="tel" inputmode="numeric"></div>
-        <div class="fg full"><label>楽器</label><input id="em-instrument" type="text" list="instrument-list" placeholder="例：ピアノ、ヴァイオリン、フルート"></div>
+        <div class="fg"><label for="em-name">氏名 *</label><input id="em-name" type="text" placeholder="山田 花子"></div>
+        <div class="fg"><label for="em-kana">ふりがな</label><input id="em-kana" type="text" placeholder="やまだ はなこ"></div>
+        <div class="fg"><label for="em-email">メール</label><input id="em-email" type="email"></div>
+        <div class="fg"><label for="em-tel">電話</label><input id="em-tel" type="tel" inputmode="numeric"></div>
+        <div class="fg full"><label for="em-instrument">楽器</label><input id="em-instrument" type="text" list="instrument-list" placeholder="例：ピアノ、ヴァイオリン、フルート"></div>
       </div>
       <div class="subsect" style="margin-top:0.9rem">
         <div class="subsect-title">伴奏</div>
@@ -1486,11 +1566,11 @@ select.status-sel{
     <!-- GROUP FIELDS -->
     <div id="group-fields" style="display:none">
       <div class="form-grid">
-        <div class="fg full"><label>グループ名 *</label><input id="em-group-name" type="text" placeholder="例：トリオ・ラ・フルール"></div>
-        <div class="fg"><label>代表者名</label><input id="em-group-rep" type="text" placeholder="代表者の氏名"></div>
-        <div class="fg"><label>代表者ふりがな</label><input id="em-group-rep-kana" type="text" placeholder="ふりがな"></div>
-        <div class="fg"><label>代表者メール</label><input id="em-group-email" type="email"></div>
-        <div class="fg"><label>代表者電話</label><input id="em-group-tel" type="tel" inputmode="numeric"></div>
+        <div class="fg full"><label for="em-group-name">グループ名 *</label><input id="em-group-name" type="text" placeholder="例：トリオ・ラ・フルール"></div>
+        <div class="fg"><label for="em-group-rep">代表者名</label><input id="em-group-rep" type="text" placeholder="代表者の氏名"></div>
+        <div class="fg"><label for="em-group-rep-kana">代表者ふりがな</label><input id="em-group-rep-kana" type="text" placeholder="ふりがな"></div>
+        <div class="fg"><label for="em-group-email">代表者メール</label><input id="em-group-email" type="email"></div>
+        <div class="fg"><label for="em-group-tel">代表者電話</label><input id="em-group-tel" type="tel" inputmode="numeric"></div>
       </div>
       <div class="subsect" style="margin-top:0.9rem">
         <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
@@ -1530,6 +1610,7 @@ select.status-sel{
       </div>
     </div>
 
+    <div id="em-participation"></div>
     <!-- COMMON: PIECES -->
     <div class="subsect" style="margin-top:1rem">
       <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
@@ -1553,10 +1634,10 @@ select.status-sel{
 
     <!-- COMMON: REST -->
     <div class="form-grid" style="margin-top:1rem">
-      <div class="fg full"><label>プロフィール・自己紹介</label><textarea id="em-profile" rows="3"></textarea></div>
-      <div class="fg full"><label>メモ（必要機材、連絡事項）</label><textarea id="em-memo" rows="2" placeholder="例：譜面台が必要、当日14時までに入場"></textarea></div>
-      <div class="fg"><label>メモ（リハ）</label><textarea id="em-memo-reh" rows="2" placeholder="リハーサル時の備考"></textarea></div>
-      <div class="fg"><label>メモ（本番）</label><textarea id="em-memo-perf" rows="2" placeholder="本番時の備考"></textarea></div>
+      <div class="fg full"><label for="em-profile">プロフィール・自己紹介</label><textarea id="em-profile" rows="3"></textarea></div>
+      <div class="fg full"><label for="em-memo">メモ（必要機材、連絡事項）</label><textarea id="em-memo" rows="2" placeholder="例：譜面台が必要、当日14時までに入場"></textarea></div>
+      <div class="fg"><label for="em-memo-reh">メモ（リハ）</label><textarea id="em-memo-reh" rows="2" placeholder="リハーサル時の備考"></textarea></div>
+      <div class="fg"><label for="em-memo-perf">メモ（本番）</label><textarea id="em-memo-perf" rows="2" placeholder="本番時の備考"></textarea></div>
     </div>
 
     <!-- リハーサル設定 -->
@@ -1746,7 +1827,7 @@ select.status-sel{
       <button class="close-btn" onclick="closeModalWithConfirm('txn-modal')">×</button>
     </div>
     <div class="form-grid">
-      <div class="fg full"><label>演奏会</label><select id="tm-concert"></select></div>
+      <div class="fg full"><label for="tm-concert">演奏会</label><select id="tm-concert"></select></div>
       <div class="fg full">
         <label>収入 / 支出</label>
         <div class="type-toggle" style="margin-top:0.3rem">
@@ -1758,10 +1839,10 @@ select.status-sel{
         <label>カテゴリ</label>
         <select id="tm-category"></select>
       </div>
-      <div class="fg full"><label>内容・メモ</label><input id="tm-desc" type="text" placeholder="例：○○ホール使用料"></div>
-      <div class="fg"><label>金額（円）</label><input id="tm-amount" type="number" min="0" placeholder="10000" inputmode="numeric"></div>
-      <div class="fg"><label>日付</label><input id="tm-date" type="date"></div>
-      <div class="fg full"><label>備考</label><input id="tm-note" type="text" placeholder="領収書No.など"></div>
+      <div class="fg full"><label for="tm-desc">内容・メモ</label><input id="tm-desc" type="text" placeholder="例：○○ホール使用料"></div>
+      <div class="fg"><label for="tm-amount">金額（円）</label><input id="tm-amount" type="number" min="0" placeholder="10000" inputmode="numeric"></div>
+      <div class="fg"><label for="tm-date">日付</label><input id="tm-date" type="date"></div>
+      <div class="fg full"><label for="tm-note">備考</label><input id="tm-note" type="text" placeholder="領収書No.など"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModalWithConfirm('txn-modal')">キャンセル</button>
@@ -1801,6 +1882,16 @@ select.status-sel{
   <option value="その他">
 </datalist>
 
+<div class="overlay" id="confirmation-mail-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmation-mail-title">
+    <div class="modal-hd"><h3 id="confirmation-mail-title">参加確定メールの確認</h3><button class="close-btn" onclick="closeModal('confirmation-mail')" aria-label="閉じる">×</button></div>
+    <p>宛先：<strong id="confirmation-mail-to"></strong></p>
+    <p id="confirmation-mail-subject" style="margin:1rem 0;font-weight:bold"></p>
+    <pre id="confirmation-mail-body" style="white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.9;background:var(--surface2);padding:1rem;border-radius:8px"></pre>
+    <p id="confirmation-mail-result" role="status" style="margin-top:1rem;line-height:1.8"></p>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('confirmation-mail')">閉じる</button><button id="confirmation-mail-send" class="btn btn-gold" onclick="sendReviewedConfirmation()">この内容で送信</button></div>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
   emailjs.init('MXutqvlZ_pBSuWZSK');
@@ -1811,7 +1902,7 @@ select.status-sel{
 //  FIREBASE SETUP
 // ════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, onValue, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAvuRxZPjL0hZ9L9eRGR6yXh0YQvKsXDOY",
@@ -1830,6 +1921,7 @@ window._fbRef = ref;
 window._fbSet = set;
 window._fbOnValue = onValue;
 window._fbGet = get;
+window._fbTransaction = runTransaction;
 </script>
 
 <script>
@@ -1883,92 +1975,221 @@ let adminPassword = 'admin'; // Firebaseから読み込まれる
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
 function esc(s){ if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+const PARTY_LABELS = {'':'未回答',yes:'参加',no:'不参加',undecided:'未定'};
+const VIDEO_LABELS = {'':'未回答',public:'公開可',limited:'限定公開のみ可',private:'公開不可'};
+function participationFields(prefix, data={}){
+  const options=(labels,value)=>Object.entries(labels).map(([v,label])=>`<option value="${v}" ${v===(value||'')?'selected':''}>${label}</option>`).join('');
+  return `<fieldset class="participation-options"><legend>打ち上げ・録画について</legend>
+    <div class="form-grid">
+      <div class="fg"><label for="${prefix}-party">打ち上げへの参加</label><select id="${prefix}-party">${options(PARTY_LABELS,data.afterParty)}</select></div>
+      <div class="fg"><label for="${prefix}-video">録画の公開範囲</label><select id="${prefix}-video" onchange="toggleVideoConditions('${prefix}')">${options(VIDEO_LABELS,data.videoPublication)}</select></div>
+      <div class="fg full"><span class="field-label">公開する場合の条件（複数選択可）</span>
+        <div class="consent-checks" id="${prefix}-conditions">
+          <label><input type="checkbox" id="${prefix}-anonymous" ${data.videoAnonymous?'checked':''}>匿名にする（氏名を表示しない）</label>
+          <label><input type="checkbox" id="${prefix}-blur" ${data.videoBlur?'checked':''}>顔・姿にぼかしを入れる</label>
+        </div>
+        <p class="field-help">条件を満たせない場合は公開しません。未回答は公開許可として扱いません。</p>
+      </div>
+      <div class="fg full"><label for="${prefix}-participation-note">補足（グループ内で回答が異なる場合など）</label><textarea id="${prefix}-participation-note" rows="2" placeholder="例：打ち上げは3人中2人参加。録画は全員ぼかし希望。">${esc(data.participationNote||'')}</textarea></div>
+    </div></fieldset>`;
+}
+function toggleVideoConditions(prefix){
+  const allowed=['public','limited'].includes(document.getElementById(prefix+'-video').value);
+  ['anonymous','blur'].forEach(key=>{document.getElementById(prefix+'-'+key).disabled=!allowed;});
+}
+function readParticipation(prefix){
+  const videoPublication=document.getElementById(prefix+'-video').value;
+  const allowed=['public','limited'].includes(videoPublication);
+  return {afterParty:document.getElementById(prefix+'-party').value, videoPublication,
+    videoAnonymous:allowed&&document.getElementById(prefix+'-anonymous').checked,
+    videoBlur:allowed&&document.getElementById(prefix+'-blur').checked,
+    participationNote:document.getElementById(prefix+'-participation-note').value.trim()};
+}
+function videoLabel(data){
+  const conditions=['public','limited'].includes(data.videoPublication)
+    ? [data.videoAnonymous?'匿名':'',data.videoBlur?'顔・姿にぼかし':''].filter(Boolean) : [];
+  return (VIDEO_LABELS[data.videoPublication]||'未回答')+(conditions.length?'（'+conditions.join('・')+'が条件）':'');
+}
+function participationSummary(data){
+  return `<div class="participation-summary"><span>打ち上げ：${PARTY_LABELS[data.afterParty]||'未回答'}</span><span>録画：${videoLabel(data)}</span>${data.participationNote?`<span class="participation-note">補足：${esc(data.participationNote)}</span>`:''}</div>`;
+}
+function readNonnegative(id, fallback=0){
+  const raw=document.getElementById(id).value.trim();
+  const n=raw===''?fallback:Number(raw);
+  if(!Number.isInteger(n)||n<0) throw new Error('人数・枠数・間隔は0以上の整数で入力してください。');
+  return n;
+}
+function capacityState(concert, allEntries=entries, allApplications=applications){
+  const cid=concert?.id;
+  const registered=(allEntries||[]).filter(e=>e.concertId===cid&&e.status!=='absent').length;
+  const pending=(allApplications||[]).filter(a=>a.concertId===cid&&a.status==='new').length;
+  const limit=Number(concert?.entryCapacity)||0;
+  return {limit,registered,pending,used:registered+pending,remaining:limit?Math.max(0,limit-registered-pending):null};
+}
+function capacitySummary(c){
+  const q=capacityState(c);
+  return `<div class="capacity-summary ${q.limit&&q.remaining===0?'is-full':''}" role="status"><strong>${q.limit?(q.remaining===0?'満枠':`残り ${q.remaining} 枠`):'参加枠：上限なし'}</strong><span>1組＝1枠（ソロ・グループ共通）${q.limit?` ／ 定員 ${q.limit} 組`:''}</span><span>登録 ${q.registered} 組・承認待ち ${q.pending} 組</span></div>`;
+}
+function updateApplyCapacity(){
+  const c=concerts.find(c=>c.id===applyConcertId);
+  if(!c)return;
+  document.getElementById('apply-capacity').innerHTML=capacitySummary(c);
+  const full=capacityState(c).remaining===0;
+  const button=document.getElementById('af-submit');
+  button.disabled=full||_applicationSubmitting;
+  button.textContent=full?'満枠のため受付を終了しました':_applicationSubmitting?'送信中…':'申し込む';
+}
+
 function fmtTime(m){ return `${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`; }
 function today(){ return new Date().toISOString().slice(0,10); }
 
 // ════════════════════════
 //  STORAGE（Firebase）
 // ════════════════════════
-let _fbReady = false;
-let _persistTimer = null;
-
-async function persist(){
-  // デバウンス：連続保存を300ms間引く
-  if(_persistTimer) clearTimeout(_persistTimer);
-  _persistTimer = setTimeout(async ()=>{
-    if(!window._fbDb) return;
-    const data = {
-      concerts,
-      entries,
-      transactions,
-      applications,
-      audienceApplications,
-      accompanists,
-      instrumentList,
-      instrumentAbbr,
-      adminPassword,
-      emailTemplates,
-      schedBreaks,
-      schedCustomEvents,
-      schedRehearsalOrders,
-      updatedAt: Date.now()
-    };
-    try{
-      _lastWriteAt = Date.now();
-      await window._fbSet(window._fbRef(window._fbDb, 'salonConcert'), data);
-    }catch(e){ console.warn('Firebase write error:', e); }
-  }, 300);
+// Store only this client's changes; reserve capacity in the same transaction.
+let _storageBase = null;
+let _saveQueue = Promise.resolve();
+let _pendingSaves = 0;
+let _saveFailed = false;
+function cloneData(value){return JSON.parse(JSON.stringify(value));}
+function storageData(){
+  return cloneData({concerts,entries,transactions,applications,audienceApplications,accompanists,
+    instrumentList,instrumentAbbr,adminPassword,emailTemplates,schedBreaks,schedCustomEvents,
+    schedRehearsalOrders,schedStaffEvents,concertStaff});
 }
-
-async function hydrate(){
-  if(!window._fbDb) return;
-  try{
-    const snapshot = await window._fbGet(window._fbRef(window._fbDb, 'salonConcert'));
-    if(snapshot.exists()){
-      const data = snapshot.val();
-      if(data.concerts)     concerts      = data.concerts.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-      if(data.entries)      entries       = data.entries;
-      if(data.transactions) transactions  = data.transactions;
-      if(data.applications) applications  = data.applications;
-      if(data.audienceApplications) audienceApplications = data.audienceApplications;
-      if(data.accompanists) accompanists  = data.accompanists;
-      if(data.instrumentList) instrumentList = data.instrumentList;
-      if(data.instrumentAbbr)  instrumentAbbr = data.instrumentAbbr;
-      if(data.adminPassword)  adminPassword  = data.adminPassword;
-      if(data.emailTemplates) emailTemplates = data.emailTemplates;
-      if(data.schedBreaks)         schedBreaks         = data.schedBreaks;
-      if(data.schedCustomEvents)   schedCustomEvents   = data.schedCustomEvents;
-      if(data.schedRehearsalOrders) schedRehearsalOrders = data.schedRehearsalOrders;
+function applyStorage(data){
+  concerts=(data.concerts||[]).filter(Boolean).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  entries=data.entries||[];transactions=data.transactions||[];applications=data.applications||[];
+  audienceApplications=data.audienceApplications||[];accompanists=data.accompanists||{};
+  instrumentList=data.instrumentList||instrumentList;instrumentAbbr=data.instrumentAbbr||instrumentAbbr;
+  adminPassword=data.adminPassword||adminPassword;emailTemplates=data.emailTemplates||[];
+  schedBreaks=data.schedBreaks||{};schedCustomEvents=data.schedCustomEvents||{};
+  schedRehearsalOrders=data.schedRehearsalOrders||{};schedStaffEvents=data.schedStaffEvents||{};
+  concertStaff=data.concertStaff||{};
+}
+function sameData(a,b){return JSON.stringify(a)===JSON.stringify(b);}
+function mergeChanges(remote,before,after){
+  if(sameData(before,after))return remote;
+  if(Array.isArray(after)&&Array.isArray(before)&&[...before,...after].every(x=>x&&typeof x==='object'&&x.id)){
+    const result=new Map((Array.isArray(remote)?remote:[]).filter(Boolean).map(x=>[x.id,x]));
+    const old=new Map(before.map(x=>[x.id,x]));
+    const next=new Map(after.map(x=>[x.id,x]));
+    for(const id of old.keys())if(!next.has(id))result.delete(id);
+    for(const [id,value] of next){
+      if(!old.has(id))result.set(id,value);
+      else if(!sameData(old.get(id),value)){
+        if(!result.has(id))throw new Error('他の端末で削除された情報です。最新の一覧をご確認ください。');
+        result.set(id,mergeChanges(result.get(id),old.get(id),value));
+      }
     }
-  }catch(e){ console.warn('Firebase read error:', e); }
+    return [...result.values()];
+  }
+  if(after&&before&&typeof after==='object'&&typeof before==='object'&&!Array.isArray(after)&&!Array.isArray(before)){
+    const result={...(remote||{})};
+    for(const key of new Set([...Object.keys(before),...Object.keys(after)])){
+      if(sameData(before[key],after[key]))continue;
+      if(!(key in after))delete result[key];
+      else result[key]=mergeChanges(result[key],before[key],after[key]);
+    }
+    return result;
+  }
+  return after;
 }
-
-// リアルタイム同期リスナー（ログイン後に開始）
-let _lastWriteAt = 0;
-
-function startRealtimeSync(){
-  if(!window._fbDb || window._realtimeStarted) return;
-  window._realtimeStarted = true;
-  window._fbOnValue(window._fbRef(window._fbDb, 'salonConcert'), snapshot=>{
-    if(!snapshot.exists()) return;
-    const data = snapshot.val();
-    // 自分が書き込んだデータが即座に返ってくる場合はスキップ（500ms以内）
-    if(data.updatedAt && (Date.now() - _lastWriteAt) < 500) return;
-    if(data.concerts)     concerts      = data.concerts.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-    if(data.entries)      entries       = data.entries;
-    if(data.transactions) transactions  = data.transactions;
-    if(data.applications) applications  = data.applications;
-    if(data.audienceApplications) audienceApplications = data.audienceApplications;
-    if(data.accompanists) accompanists  = data.accompanists;
-    if(data.instrumentList) instrumentList = data.instrumentList;
-    if(data.instrumentAbbr)  instrumentAbbr = data.instrumentAbbr;
-    if(data.adminPassword)  adminPassword  = data.adminPassword;
-    if(data.schedBreaks)          schedBreaks          = data.schedBreaks;
-    if(data.schedCustomEvents)    schedCustomEvents    = data.schedCustomEvents;
-    if(data.schedRehearsalOrders) schedRehearsalOrders = data.schedRehearsalOrders;
-    // 表示中のページを再描画
-    refreshCurrentPage();
+function validateCapacityChange(previous,next){
+  for(const c of next.concerts||[]){
+    const now=capacityState(c,next.entries||[],next.applications||[]);
+    const oldConcert=(previous.concerts||[]).find(x=>x.id===c.id);
+    const old=capacityState(oldConcert,previous.entries||[],previous.applications||[]);
+    if(now.limit&&now.used>now.limit&&(now.used>old.used||now.limit!==old.limit)){
+      throw new Error(`「${c.name}」の参加枠が不足しています。残り枠を確認してください。`);
+    }
+  }
+  for(const a of next.applications||[]){
+    const old=(previous.applications||[]).find(x=>x.id===a.id);
+    const n=a.confirmationMail,p=old?.confirmationMail;
+    if(n?.status==='sending'&&n.attemptId!==p?.attemptId){
+      if(p?.status==='sent'||(p?.status==='sending'&&Date.now()-p.startedAt<120000))throw new Error('このメールは送信済み、または別の画面で送信中です。');
+    }
+  }
+  const seen=new Set();
+  for(const e of next.entries||[]){
+    if(!e.applicationId)continue;
+    if(seen.has(e.applicationId))throw new Error('この申し込みは別の端末で承認済みです。最新の一覧をご確認ください。');
+    seen.add(e.applicationId);
+  }
+}
+function persist(){
+  if(!window._fbDb||!_storageBase){alert('データを読み込めていないため保存できません。再読み込みしてください。');return Promise.resolve(false);}
+  const before=cloneData(_storageBase),after=storageData();
+  _storageBase=cloneData(after);
+  _pendingSaves++;
+  const task=_saveQueue.then(async()=>{
+    if(_saveFailed)return false;
+    let failure='';
+    try{
+      const result=await window._fbTransaction(window._fbRef(window._fbDb,'salonConcert'),raw=>{
+        try{
+          const previous=raw||before;
+          const next=mergeChanges(previous,before,after);
+          validateCapacityChange(previous,next);
+          next.updatedAt=Date.now();
+          failure='';return next;
+        }catch(e){failure=e.message;return;}
+      },{applyLocally:false});
+      if(!result.committed)throw new Error(failure||'保存できませんでした。もう一度お試しください。');
+      // Bring in remote changes without losing newer edits queued on this device.
+      if(_pendingSaves===1){
+        const newer=storageData();
+        const saved=result.snapshot.val()||{};
+        applyStorage(mergeChanges(saved,after,newer));
+        _storageBase=cloneData(saved);
+      }
+      return true;
+    }catch(e){
+      _saveFailed=true;
+      alert(e.message||'保存に失敗しました。通信状態をご確認ください。');
+      return false;
+    }
+  }).finally(async()=>{
+    _pendingSaves--;
+    if(!_pendingSaves){
+      if(_saveFailed){await hydrate();_saveFailed=false;}
+      if(typeof applyConcertId!=='undefined'&&applyConcertId)updateApplyCapacity();
+    }
   });
+  _saveQueue=task.catch(()=>false);
+  return task;
+}
+async function hydrate(){
+  if(!window._fbDb)return false;
+  try{
+    const snapshot=await window._fbGet(window._fbRef(window._fbDb,'salonConcert'));
+    if(snapshot.exists())applyStorage(snapshot.val());
+    _storageBase=storageData();
+    return true;
+  }catch(e){
+    _storageBase=null;
+    console.warn('Firebase read error:',e);
+    return false;
+  }
+}
+function startRealtimeSync(){
+  if(!window._fbDb||window._realtimeStarted)return;
+  window._realtimeStarted=true;
+  window._fbOnValue(window._fbRef(window._fbDb,'salonConcert'),snapshot=>{
+    if(!snapshot.exists()||_pendingSaves)return;
+    const previous=_storageBase||storageData();
+    const local=storageData();
+    const remote=snapshot.val();
+    try{applyStorage(mergeChanges(remote,previous,local));}catch(e){applyStorage(remote);}
+    _storageBase=cloneData(remote);
+    if(typeof applyConcertId!=='undefined'&&applyConcertId)updateApplyCapacity();
+    // Keep unsaved form inputs intact during background updates.
+    const editing=document.querySelector('.overlay.open')||document.activeElement?.matches('input,select,textarea')||
+      (currentConcertTab==='info'&&document.getElementById('page-concert-detail').classList.contains('active'));
+    if(currentUser&&!editing)refreshCurrentPage();
+  },error=>{console.warn('Firebase sync error:',error);});
 }
 
 function refreshCurrentPage(){
@@ -1983,7 +2204,7 @@ function refreshCurrentPage(){
   else if(id==='page-concert-detail') {
     renderConcertDetailHeader(currentConcertId);
     if(currentConcertTab==='info')          renderConcertInfo(currentConcertId);
-    else if(currentConcertTab==='participants') renderConcertParticipants(currentConcertId);
+    else if(currentConcertTab==='participants') renderConcertParticipants(currentConcertId,_participantTab);
     else if(currentConcertTab==='audience')     renderConcertAudience(currentConcertId);
     else if(currentConcertTab==='program')      renderConcertProgram(currentConcertId);
     else if(currentConcertTab==='schedule')     renderConcertSchedule(currentConcertId);
@@ -2467,6 +2688,7 @@ function openConcertModal(id){
     document.getElementById('cm-performance-gap').value=c.performanceGap??3;
     document.getElementById('cm-venue').value=c.venue||'';
     document.getElementById('cm-venue-url').value=c.venueUrl||'';
+    document.getElementById('cm-entry-capacity').value=c.entryCapacity||'';
     document.getElementById('cm-audience-capacity').value=c.audienceCapacity||'';
     document.getElementById('cm-description').value=c.description||'';
     document.getElementById('cm-note').value=c.note||'';
@@ -2486,7 +2708,7 @@ function openConcertModal(id){
     } else { clearFlyer(); }
     document.getElementById('concert-modal-title').textContent='演奏会を編集';
   } else {
-    ['cm-name','cm-date','cm-venue','cm-venue-url','cm-audience-capacity','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note','cm-description'].forEach(i=>document.getElementById(i).value='');
+    ['cm-name','cm-date','cm-venue','cm-venue-url','cm-entry-capacity','cm-audience-capacity','cm-note','cm-code','cm-line-url','cm-acc-fee','cm-fee-note','cm-description'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('cm-time').value='14:00';
     document.getElementById('cm-venue-start').value='';
     document.getElementById('cm-venue-open').value='';
@@ -2503,7 +2725,9 @@ function openConcertModal(id){
   }
   openModal('concert-modal');
 }
-function saveConcert(){
+async function saveConcert(){
+  let entryCapacity,rehearsalGap,performanceGap;
+  try {entryCapacity=readNonnegative('cm-entry-capacity'); rehearsalGap=readNonnegative('cm-rehearsal-gap',2); performanceGap=readNonnegative('cm-performance-gap',3);} catch(e){alert(e.message);return;}
   const name=document.getElementById('cm-name').value.trim();
   if(!name){alert('演奏会名を入力してください');return;}
   const data={
@@ -2515,8 +2739,7 @@ function saveConcert(){
     venueEnd:document.getElementById('cm-venue-end').value,
     rehearsalTime:document.getElementById('cm-rehearsal-time').value,
     rehearsalDuration:Number(document.getElementById('cm-rehearsal-duration').value)||10,
-    rehearsalGap:Number(document.getElementById('cm-rehearsal-gap').value)||2,
-    performanceGap:Number(document.getElementById('cm-performance-gap').value)||3,
+    rehearsalGap, performanceGap, entryCapacity,
     venue:document.getElementById('cm-venue').value.trim(),
     venueUrl:document.getElementById('cm-venue-url').value.trim(),
     audienceCapacity:parseInt(document.getElementById('cm-audience-capacity').value)||0,
@@ -2541,7 +2764,7 @@ function saveConcert(){
     concertStaff[newId] = getCmStaff();
   }
   concerts.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  persist(); closeModal('concert-modal'); renderConcerts();
+  if(!await persist())return; closeModal('concert-modal'); renderConcerts();
 }
 function deleteConcert(id){
   if(!confirm('この演奏会を削除しますか？\n参加者データも削除されます。'))return;
@@ -2621,41 +2844,38 @@ function renderConcertInfo(cid){
 
   // 演奏会情報フォームを直接表示
   const tiers = (c.entryFeeTiers||[{name:'一般',price:0}]);
-  const tiersHtml = tiers.map((t,i)=>`
-    <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.4rem">
-      <input type="text" value="${esc(t.name)}" placeholder="区分名" style="width:100px" onchange="updateConcertInfoTier(${i},'name',this.value)">
-      <input type="number" value="${t.price||0}" min="0" style="width:80px;text-align:right" onchange="updateConcertInfoTier(${i},'price',this.value)">
-      <span style="font-size:0.78rem;color:var(--text3)">円</span>
-      ${tiers.length>1?`<button onclick="removeConcertInfoTier(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.9rem">✕</button>`:''}
-    </div>`).join('');
+  const tiersHtml = concertInfoTiersHtml(tiers);
 
   el.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.9rem 1.2rem;max-width:720px">
-      <div class="fg full"><label>演奏会名</label><input id="ci-name" type="text" value="${esc(c.name)}"></div>
-      <div class="fg"><label>開催日</label><input id="ci-date" type="date" value="${c.date||''}"></div>
-      <div class="fg"><label>開場時間</label><input id="ci-venue-open" type="time" value="${c.venueOpen||''}"></div>
-      <div class="fg"><label>開演時間</label><input id="ci-time" type="time" value="${c.time||''}"></div>
-      <div class="fg"><label>会場利用開始時間</label><input id="ci-venue-start" type="time" value="${c.venueStart||''}"></div>
-      <div class="fg"><label>会場利用終了時間</label><input id="ci-venue-end" type="time" value="${c.venueEnd||''}"></div>
-      <div class="fg"><label>会場名</label><input id="ci-venue" type="text" value="${esc(c.venue||'')}"></div>
-      <div class="fg"><label>会場URL</label><input id="ci-venue-url" type="url" value="${esc(c.venueUrl||'')}"></div>
-      <div class="fg"><label>来場者上限（人）</label><input id="ci-audience-capacity" type="number" min="0" value="${c.audienceCapacity||''}"></div>
-      <div class="fg"><label>リハ持ち時間（分）</label><input id="ci-rehearsal-duration" type="number" min="1" value="${c.rehearsalDuration||''}"></div>
-      <div class="fg"><label>リハ間隔（分）</label><input id="ci-rehearsal-gap" type="number" min="0" value="${c.rehearsalGap||''}"></div>
-      <div class="fg"><label>リハ開始時刻</label><input id="ci-rehearsal-time" type="time" value="${c.rehearsalTime||''}"></div>
+    <div class="concert-info-grid form-grid" style="max-width:720px">
+      <div class="fg full"><label for="ci-name">演奏会名</label><input id="ci-name" type="text" value="${esc(c.name)}"></div>
+      <div class="fg"><label for="ci-date">開催日</label><input id="ci-date" type="date" value="${c.date||''}"></div>
+      <div class="fg"><label for="ci-venue-open">開場時間</label><input id="ci-venue-open" type="time" value="${c.venueOpen||''}"></div>
+      <div class="fg"><label for="ci-time">開演時間</label><input id="ci-time" type="time" value="${c.time||''}"></div>
+      <div class="fg"><label for="ci-venue-start">会場利用開始時間</label><input id="ci-venue-start" type="time" value="${c.venueStart||''}"></div>
+      <div class="fg"><label for="ci-venue-end">会場利用終了時間</label><input id="ci-venue-end" type="time" value="${c.venueEnd||''}"></div>
+      <div class="fg"><label for="ci-venue">会場名</label><input id="ci-venue" type="text" value="${esc(c.venue||'')}"></div>
+      <div class="fg"><label for="ci-venue-url">会場URL</label><input id="ci-venue-url" type="url" value="${esc(c.venueUrl||'')}"></div>
+      <div class="fg"><label for="ci-entry-capacity">参加枠の上限（組）</label><input id="ci-entry-capacity" type="number" min="0" step="1" inputmode="numeric" value="${c.entryCapacity||''}"><p class="field-help">空欄・0は上限なし。申込受付時に枠を確保します。</p></div>
+      <div class="fg full">${capacitySummary(c)}</div>
+      <div class="fg"><label for="ci-audience-capacity">来場者上限（人）</label><input id="ci-audience-capacity" type="number" min="0" value="${c.audienceCapacity||''}"></div>
+      <div class="fg"><label for="ci-rehearsal-duration">リハ持ち時間（分）</label><input id="ci-rehearsal-duration" type="number" min="1" value="${c.rehearsalDuration||''}"></div>
+      <div class="fg"><label for="ci-rehearsal-gap">リハ間隔（分）</label><input id="ci-rehearsal-gap" type="number" min="0" value="${c.rehearsalGap??2}"></div>
+      <div class="fg"><label for="ci-performance-gap">本番奏者間・転換時間（分）</label><input id="ci-performance-gap" type="number" min="0" step="1" inputmode="numeric" value="${c.performanceGap??3}"></div>
+      <div class="fg"><label for="ci-rehearsal-time">リハ開始時刻</label><input id="ci-rehearsal-time" type="time" value="${c.rehearsalTime||''}"></div>
       <div class="fg full"><label>申し込み承認方法</label>
         <select id="ci-apply-approval">
           <option value="manual" ${(c.applyApproval||'manual')==='manual'?'selected':''}>手動承認（申し込みタブで確認後に登録）</option>
           <option value="auto"   ${c.applyApproval==='auto'?'selected':''}>自動承認（申し込み送信と同時に参加者登録）</option>
         </select>
       </div>
-      <div class="fg"><label>申し込み期限</label><input id="ci-apply-deadline" type="date" value="${c.applyDeadline||''}"></div>
-      <div class="fg"><label>承認連絡予定日</label><input id="ci-decision-date" type="date" value="${c.decisionDate||''}"></div>
-      <div class="fg full"><label>演奏会の説明</label><textarea id="ci-description" rows="3">${esc(c.description||'')}</textarea></div>
-      <div class="fg full"><label>備考・連絡事項</label><textarea id="ci-note" rows="2">${esc(c.note||'')}</textarea></div>
-      <div class="fg"><label>LINE URL</label><input id="ci-line-url" type="url" value="${esc(c.lineUrl||'')}"></div>
-      <div class="fg"><label>主催者コード</label><input id="ci-code" type="text" value="${esc(c.code||'')}"></div>
-      <div class="fg full"><label>伴奏代（円）</label><input id="ci-acc-fee" type="number" min="0" value="${c.accFee||''}"></div>
+      <div class="fg"><label for="ci-apply-deadline">申し込み期限</label><input id="ci-apply-deadline" type="date" value="${c.applyDeadline||''}"></div>
+      <div class="fg"><label for="ci-decision-date">承認連絡予定日</label><input id="ci-decision-date" type="date" value="${c.decisionDate||''}"></div>
+      <div class="fg full"><label for="ci-description">演奏会の説明</label><textarea id="ci-description" rows="3">${esc(c.description||'')}</textarea></div>
+      <div class="fg full"><label for="ci-note">備考・連絡事項</label><textarea id="ci-note" rows="2">${esc(c.note||'')}</textarea></div>
+      <div class="fg"><label for="ci-line-url">LINE URL</label><input id="ci-line-url" type="url" value="${esc(c.lineUrl||'')}"></div>
+      <div class="fg"><label for="ci-code">主催者コード</label><input id="ci-code" type="text" value="${esc(c.code||'')}"></div>
+      <div class="fg full"><label for="ci-acc-fee">伴奏代（円）</label><input id="ci-acc-fee" type="number" min="0" value="${c.accFee||''}"></div>
       <div class="fg full">
         <label>参加費設定</label>
         <div id="ci-fee-tiers">${tiersHtml}</div>
@@ -2665,10 +2885,10 @@ function renderConcertInfo(cid){
         ${c.flyerData?`<img src="${c.flyerData}" style="max-height:160px;border-radius:6px;margin-bottom:0.4rem;display:block"><button class="btn btn-outline btn-sm" onclick="clearConcertInfoFlyer()">削除</button>`:''}
         <input type="file" accept="image/*" onchange="setConcertInfoFlyer(event)" style="margin-top:0.4rem">
       </div>
-      <div class="fg full"><label>振込先情報</label><textarea id="ci-bank-info" rows="3" placeholder="例：〇〇銀行 〇〇支店&#10;普通 1234567&#10;カナ名義">${esc(c.bankInfo||'')}</textarea></div>
-      <div class="fg full"><label>PayPayリンク（URL）</label><input id="ci-paypay-url" type="url" value="${esc(c.paypayUrl||'')}" placeholder="https://qr.paypay.ne.jp/..."></div>
-      <div class="fg full"><label>📸 写真アルバムURL（Google フォト・Drive など）</label><input id="ci-photo-url" type="url" value="${esc(c.photoUrl||'')}" placeholder="https://photos.google.com/..."></div>
-      <div class="fg full"><label>🎬 動画URL（YouTube・Vimeo など）</label><textarea id="ci-video-urls" rows="3" placeholder="1行に1URLずつ入力&#10;https://youtube.com/...">${esc(c.videoUrls||'')}</textarea></div>
+      <div class="fg full"><label for="ci-bank-info">振込先情報</label><textarea id="ci-bank-info" rows="3" placeholder="例：〇〇銀行 〇〇支店&#10;普通 1234567&#10;カナ名義">${esc(c.bankInfo||'')}</textarea></div>
+      <div class="fg full"><label for="ci-paypay-url">PayPayリンク（URL）</label><input id="ci-paypay-url" type="url" value="${esc(c.paypayUrl||'')}" placeholder="https://qr.paypay.ne.jp/..."></div>
+      <div class="fg full"><label for="ci-photo-url">📸 写真アルバムURL（Google フォト・Drive など）</label><input id="ci-photo-url" type="url" value="${esc(c.photoUrl||'')}" placeholder="https://photos.google.com/..."></div>
+      <div class="fg full"><label for="ci-video-urls">🎬 動画URL（YouTube・Vimeo など）</label><textarea id="ci-video-urls" rows="3" placeholder="1行に1URLずつ入力&#10;https://youtube.com/...">${esc(c.videoUrls||'')}</textarea></div>
     </div>
     <div style="display:flex;gap:0.8rem;margin-top:1.5rem;align-items:center">
       <button class="btn btn-gold" onclick="saveConcertInfo()">💾 保存</button>
@@ -2692,16 +2912,28 @@ function renderConcertInfo(cid){
   window._ciFlyer = c.flyerData||null;
 }
 
+function concertInfoTiersHtml(tiers){
+  return tiers.map((t,i)=>`
+    <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.4rem">
+      <input type="text" value="${esc(t.name)}" placeholder="区分名" aria-label="参加費区分 ${i+1} の名前" style="width:100px" oninput="updateConcertInfoTier(${i},'name',this.value)">
+      <input type="number" value="${t.price||0}" min="0" aria-label="参加費区分 ${i+1} の金額" style="width:80px;text-align:right" oninput="updateConcertInfoTier(${i},'price',this.value)">
+      <span style="font-size:0.78rem;color:var(--text3)">円</span>
+      ${tiers.length>1?`<button type="button" aria-label="参加費区分 ${i+1} を削除" onclick="removeConcertInfoTier(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.9rem">✕</button>`:''}
+    </div>`).join('');
+}
+function renderConcertInfoTiers(){
+  document.getElementById('ci-fee-tiers').innerHTML=concertInfoTiersHtml(window._ciTiers);
+}
 function updateConcertInfoTier(i,field,val){
   window._ciTiers[i][field] = field==='price'?parseInt(val)||0:val;
 }
 function addConcertInfoTier(){
   window._ciTiers.push({name:'',price:0});
-  renderConcertInfo(currentConcertId);
+  renderConcertInfoTiers();
 }
 function removeConcertInfoTier(i){
   window._ciTiers.splice(i,1);
-  renderConcertInfo(currentConcertId);
+  renderConcertInfoTiers();
 }
 function setConcertInfoFlyer(event){
   const file=event.target.files[0]; if(!file) return;
@@ -2714,7 +2946,9 @@ function clearConcertInfoFlyer(){
   renderConcertInfo(currentConcertId);
 }
 
-function saveConcertInfo(){
+async function saveConcertInfo(){
+  let entryCapacity,rehearsalGap,performanceGap;
+  try {entryCapacity=readNonnegative('ci-entry-capacity'); rehearsalGap=readNonnegative('ci-rehearsal-gap',2); performanceGap=readNonnegative('ci-performance-gap',3);} catch(e){alert(e.message);return;}
   const c = concerts.find(x=>x.id===currentConcertId);
   if(!c) return;
   c.name           = document.getElementById('ci-name').value.trim();
@@ -2727,7 +2961,9 @@ function saveConcertInfo(){
   c.venueUrl       = document.getElementById('ci-venue-url').value.trim();
   c.audienceCapacity = parseInt(document.getElementById('ci-audience-capacity').value)||0;
   c.rehearsalDuration= parseInt(document.getElementById('ci-rehearsal-duration').value)||10;
-  c.rehearsalGap   = parseInt(document.getElementById('ci-rehearsal-gap').value)||3;
+  c.rehearsalGap = rehearsalGap;
+  c.performanceGap = performanceGap;
+  c.entryCapacity = entryCapacity;
   c.rehearsalTime  = document.getElementById('ci-rehearsal-time').value;
   c.description    = document.getElementById('ci-description').value.trim();
   c.note           = document.getElementById('ci-note').value.trim();
@@ -2742,7 +2978,7 @@ function saveConcertInfo(){
   c.paypayUrl      = document.getElementById('ci-paypay-url').value.trim();
   c.photoUrl       = document.getElementById('ci-photo-url').value.trim();
   c.videoUrls      = document.getElementById('ci-video-urls').value.trim();
-  persist();
+  if(!await persist())return;
   renderConcertDetailHeader(currentConcertId);
   renderConcertInfo(currentConcertId);
   alert('保存しました');
@@ -2757,7 +2993,7 @@ function deleteConcertFromDetail(){
   backToConcerts();
 }
 
-function renderConcertParticipants(cid){
+function renderConcertParticipants(cid, selectedTab='entries'){
   const el = document.getElementById('cdt-participants');
   const concert = concerts.find(c=>c.id===cid);
   const isPast = concert?.date && concert.date < today();
@@ -2766,12 +3002,15 @@ function renderConcertParticipants(cid){
   const newApps = applications.filter(a=>a.concertId===cid&&a.status==='new').length;
   el.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem">
-      <div style="display:flex;gap:0.4rem">
+      <div class="participant-tabs" style="display:flex;gap:0.4rem;flex-wrap:wrap">
         <button id="ptab-entries" class="btn btn-gold btn-sm" onclick="switchParticipantTab('entries')">出演者</button>
         <button id="ptab-acc" class="btn btn-outline btn-sm" onclick="switchParticipantTab('acc')">伴奏者</button>
         <button id="ptab-apps" class="btn btn-outline btn-sm" onclick="switchParticipantTab('apps')" style="position:relative">
           申し込み${newApps?`<span style="position:absolute;top:-4px;right:-4px;background:#74b9ff;color:#fff;font-size:0.6rem;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center">${newApps}</span>`:''}
         </button>
+        <button id="ptab-party" class="btn btn-outline btn-sm" onclick="switchParticipantTab('party')">打ち上げ</button>
+        <button id="ptab-video" class="btn btn-outline btn-sm" onclick="switchParticipantTab('video')">録画</button>
+        <button id="ptab-pending" class="btn btn-outline btn-sm" onclick="switchParticipantTab('pending')">未確定</button>
       </div>
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
         ${!isPast?`<label class="btn btn-outline btn-sm" style="cursor:pointer;margin:0">📂 CSVインポート<input type="file" accept=".csv,text/csv" onchange="importCSV(event)" style="display:none"></label>`:''}
@@ -2781,9 +3020,9 @@ function renderConcertParticipants(cid){
     </div>
     <div id="participant-list"></div>
     <div id="accompanist-list" style="display:none"></div>
-    <div id="application-list" style="display:none"></div>`;
-  _participantTab = 'entries';
-  renderParticipants();
+    <div id="application-list" style="display:none"></div>
+    <div id="participant-report" style="display:none"></div>`;
+  switchParticipantTab(selectedTab);
 }
 
 function renderConcertApplications(cid){
@@ -3224,7 +3463,7 @@ function setStatusSwitch(status){
 function togglePerformerCodeVisibility(){
   const isGroup=document.getElementById('group-fields')?.style.display!=='none';
   const wrap=document.getElementById('em-performer-code-wrap');
-  if(wrap) wrap.style.display=isGroup?'none':'';
+  if(wrap) wrap.style.display='';
 }
 
 // ── MEMBER ROWS (name + instrument) ──
@@ -3408,6 +3647,8 @@ function openEntryModal(id){
     document.getElementById('em-reh-default-hint').textContent = `（演奏会設定：${defaultRehNew}分）`;
     updateRehFields();
   }
+  document.getElementById('em-participation').innerHTML=participationFields('em',entries.find(e=>e.id===id)||{});
+  toggleVideoConditions('em');
   openModal('entry-modal');
 }
 function updateRehFields(){
@@ -3433,11 +3674,12 @@ function onEmConcertChange(){
   }
 }
 
-function saveEntry(){
+async function saveEntry(){
   const cid=document.getElementById('em-concert').value;
   const type=currentType;
   const accFeeVisible=document.getElementById('em-acc-fee-wrap')?.style.display!=='none';
   let data={concertId:cid,type,
+    ...readParticipation('em'),
     pieces:getPieces(),
     order:parseInt(document.getElementById('em-order').value)||0,
     duration:parseInt(document.getElementById('em-duration').value)||0,
@@ -3511,12 +3753,12 @@ function saveEntry(){
   } else {
     entries.push({id:uid(),...data});
   }
-  persist(); closeModal('entry-modal'); renderParticipants();
+  if(!await persist())return; closeModal('entry-modal'); refreshParticipantView();
 }
-function deleteEntry(id){
+async function deleteEntry(id){
   if(!confirm('この参加者を削除しますか？'))return;
   entries=entries.filter(x=>x.id!==id);
-  persist(); renderParticipants();
+  if(await persist())renderParticipants();
 }
 function toggleFeeStatus(id){
   const e=entries.find(x=>x.id===id);
@@ -3525,9 +3767,9 @@ function toggleFeeStatus(id){
   persist(); renderParticipants();
 }
 
-function changeStatus(id, val){
+async function changeStatus(id, val){
   const e=entries.find(x=>x.id===id);
-  if(e){e.status=val;persist();}
+  if(e){e.status=val;await persist();renderParticipants();}
 }
 
 function populateSel(selId){
@@ -3546,11 +3788,11 @@ function populateSel2(selId){
 // ════════════════════════
 //  ACCOMPANIST MANAGEMENT
 // ════════════════════════
-let _participantTab = 'entries'; // 'entries' | 'acc'
+let _participantTab = 'entries'; // entries / acc / apps / party / video / pending
 
 function switchParticipantTab(tab){
   _participantTab = tab;
-  ['entries','acc','apps'].forEach(t=>{
+  ['entries','acc','apps','party','video','pending'].forEach(t=>{
     const btn = document.getElementById('ptab-'+t);
     if(!btn) return;
     btn.classList.toggle('btn-gold',    t===tab);
@@ -3564,6 +3806,11 @@ function switchParticipantTab(tab){
   if(aList)   aList.style.display   = tab==='acc'     ? '' : 'none';
   if(appList) appList.style.display = tab==='apps'    ? '' : 'none';
   if(addBtn)  addBtn.style.display  = tab==='entries' ? '' : 'none';
+  const report=document.getElementById('participant-report');
+  const reporting=['party','video','pending'].includes(tab);
+  if(report)report.style.display=reporting?'':'none';
+  if(reporting)renderParticipantReport(tab);
+  if(tab==='entries') renderParticipants();
   if(tab==='acc')  renderAccompanistList();
   if(tab==='apps'){
     populateSel2('app-concert-sel');
@@ -3571,6 +3818,64 @@ function switchParticipantTab(tab){
     document.getElementById('app-concert-sel').value = cid;
     renderApplications();
   }
+}
+
+
+// Read-only summaries share the saved entry/application answers; no duplicate state.
+function participantReportItems(cid){
+  return [
+    ...entries.filter(e=>e.concertId===cid&&e.status!=='absent').map(e=>({data:e,source:'entry'})),
+    ...applications.filter(a=>a.concertId===cid&&a.status==='new').map(a=>({data:a,source:'application'}))
+  ];
+}
+function participantReportName(item){
+  const d=item.data;
+  return d.type==='group'?(d.groupName||d.groupRep||d.name||'名称未設定'):(d.name||'氏名未設定');
+}
+function participantReportCard(item,kind){
+  const d=item.data;
+  const isApplication=item.source==='application';
+  const status=isApplication?'申込・承認待ち':d.status==='confirmed'?'参加確定':'登録済み・参加未確定';
+  const members=d.type==='group'?(d.members||[]).map(m=>typeof m==='string'?m:m.name).filter(Boolean).join('、'):'';
+  return `<article class="report-person">
+    <div class="report-person-heading"><strong>${esc(participantReportName(item))}</strong><span class="badge ${isApplication||d.status!=='confirmed'?'badge-pending':'badge-confirmed'}">${status}</span></div>
+    ${members?`<p class="report-meta">メンバー：${esc(members)}</p>`:''}
+    ${kind==='party'?`<p>打ち上げ：${PARTY_LABELS[d.afterParty]||'未回答'}</p>`:''}
+    ${kind==='video'?`<p>録画：${videoLabel(d)}</p>`:''}
+    ${kind!=='pending'&&d.participationNote?`<p class="report-note">補足：${esc(d.participationNote)}</p>`:''}
+    <div class="report-actions">${isApplication
+      ?`<button class="btn btn-outline btn-sm" onclick="switchParticipantTab('apps')">申し込みを確認</button>`
+      :`<button class="btn btn-outline btn-sm" data-report-entry="${esc(d.id)}" onclick="openEntryModal(this.dataset.reportEntry)">詳細・編集</button>`}</div>
+  </article>`;
+}
+function participantReportSection(title,items,kind){
+  return `<section class="report-section"><h3>${esc(title)} <span>${items.length}組</span></h3>
+    ${items.length?items.map(item=>participantReportCard(item,kind)).join(''):'<p class="report-empty">該当者はいません</p>'}</section>`;
+}
+function renderParticipantReport(kind){
+  const el=document.getElementById('participant-report');
+  if(!el)return;
+  const cid=document.getElementById('p-concert-sel')?.value;
+  const items=participantReportItems(cid);
+  const note='<p class="report-help">ソロ・グループを各1組として集計しています。承認待ちの申込も含み、欠席・不承認は除いています。グループ内で回答が異なる場合は補足をご確認ください。</p>';
+  if(kind==='pending'){
+    const waiting=items.filter(x=>x.source==='application');
+    const pending=items.filter(x=>x.source==='entry'&&x.data.status!=='confirmed');
+    el.innerHTML=`<h2 class="report-title">未確定の確認 <span>${waiting.length+pending.length}組</span></h2>
+      <p class="report-help">「申込・承認待ち」と「登録済み・参加未確定」を分けて表示しています。詳細・編集から参加確定に変更できます。</p>
+      <div class="report-grid">${participantReportSection('申込・承認待ち',waiting,kind)}${participantReportSection('登録済み・参加未確定',pending,kind)}</div>`;
+    return;
+  }
+  const labels=kind==='party'?PARTY_LABELS:VIDEO_LABELS;
+  const field=kind==='party'?'afterParty':'videoPublication';
+  const order=kind==='party'?['yes','undecided','no','']:['public','limited','private',''];
+  el.innerHTML=`<h2 class="report-title">${kind==='party'?'打ち上げ参加者':'録画の公開条件'}</h2>${note}
+    ${kind==='video'?'<p class="report-help">匿名・ぼかしの条件を含めて確認してください。未回答は公開許可として扱いません。</p>':''}
+    <div class="report-grid">${order.map(key=>participantReportSection(labels[key],items.filter(x=>(Object.hasOwn(labels,x.data[field])?x.data[field]:'')===key),kind)).join('')}</div>`;
+}
+function refreshParticipantView(){
+  if(['party','video','pending'].includes(_participantTab))renderParticipantReport(_participantTab);
+  else renderParticipants();
 }
 
 function renderAccompanistList(){
@@ -3667,12 +3972,12 @@ function renderParticipants(){
   const isPast = concert?.date && concert.date < today();
   const list=entries.filter(e=>e.concertId===cid).sort((a,b)=>(a.order||999)-(b.order||999));
   if(!list.length){
-    el.innerHTML='<div class="empty"><div class="empty-icon">♩</div><p>参加者がまだいません。<br>「参加者を追加」から登録してください。</p></div>';
+    el.innerHTML=capacitySummary(concert)+'<div class="empty"><div class="empty-icon">♩</div><p>参加者がまだいません。<br>「参加者を追加」から登録してください。</p></div>';
     return;
   }
-  el.innerHTML=`<div class="tbl-wrap"><table>
+  el.innerHTML=`${capacitySummary(concert)}<div class="tbl-wrap participant-table"><table>
     <thead><tr>
-      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th style="width:3.5rem;white-space:nowrap">時間</th><th style="width:3.5rem;white-space:nowrap">リハ</th><th>伴奏者</th><th>ログインコード</th><th style="width:6rem;white-space:nowrap">参加状況</th><th>操作</th>
+      <th style="width:2.5rem"></th><th>氏名 / グループ名</th><th>形式</th><th style="width:3.5rem;white-space:nowrap">時間</th><th style="width:3.5rem;white-space:nowrap">リハ</th><th>伴奏者</th><th>操作</th>
     </tr></thead><tbody id="participant-tbody">
     ${list.map(e=>{
       const soloInstr = e.instrument ? `（${esc(instrAbbr(e.instrument))}）` : '';
@@ -3685,16 +3990,6 @@ function renderParticipants(){
         : e.accType==='needed'
           ? `<span style="font-size:0.72rem;color:#f6c90e">手配中</span>`
           : `<span style="color:transparent">—</span>`;
-
-      // 同じコードを持つ他のエントリー数を確認（複数コード対応）
-      const myCodes = e.performerCode ? e.performerCode.split(',').map(c=>c.trim().toLowerCase()).filter(Boolean) : [];
-      const sharedCount = myCodes.length
-        ? list.filter(x=>x.id!==e.id && x.performerCode &&
-            x.performerCode.split(',').map(c=>c.trim().toLowerCase()).some(c=>myCodes.includes(c))).length
-        : 0;
-      const codeCell = e.performerCode
-        ? `<span style="font-family:'EB Garamond',serif;font-size:0.85rem;color:var(--gold2);letter-spacing:0.05em">${esc(e.performerCode)}</span>${sharedCount>0?`<br><span style="font-size:0.65rem;color:#56aee0">🔗 ${sharedCount}件と共有</span>`:''}`
-        : `<span style="font-size:0.72rem;color:var(--text3)">未設定</span>`;
 
       return `<tr draggable="true" data-id="${e.id}" style="cursor:grab">
         <td style="white-space:nowrap;text-align:center">
@@ -3720,14 +4015,6 @@ function renderParticipants(){
           </button>
         </td>
         <td style="white-space:nowrap">${accCell}</td>
-        <td>${codeCell}</td>
-        <td>
-          <select class="status-sel" onchange="changeStatus('${e.id}',this.value)">
-            <option value="pending"   ${e.status==='pending'  ?'selected':''}>未確認</option>
-            <option value="confirmed" ${e.status==='confirmed'?'selected':''}>確定</option>
-            <option value="absent"    ${e.status==='absent'   ?'selected':''}>欠席</option>
-          </select>
-        </td>
         <td style="white-space:nowrap">
           <button class="btn btn-outline btn-sm" onclick="openMailModal('${e.id}')">✉</button>
           ${isPast
@@ -3741,6 +4028,8 @@ function renderParticipants(){
 
   // ── Drag & Drop reorder ──
   const tbody = document.getElementById('participant-tbody');
+  const labels=['出演順','氏名 / グループ名','形式','演奏時間','リハーサル','伴奏者','操作'];
+  tbody.querySelectorAll('tr').forEach(row=>[...row.cells].forEach((cell,i)=>cell.dataset.label=labels[i]));
   let dragSrc = null;
   tbody.querySelectorAll('tr').forEach(row => {
     row.addEventListener('dragstart', e => {
@@ -4406,7 +4695,7 @@ function exportScheduleCSV(){
   const rTime = concert.rehearsalTime||'';
   const pTime = concert.time||'';
   const rDur  = concert.rehearsalDuration||10;
-  const rGap  = concert.rehearsalGap||3;
+  const rGap  = concert.rehearsalGap??2;
   const rhOrder = getRehearsalOrder(cid, perfList);
   const rhList  = rhOrder.map(id=>perfList.find(e=>e.id===id)).filter(Boolean);
 
@@ -4430,7 +4719,7 @@ function exportScheduleCSV(){
   // 本番行（休憩・カスタムイベント・奏者間ギャップを考慮）
   let pOffset = 0;
   const breaks = schedBreaks[cid] || [];
-  const pGap = concert.performanceGap || 0;
+  const pGap = concert.performanceGap ?? 3;
 
   perfList.forEach((e,i)=>{
     // 直前に休憩があれば追加
@@ -4788,6 +5077,7 @@ function renderMyConvert(){
         <span class="badge ${statusBadge[e.status]||'badge-pending'}" style="flex-shrink:0">${statusLabel[e.status]||'未確認'}</span>
       </div>
       ${piecesHtml}
+      ${participationSummary(e)}
       <div style="margin-top:0.7rem;text-align:right">
         <button class="btn btn-gold btn-sm" onclick="openMyEntryEdit('${e.id}')">✏ 編集</button>
       </div>
@@ -5168,6 +5458,7 @@ function renderMyProfile(){
       ${pieces.length?`<div style="font-size:0.78rem;color:var(--text2);line-height:1.9;margin-top:0.4rem">
         ${pieces.map((p,i)=>`<div>${i+1}. ${esc(p.title||'')}${p.composer?` <span style="color:var(--text3)">/ ${esc(p.composer)}</span>`:''}</div>`).join('')}
       </div>`:'<div style="font-size:0.78rem;color:var(--text3);margin-top:0.3rem">演奏曲目未登録</div>'}
+      ${participationSummary(e)}
       <div style="margin-top:0.8rem;text-align:right">
         <button class="btn btn-gold btn-sm" onclick="openMyEntryEdit('${e.id}')">✏ 編集</button>
       </div>
@@ -5193,11 +5484,11 @@ function openMyEntryEdit(entryId){
 
     ${e.type==='solo'?`
     <div class="form-grid" style="margin-top:0.8rem">
-      <div class="fg"><label>氏名</label><input id="mpe-name" type="text" value="${esc(e.name||'')}"></div>
-      <div class="fg"><label>ふりがな</label><input id="mpe-kana" type="text" value="${esc(e.kana||'')}"></div>
-      <div class="fg"><label>メールアドレス</label><input id="mpe-email" type="email" value="${esc(e.email||'')}"></div>
-      <div class="fg"><label>電話番号</label><input id="mpe-tel" type="tel" value="${esc(e.tel||'')}"></div>
-      <div class="fg full"><label>楽器</label><input id="mpe-instrument" type="text" list="instrument-list" value="${esc(e.instrument||'')}"></div>
+      <div class="fg"><label for="mpe-name">氏名</label><input id="mpe-name" type="text" value="${esc(e.name||'')}"></div>
+      <div class="fg"><label for="mpe-kana">ふりがな</label><input id="mpe-kana" type="text" value="${esc(e.kana||'')}"></div>
+      <div class="fg"><label for="mpe-email">メールアドレス</label><input id="mpe-email" type="email" value="${esc(e.email||'')}"></div>
+      <div class="fg"><label for="mpe-tel">電話番号</label><input id="mpe-tel" type="tel" value="${esc(e.tel||'')}"></div>
+      <div class="fg full"><label for="mpe-instrument">楽器</label><input id="mpe-instrument" type="text" list="instrument-list" value="${esc(e.instrument||'')}"></div>
     </div>
     <div class="subsect" style="margin-top:0.9rem">
       <div class="subsect-title">伴奏</div>
@@ -5217,11 +5508,11 @@ function openMyEntryEdit(entryId){
 
     :e.type==='group'?`
     <div class="form-grid" style="margin-top:0.8rem">
-      <div class="fg full"><label>グループ名</label><input id="mpe-group-name" type="text" value="${esc(e.groupName||'')}"></div>
-      <div class="fg"><label>代表者名</label><input id="mpe-group-rep" type="text" value="${esc(e.groupRep||'')}"></div>
-      <div class="fg"><label>代表者ふりがな</label><input id="mpe-group-rep-kana" type="text" value="${esc(e.groupRepKana||'')}"></div>
-      <div class="fg"><label>メールアドレス（代表）</label><input id="mpe-email" type="email" value="${esc(e.groupEmail||'')}"></div>
-      <div class="fg"><label>電話番号（代表）</label><input id="mpe-tel" type="tel" value="${esc(e.groupTel||'')}"></div>
+      <div class="fg full"><label for="mpe-group-name">グループ名</label><input id="mpe-group-name" type="text" value="${esc(e.groupName||'')}"></div>
+      <div class="fg"><label for="mpe-group-rep">代表者名</label><input id="mpe-group-rep" type="text" value="${esc(e.groupRep||'')}"></div>
+      <div class="fg"><label for="mpe-group-rep-kana">代表者ふりがな</label><input id="mpe-group-rep-kana" type="text" value="${esc(e.groupRepKana||'')}"></div>
+      <div class="fg"><label for="mpe-email">メールアドレス（代表）</label><input id="mpe-email" type="email" value="${esc(e.groupEmail||'')}"></div>
+      <div class="fg"><label for="mpe-tel">電話番号（代表）</label><input id="mpe-tel" type="tel" value="${esc(e.groupTel||'')}"></div>
     </div>
     <div class="subsect" style="margin-top:0.9rem">
       <div class="subsect-title">メンバー</div>
@@ -5268,6 +5559,7 @@ function openMyEntryEdit(entryId){
         <input id="mpe-duration" type="number" min="1" placeholder="例：10" value="${e.duration||''}" inputmode="numeric"></div>
     </div>
 
+    ${participationFields('mpe',e)}
     ${e.feeAmount>0?`
     <div class="subsect" style="margin-top:1rem">
       <div class="subsect-title" style="display:flex;align-items:center;gap:0.5rem">
@@ -5338,6 +5630,7 @@ function openMyEntryEdit(entryId){
   if(pa.length) pa.forEach(p=>addMpeRow(p.title||'',p.composer||''));
   else addMpeRow();
 
+  toggleVideoConditions('mpe');
   openModal('my-entry-edit-modal');
 }
 
@@ -5352,13 +5645,14 @@ function toggleMpeAcc(){
   }
 }
 
-function saveMyEntryEdit(entryId){
+async function saveMyEntryEdit(entryId){
   const e=entries.find(x=>x.id===entryId);
   if(!e)return;
   e.pieces=[...document.querySelectorAll('#mpe-piece-list .piece-row')].map(r=>({
     title:r.querySelector('.piece-title').value.trim(),
     composer:r.querySelector('.piece-composer').value.trim()
   })).filter(p=>p.title||p.composer);
+  Object.assign(e,readParticipation('mpe'));
   e.profile=document.getElementById('mpe-profile').value.trim();
   e.memo=document.getElementById('mpe-organizer-memo').value.trim();
   const durVal = document.getElementById('mpe-duration')?.value;
@@ -5385,7 +5679,7 @@ function saveMyEntryEdit(entryId){
       code:r.querySelector('.member-code-input')?.value.trim()||''
     })).filter(m=>m.name);
   }
-  persist();
+  if(!await persist())return;
   closeModal('my-entry-edit-modal');
   renderMyProfile();
   renderMyConvert();
@@ -5551,7 +5845,20 @@ let _mailTargets = [];   // [{entryId, name, email, code}]
 let _mailPageIdx = 0;    // 現在表示中の宛先インデックス
 
 // デフォルトテンプレート
+const OFFICIAL_LINE_URL='https://lin.ee/ur7P23U';
+function contactGuide(method){
+  if(method==='email')return '演奏会のご案内は、お申し込み時のメールアドレスにお送りします。';
+  if(method==='line')return '演奏会のご案内は、ご希望の個別LINEでお送りします。';
+  if(method==='line_official'||method==='line_open')return '今後の演奏会の連絡には公式LINEを使用します。'+OFFICIAL_LINE_URL+' から友だち追加し、トークで「演奏会名」と「申込時のお名前」をお送りください。';
+  return '連絡方法についてご希望がありましたら、主催者までお知らせください。';
+}
 const DEFAULT_MAIL_TEMPLATES = [
+  {id:'tpl-contact',name:'今後の連絡方法のご案内',subject:'【{{演奏会名}}】今後のご連絡について',
+   body:`{{氏名}} 様
+
+{{演奏会名}}にお申し込みいただき、ありがとうございます。
+
+{{連絡案内}}`},
   {
     id:'tpl-login', name:'ログインコード通知',
     subject:'【{{演奏会名}}】出演者専用ページのログインコードのご案内',
@@ -5566,6 +5873,8 @@ const DEFAULT_MAIL_TEMPLATES = [
 
 プログラムやスケジュールをご確認いただけます。
 
+{{連絡案内}}
+
 ご不明な点がございましたらお気軽にご連絡ください。
 どうぞよろしくお願いいたします。`
   },
@@ -5579,6 +5888,8 @@ const DEFAULT_MAIL_TEMPLATES = [
 日時：{{日付}}　開演 {{開演時刻}}
 会場：{{会場}}
 リハーサル：{{リハ時刻}}〜
+
+{{連絡案内}}
 
 ご確認いただけますようよろしくお願いいたします。`
   },
@@ -5697,6 +6008,7 @@ function expandVars(text, target){
   const concert = concerts.find(c=>c.id===cid)||{};
   const url = location.origin + location.pathname + '?cid=' + (cid||'');
   return text
+    .replace(/{{連絡案内}}/g,()=>contactGuide(target.entry?.contactMethod||applications.find(a=>a.id===target.entry?.applicationId)?.contactMethod))
     .replace(/{{氏名}}/g, target.name||'')
     .replace(/{{演奏会名}}/g, concert.name||'')
     .replace(/{{日付}}/g, concert.date||'')
@@ -6319,7 +6631,7 @@ function renderCompare(){
 //  MODAL HELPERS
 // ════════════════════════
 // 編集系モーダル：変更検知のため初期状態を記録
-const EDIT_MODALS = ['concert-modal','entry-modal','txn-modal','my-entry-edit-modal'];
+const EDIT_MODALS = ['concert-modal','entry-modal','txn-modal','my-entry-edit-modal','confirmation-mail'];
 
 function openModal(id){
   const overlay = document.getElementById(id+'-overlay');
@@ -6380,7 +6692,10 @@ async function init(){
     <div style="font-size:0.85rem;letter-spacing:0.1em">データを読み込み中...</div>
   </div>`;
 
-  await hydrate();
+  if(!await hydrate()){
+    loginBox.innerHTML='<p>データを読み込めませんでした。通信状態を確認して再読み込みしてください。</p><button class="btn btn-gold" onclick="location.reload()">再読み込み</button>';
+    return;
+  }
   loginBox.innerHTML = origContent;
   updateDatalist();
 
@@ -6506,10 +6821,11 @@ function showApplyScreen(concert){
   if(concert.flyerData){ flyerImg.src=concert.flyerData; flyerImg.style.display='block'; }
   else { flyerImg.style.display='none'; }
 
-  const lineBtn = document.getElementById('apply-line-btn');
-  if(concert.lineUrl){ lineBtn.href=concert.lineUrl; lineBtn.style.display='flex'; }
-  else { lineBtn.style.display='none'; }
 
+  document.getElementById('af-participation').innerHTML=participationFields('af');
+  toggleVideoConditions('af');
+  updateApplyCapacity();
+  startRealtimeSync();
   // init piece editor
   addAfPiece();
   setApplyType('solo');
@@ -6562,7 +6878,11 @@ function addAfPiece(title='', composer=''){
   list.appendChild(row);
 }
 
+let _applicationSubmitting=false;
 async function submitApplication(){
+  if(_applicationSubmitting)return;
+  const selectedConcert=concerts.find(c=>c.id===applyConcertId);
+  if(!selectedConcert||capacityState(selectedConcert).remaining===0){updateApplyCapacity();alert('満枠のため申し込みを受け付けられません。');return;}
   const isSolo = applyType === 'solo';
 
   // バリデーション
@@ -6595,6 +6915,7 @@ async function submitApplication(){
     pieces,
     duration: parseInt(document.getElementById('af-duration').value)||0,
     contactMethod,
+    ...readParticipation('af'),
     message: document.getElementById('af-message').value.trim(),
     referrer: document.getElementById('af-referrer').value.trim(),
   };
@@ -6622,15 +6943,20 @@ async function submitApplication(){
     })).filter(m=>m.name);
   }
 
+  _applicationSubmitting=true;
+  updateApplyCapacity();
   applications.push(app);
 
   // 自動承認の場合は即時参加者登録
   const applyConcertObj = concerts.find(c=>c.id===applyConcertId);
   if(applyConcertObj?.applyApproval === 'auto'){
-    await acceptApplicationById(app.id);
-  } else {
-    await persist();
+    entries.push(entryFromApplication(app));
+    app.status='accepted';
   }
+  const saved=await persist();
+  _applicationSubmitting=false;
+  updateApplyCapacity();
+  if(!saved)return;
 
   // 確認テキスト生成
   const concert = concerts.find(c=>c.id===applyConcertId);
@@ -6643,7 +6969,7 @@ async function submitApplication(){
     : '伴奏なし';
   const membersText = (app.members||[]).length
     ? app.members.map(m=>m.name+(m.kana?`（${m.kana}）`:'')+(m.instrument?`・${m.instrument}`:'')).join('、') : '';
-  const contactLabel = {'line_open':'LINEオープンチャット','line':'個別LINE','email':'メール'}[app.contactMethod]||'';
+  const contactLabel = {'line_official':'公式LINE','line_open':'LINEオープンチャット','line':'個別LINE','email':'メール'}[app.contactMethod]||'';
 
   const copyLines = [
     `【申し込み確認】${concertName}`,
@@ -6657,6 +6983,9 @@ async function submitApplication(){
     contactLabel   ? `連絡方法：${contactLabel}` : null,
     accText        ? `伴奏：${accText}` : null,
     app.duration   ? `演奏時間：${app.duration}分` : null,
+    `打ち上げ：${PARTY_LABELS[app.afterParty]||'未回答'}`,
+    `録画：${videoLabel(app)}`,
+    app.participationNote ? `補足：${app.participationNote}` : null,
     '',
     '【演奏曲目】',
     piecesText,
@@ -6665,35 +6994,24 @@ async function submitApplication(){
   ].filter(l=>l!==null).join('\n');
 
   document.getElementById('apply-form-wrap').style.display='none';
+  document.getElementById('af-official-next').hidden=app.contactMethod!=='line_official';
   document.getElementById('apply-success-wrap').style.display='block';
 
-  // EmailJS で申し込み完了メールを自動送信
+  // Approved applicants receive their persisted passcode; pending applicants receive an acknowledgement.
   const applyConcert = concerts.find(c=>c.id===applyConcertId);
-  const isAuto = applyConcert?.applyApproval === 'auto';
-  const accessUrl = location.origin + location.pathname + '?cid=' + applyConcertId;
-  const loginCode = app.email ? app.email.split('@')[0] : '';
-  const vOpen = applyConcert?.venueOpen ? `　開場 ${applyConcert.venueOpen}` : '';
-  const pTime = applyConcert?.time ? `　開演 ${applyConcert.time}` : '';
-  const concertDate = applyConcert?.date ? `${applyConcert.date}${vOpen}${pTime}` : '';
-  const templateId = isAuto ? 'template_6bx146p' : 'template_97dpdma';
-  emailjs.send('service_p7pw2an', templateId, {
-    to_email:          app.email,
-    name:              app.name,
-    concert_name:      concertName,
-    concert_date:      concertDate,
-    concert_venue:     applyConcert?.venue || '',
-    concert_venue_url: applyConcert?.venueUrl || '',
-    line_url:          applyConcert?.lineUrl || '',
-    access_url:        isAuto ? accessUrl : '',
-    login_code:        isAuto ? loginCode : '',
-    apply_deadline:    applyConcert?.applyDeadline || '',
-    decision_date:     applyConcert?.decisionDate || '',
-    approval_type:     isAuto ? 'auto' : 'manual',
-  }).then(()=>{
-    console.log('確認メール送信完了');
-  }).catch(err=>{
-    console.warn('メール送信失敗:', err);
-  });
+  if(applyConcert?.applyApproval==='auto'){
+    const result=await sendConfirmationEmail(app.id);
+    const notice=document.createElement('p');notice.textContent=result.message;
+    document.getElementById('apply-success-wrap').appendChild(notice);
+  }else{
+    emailjs.send('service_p7pw2an','template_97dpdma',{
+      to_email:app.email,email:app.email,name:app.name,concert_name:concertName,
+      concert_date:[applyConcert?.date,applyConcert?.time].filter(Boolean).join(' '),
+      concert_venue:applyConcert?.venue||'',concert_venue_url:applyConcert?.venueUrl||'',
+      contact_guide:contactGuide(app.contactMethod),line_url:app.contactMethod==='line_official'?OFFICIAL_LINE_URL:'',
+      access_url:'',login_code:'',apply_deadline:applyConcert?.applyDeadline||'',decision_date:applyConcert?.decisionDate||'',approval_type:'manual'
+    }).catch(()=>{const notice=document.createElement('p');notice.textContent='申し込みは保存済みですが、受付メールの送信結果を確認できませんでした。';document.getElementById('apply-success-wrap').appendChild(notice);});
+  }
 
   // Use a data attribute to avoid quoting issues inside onclick
   const btn = document.createElement('button');
@@ -6715,7 +7033,7 @@ async function submitApplication(){
   };
 
   const wrap = document.getElementById('apply-mailto-wrap');
-  wrap.innerHTML = `<p style="font-size:0.78rem;color:var(--text3);margin-bottom:0.8rem">申し込み内容をコピーして、${app.email} に確認メールとしてお送りください。</p>`;
+  wrap.innerHTML = `<p style="font-size:0.78rem;color:var(--text3);margin-bottom:0.8rem">お申し込み内容は、以下のボタンから控えとしてコピーできます。</p>`;
   wrap.appendChild(btn);
 }
 
@@ -6774,6 +7092,8 @@ function renderApplications(){
     .sort((a,b)=>b.submittedAt.localeCompare(a.submittedAt));
 
   const newCount = list.filter(a=>a.status==='new').length;
+  const appTab=document.getElementById('ptab-apps');
+  if(appTab)appTab.textContent=newCount?`申し込み ${newCount}`:'申し込み';
 
   if(!list.length){
     const concert = concerts.find(c=>c.id===cid);
@@ -6809,9 +7129,11 @@ function renderApplications(){
         ${piecesHtml?`<div style="font-size:0.75rem;color:var(--text2);margin:0.4rem 0;line-height:1.8">${piecesHtml}</div>`:''}
         ${a.type==='group'&&a.members?.length?`<div style="font-size:0.75rem;color:var(--text3)">メンバー: ${a.members.map(m=>esc(m.name)+(m.instrument?'（'+esc(m.instrument)+'）':'')).join('　')}</div>`:''}
         ${a.accType&&a.accType!=='none'?`<div style="font-size:0.75rem;color:var(--text3)">伴奏: ${a.accType==='self'?'自己手配（'+esc(a.accName||'未記入')+'）':'手配が必要'}</div>`:''}
+        ${participationSummary(a)}
         ${a.message?`<div style="font-size:0.78rem;color:var(--text2);margin-top:0.5rem;padding:0.5rem 0.7rem;background:var(--surface2);border-radius:5px;border-left:2px solid var(--border2)">${esc(a.message)}</div>`:''}
+        ${a.status==='accepted'?confirmationMailControls(a):''}
         <div class="card-actions">
-          ${a.status!=='accepted'?`<button class="btn btn-green btn-sm" onclick="acceptApplication('${a.id}')">✓ 承認してエントリーに追加</button>`:''}
+          ${a.status!=='accepted'?`<button class="btn btn-green btn-sm" onclick="acceptApplication('${a.id}')">✓ 承認してパスコード発行</button>`:''}
           ${a.status==='new'?`<button class="btn btn-outline btn-sm" onclick="rejectApplication('${a.id}')">不承認</button>`:''}
           <button class="btn btn-danger btn-sm" onclick="deleteApplication('${a.id}')">削除</button>
         </div>
@@ -6820,74 +7142,169 @@ function renderApplications(){
     </div>`;
 }
 
+
+const CONFIRMATION_TEMPLATE='template_6bx146p';
+const LOGIN_PAGE_URL='https://ts-np.github.io/salon-concert/';
+const _confirmationBusy=new Set();
+let _reviewedConfirmation=null;
+function performerCodesUsed(){
+  const codes=new Set();
+  const add=value=>String(value||'').split(',').forEach(x=>{if(x.trim())codes.add(x.trim().toLowerCase());});
+  concerts.forEach(c=>add(c.code));
+  entries.forEach(e=>{add(e.performerCode);(e.members||[]).forEach(m=>add(m.code));});
+  Object.values(accompanists).flat().forEach(a=>add(a.code));
+  return codes;
+}
+function generatePerformerCode(){
+  const used=performerCodesUsed();
+  for(let attempt=0;attempt<20;attempt++){
+    const bytes=new Uint8Array(8);crypto.getRandomValues(bytes);
+    const code=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+    if(!used.has(code))return code;
+  }
+  throw new Error('パスコードの発行に失敗しました。もう一度お試しください。');
+}
+function confirmationEntry(a){
+  return entries.find(e=>e.applicationId===a.id&&e.concertId===a.concertId);
+}
+function confirmationParams(a){
+  const e=confirmationEntry(a),c=concerts.find(c=>c.id===a.concertId);
+  if(!e||!c)throw new Error('申込に対応する参加者情報がありません。主催者にご確認ください。');
+  if(a.status!=='accepted'||e.status!=='confirmed')throw new Error('参加確定後に送信できます。');
+  const recipient=(e.type==='group'?e.groupEmail:e.email)||a.email||'';
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient))throw new Error('送信先のメールアドレスを参加者の編集画面で確認してください。');
+  const code=(e.performerCode||'').split(',').map(x=>x.trim()).find(x=>/^[a-z0-9]+$/i.test(x));
+  if(!code)throw new Error('利用できる英数字のパスコードがありません。参加者の編集画面をご確認ください。');
+  const url=new URL(LOGIN_PAGE_URL);url.searchParams.set('cid',c.id);
+  const method=e.contactMethod||a.contactMethod;
+  return {to_email:recipient,email:recipient,name:(e.type==='group'?e.groupRep:e.name)||a.name||'',
+    concert_name:c.name||'',concert_date:[c.date,c.venueOpen?'開場 '+c.venueOpen:'',c.time?'開演 '+c.time:''].filter(Boolean).join('　'),
+    concert_venue:c.venue||'',concert_venue_url:c.venueUrl||'',
+    access_url:url.href,login_code:code,contact_guide:contactGuide(method),
+    line_url:method==='line_official'||method==='line_open'?OFFICIAL_LINE_URL:'',approval_type:'auto'};
+}
+function confirmationSubject(p){return `【${p.concert_name}】参加確定・ログインのご案内`;}
+function confirmationBody(p){
+  return `${p.name} 様\n\n${p.concert_name}へのお申し込みを承認し、参加が確定しました。\n\n■ 演奏会情報\n日時：${p.concert_date}\n会場：${p.concert_venue}\nアクセス：${p.concert_venue_url}\n\n■ 出演者専用ページ\nログイン先：${p.access_url}\nパスコード：${p.login_code}\n\n「出演者」を選び、上記のパスコードでログインしてください。演奏曲目・演奏時間・プロフィールをご確認・更新ください。\nパスコードはご本人（グループの場合は代表者）で大切に保管してください。\n\n${p.contact_guide}\n\n荘所 智子\nEmail: tomoko.shojo@gmail.com`;
+}
+function confirmationMailControls(a){
+  const m=a.confirmationMail||{};
+  const status={sending:'送信処理中（結果が不明な場合は送信履歴をご確認ください）',sent:'送信受付済み',failed:'送信結果を確認できません。メール履歴を確認してから再試行してください。'}[m.status]||'未送信';
+  const stamp=m.sentAt?`（${new Date(m.sentAt).toLocaleString('ja-JP')}）`:'';
+  const locked=m.status==='sent'||(m.status==='sending'&&Date.now()-m.startedAt<120000);
+  return `<div class="info-box"><p>参加確定メール：${status}${stamp}</p><button class="btn btn-outline btn-sm" ${locked?'disabled':''} data-confirmation-id="${esc(a.id)}" onclick="openConfirmationMail(this.dataset.confirmationId)">${m.status==='failed'||m.status==='sending'?'確認して再試行':'参加確定メールを送信'}</button></div>`;
+}
+async function openConfirmationMail(id){
+  if(currentUser?.role!=='organizer')return;
+  let a=applications.find(x=>x.id===id);
+  if(!a||a.status!=='accepted')return;
+  const e=confirmationEntry(a);
+  if(!e){alert('この申込と参加者情報の紐付けがありません。誤送信を防ぐため、参加者情報をご確認ください。');return;}
+  if(e.status==='absent'){alert('欠席の方には参加確定メールを送れません。');return;}
+  if(e.status!=='confirmed'){
+    if(!confirm('この方を参加確定に変更し、メールを準備しますか？'))return;
+    e.status='confirmed';
+  }
+  if(!e.performerCode)e.performerCode=generatePerformerCode();
+  if(!await persist())return;
+  a=applications.find(x=>x.id===id);
+  try{
+    const params=confirmationParams(a);
+    _reviewedConfirmation={id,params};
+    document.getElementById('confirmation-mail-to').textContent=params.to_email;
+    document.getElementById('confirmation-mail-subject').textContent=confirmationSubject(params);
+    document.getElementById('confirmation-mail-body').textContent=confirmationBody(params);
+    document.getElementById('confirmation-mail-result').textContent='宛先と内容を確認してから送信してください。送信受付済みは、受信箱への到達を保証するものではありません。';
+    document.getElementById('confirmation-mail-send').disabled=a.confirmationMail?.status==='sent';
+    openModal('confirmation-mail');
+  }catch(error){alert(error.message);}
+}
+async function sendReviewedConfirmation(){
+  if(!_reviewedConfirmation||currentUser?.role!=='organizer')return;
+  const review=_reviewedConfirmation,button=document.getElementById('confirmation-mail-send');
+  if(button.disabled)return;
+  button.disabled=true;
+  const result=await sendConfirmationEmail(review.id,review.params);
+  document.getElementById('confirmation-mail-result').textContent=result.message;
+  button.disabled=result.ok;
+  if(document.getElementById('app-concert-sel')?.value)renderApplications();
+}
+async function sendConfirmationEmail(id,reviewedParams=null){
+  if(_confirmationBusy.has(id))return {ok:false,message:'送信処理中です。'};
+  _confirmationBusy.add(id);
+  let sent=false;
+  try{
+    let a=applications.find(x=>x.id===id);
+    if(!a)throw new Error('申し込みが見つかりません。');
+    if(a.confirmationMail?.status==='sent')return {ok:true,message:'この参加確定メールは送信受付済みです。'};
+    const params=confirmationParams(a);
+    if(reviewedParams&&!sameData(params,reviewedParams))throw new Error('宛先または内容が更新されました。メールの確認画面を開き直してください。');
+    if(a.confirmationMail?.status==='sending'&&Date.now()-a.confirmationMail.startedAt<120000)throw new Error('別の画面で送信処理中です。');
+    if(a.confirmationMail&&['failed','sending'].includes(a.confirmationMail.status)&&!confirm('前回のメールが送信済みの可能性があります。EmailJSの履歴を確認したうえで、同じパスコードで再試行しますか？'))return {ok:false,message:'再試行を中止しました。'};
+    a.confirmationMail={status:'sending',attemptId:uid(),startedAt:Date.now()};
+    const attemptId=a.confirmationMail.attemptId;
+    if(!await persist())throw new Error('送信準備を保存できなかったため、メールは送っていません。');
+    a=applications.find(x=>x.id===id);
+    if(a?.confirmationMail?.attemptId!==attemptId)throw new Error('ほかの画面で送信状態が更新されました。');
+    // The saved record is the only source for the sent code and destination.
+    if(!sameData(params,confirmationParams(a))){
+      a.confirmationMail={...a.confirmationMail,status:'failed'};await persist();
+      throw new Error('宛先または内容が更新されました。確認画面を開き直してください。');
+    }
+    try{await emailjs.send('service_p7pw2an',CONFIRMATION_TEMPLATE,params);sent=true;}
+    catch(error){
+      a=applications.find(x=>x.id===id);
+      if(a?.confirmationMail?.attemptId===attemptId){a.confirmationMail={...a.confirmationMail,status:'failed'};await persist();}
+      return {ok:false,message:'メールの送信結果を確認できませんでした。承認とパスコードは保存済みです。EmailJSの履歴を確認後、同じコードで再試行できます。'};
+    }
+    a=applications.find(x=>x.id===id);
+    if(!a||a.confirmationMail?.attemptId!==attemptId)throw new Error('メール送信後、記録が更新されました。');
+    a.confirmationMail={...a.confirmationMail,status:'sent',sentAt:Date.now(),toEmail:params.to_email};
+    if(!await persist())return {ok:true,message:'メール送信は受け付けられましたが、送信履歴を保存できませんでした。再送前にEmailJSの履歴を確認してください。'};
+    return {ok:true,message:'参加確定メールの送信が受け付けられました。'};
+  }catch(error){return {ok:sent,message:error.message};}
+  finally{_confirmationBusy.delete(id);}
+}
+
+function entryFromApplication(a){
+  return {
+    id:uid(), applicationId:a.id, contactMethod:a.contactMethod||'', concertId:a.concertId, type:a.type,
+    name:a.name||'', kana:a.kana||'', email:a.email||'', tel:a.tel||'',
+    instrument:a.instrument||'', pieces:a.pieces||[], duration:a.duration||0,
+    profile:'', order:0, status:'confirmed', performerCode:generatePerformerCode(),
+    feeAmount:0,feeStatus:'unpaid',feeNote:'',
+    accType:a.accType||'none',accName:a.accName||'',
+    ...(a.type==='group'?{groupName:a.groupName||'',groupRep:a.name||'',groupRepKana:a.kana||'',groupEmail:a.email||'',groupTel:a.tel||'',members:a.members||[]}:{}),
+    afterParty:a.afterParty||'',videoPublication:a.videoPublication||'',
+    videoAnonymous:!!a.videoAnonymous,videoBlur:!!a.videoBlur,participationNote:a.participationNote||''
+  };
+}
 async function acceptApplicationById(id){
-  const a = applications.find(x=>x.id===id);
-  if(!a) return;
-  const entry = {
-    id: uid(), concertId: a.concertId, type: a.type,
-    name: a.name, kana: a.kana, email: a.email, tel: a.tel,
-    instrument: a.instrument, pieces: a.pieces||[],
-    profile: '', order: 0, duration: 0,
-    status: 'pending', performerCode: '',
-    feeAmount: 0, feeStatus: 'unpaid', feeNote: '',
-  };
-  if(a.type==='group'){
-    entry.groupName = a.groupName;
-    entry.groupEmail = a.email;
-    entry.groupTel = a.tel;
-    entry.members = a.members||[];
-  } else {
-    entry.accType = a.accType||'none';
-    entry.accName = a.accName||'';
-  }
-  entries.push(entry);
-  a.status = 'accepted';
-  await persist();
+  const a=applications.find(x=>x.id===id);
+  if(!a||a.status==='accepted')return false;
+  entries.push(entryFromApplication(a));
+  a.status='accepted';
+  return await persist();
 }
-
 async function acceptApplication(id){
-  const a = applications.find(x=>x.id===id);
-  if(!a) return;
-  // Create entry from application
-  const entry = {
-    id: uid(),
-    concertId: a.concertId,
-    type: a.type,
-    name: a.name, kana: a.kana, email: a.email, tel: a.tel,
-    instrument: a.instrument,
-    pieces: a.pieces||[],
-    profile: '', order: 0, duration: 0,
-    status: 'pending',
-    performerCode: '',
-    feeAmount: 0, feeStatus: 'unpaid', feeNote: '',
-  };
-  if(a.type==='group'){
-    entry.groupName = a.groupName;
-    entry.groupEmail = a.email;
-    entry.groupTel = a.tel;
-    entry.members = a.members||[];
-  } else {
-    entry.accType = a.accType||'none';
-    entry.accName = a.accName||'';
-  }
-  entries.push(entry);
-  a.status = 'accepted';
-  await persist();
+  const a=applications.find(x=>x.id===id);
+  if(!a)return;
+  if(!await acceptApplicationById(id))return;
   renderApplications();
-  alert(`${a.name} さんをエントリーに追加しました。\n「参加者管理」ページで詳細を編集できます。`);
+  await openConfirmationMail(id);
 }
 
-function rejectApplication(id){
+async function rejectApplication(id){
   const a = applications.find(x=>x.id===id);
   if(!a) return;
   a.status = 'rejected';
-  persist(); renderApplications();
+  if(await persist())renderApplications();
 }
 
-function deleteApplication(id){
+async function deleteApplication(id){
   if(!confirm('この申し込みを削除しますか？')) return;
   applications = applications.filter(x=>x.id!==id);
-  persist(); renderApplications();
+  if(await persist())renderApplications();
 }
 
 // ════════════════════════
@@ -7009,6 +7426,8 @@ function renderAudienceList(){
   const cap = concert?.audienceCapacity || 0;
   const approved = list.filter(a=>a.status==='accepted').reduce((s,a)=>s+(parseInt(a.tickets)||1),0);
   const newCount = list.filter(a=>a.status==='new').length;
+  const appTab=document.getElementById('ptab-apps');
+  if(appTab)appTab.textContent=newCount?`申し込み ${newCount}`:'申し込み';
 
   // 残席サマリ
   const summaryHtml = cap ? `
