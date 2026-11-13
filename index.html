@@ -5526,6 +5526,11 @@ function openMyEntryEdit(entryId){
       <button class="btn btn-outline btn-sm" onclick="addMpeMember()">＋ メンバーを追加</button>
     </div>`:''}
 
+    <div class="form-grid" style="margin-top:1rem">
+      <div class="fg"><label for="mpe-duration">予定演奏時間（分）</label>
+        <input id="mpe-duration" type="number" min="1" placeholder="例：10" value="${e.duration||''}" inputmode="numeric"></div>
+    </div>
+
     <!-- 演奏曲目 -->
     <div class="subsect" style="margin-top:1rem">
       <div class="subsect-title" style="display:flex;justify-content:space-between;align-items:center">
@@ -5551,12 +5556,10 @@ function openMyEntryEdit(entryId){
         <textarea id="mpe-private-memo" rows="2" placeholder="練習メモなど">${esc(e.privateMemo||'')}</textarea></div>
     </div>
 
-    <!-- 出演順・時間 -->
+    <!-- 出演順 -->
     <div class="form-grid" style="margin-top:0.5rem">
       <div class="fg"><label>出演順</label>
         <div style="padding:0.5rem 0.75rem;background:var(--surface2);border-radius:6px;font-size:0.85rem;color:var(--text2);border:1px solid var(--border)">${e.order||'未定'}</div></div>
-      <div class="fg"><label>予定演奏時間（分）</label>
-        <input id="mpe-duration" type="number" min="1" placeholder="例：10" value="${e.duration||''}" inputmode="numeric"></div>
     </div>
 
     ${participationFields('mpe',e)}
